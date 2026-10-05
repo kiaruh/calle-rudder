@@ -196,16 +196,26 @@ def create_app(db_path: str | None = None) -> FastAPI:
         app.state.failure_mode = mode
         return {"failure_mode": mode}
 
-    @app.post("/admin/accounts/{account_id}/phone")
-    def set_phone(account_id: str, body: dict[str, str]) -> dict[str, str]:
-        """For live tests only: point a fictional account at a phone you own / are authorised to call."""
+    @app.post("/admin/accounts/{account_id}/contact")
+    def set_contact(account_id: str, body: dict[str, str]) -> dict[str, Any]:
+        """For live tests only: point a fictional account at a phone you own / are authorised to call.
+        Accepts any of: phone_e164, region, locale, timezone."""
+        allowed = {"phone_e164", "region", "locale", "timezone"}
         with closing(conn()) as c, c:
             data = account_row(c, account_id)
-            data["phone_e164"] = body.get("phone_e164", "")
+            data.update({k: v for k, v in body.items() if k in allowed})
             data.pop("updated_at", None)
             c.execute("UPDATE accounts SET data=?, updated_at=? WHERE account_id=?",
                       (json.dumps(data, ensure_ascii=False), _now(), account_id))
-        return {"account_id": account_id, "phone_e164": data["phone_e164"]}
+        return {"account_id": account_id, **{k: data.get(k) for k in sorted(allowed)}}
+
+    @app.post("/admin/accounts/{account_id}/phone")
+    def set_phone(account_id: str, body: dict[str, str]) -> dict[str, Any]:
+        return set_contact(account_id, {"phone_e164": body.get("phone_e164", "")})
+
+    @app.get("/admin/failure")
+    def get_failure() -> dict[str, str]:
+        return {"failure_mode": app.state.failure_mode}
 
     @app.post("/admin/reset")
     def reset() -> dict[str, str]:
@@ -228,9 +238,21 @@ def create_app(db_path: str | None = None) -> FastAPI:
             f"<td>{t['priority']}</td><td>{t['due_date'] or ''}</td><td>{t['description']}</td></tr>"
             for t in tasks
         )
+        mode = app.state.failure_mode
+        banner = (f"<div class='bar {'down' if mode != 'none' else 'up'}'>CRM state: <b>"
+                  f"{'OUTAGE (' + mode + ')' if mode != 'none' else 'healthy'}</b>"
+                  "<span class='btns'>"
+                  "<button onclick=\"act('/admin/failure',{mode:'error'})\">Simulate outage (503)</button>"
+                  "<button onclick=\"act('/admin/failure',{mode:'timeout'})\">Simulate slow CRM (timeout)</button>"
+                  "<button onclick=\"act('/admin/failure',{mode:'none'})\">Restore CRM</button>"
+                  "<button onclick=\"act('/admin/reset',{})\">Reset CRM data</button>"
+                  "<a class='btn' href='http://127.0.0.1:8000/'>Open control center (:8000)</a>"
+                  "<a class='btn' href='/docs'>API docs</a></span></div>")
         return _page(
             "Mock CRM - Financiera Solaria (SIMULATED)",
-            f"<p>Failure mode: <b>{app.state.failure_mode}</b></p>"
+            banner +
+            "<p class='hint'>This page is the customer's system of record. The orchestrator reads accounts from here "
+            "and writes call outcomes and follow-up tasks back. Refreshes every 3 seconds.</p>"
             f"<h2>Accounts</h2><table><tr><th>Account</th><th>Name</th><th>City</th><th>Due</th><th>Due date</th><th>Status</th></tr>{rows}</table>"
             f"<h2>Follow-up tasks</h2><table><tr><th>#</th><th>Account</th><th>Type</th><th>Team</th><th>Priority</th><th>Due</th><th>Description</th></tr>{trows}</table>",
         )
@@ -241,8 +263,18 @@ def create_app(db_path: str | None = None) -> FastAPI:
 def _page(title: str, body: str) -> str:
     return (
         "<!doctype html><html><head><meta charset='utf-8'><meta http-equiv='refresh' content='3'>"
-        f"<title>{title}</title><style>body{{font-family:system-ui;margin:24px;background:#fafafa}}"
-        "table{border-collapse:collapse;width:100%;background:#fff}td,th{border:1px solid #ddd;padding:6px;font-size:14px;text-align:left}"
-        f"th{{background:#eee}}</style></head><body><h1>{title}</h1>{body}</body></html>"
+        f"<title>{title}</title><style>"
+        ":root{--bg:#f4f6f7;--fg:#15222b;--line:#d3dbe0;--surface:#fff;--good:#2d7a34;--bad:#b3261e;--accent:#0d6b66}"
+        "@media (prefers-color-scheme:dark){:root{--bg:#0f171c;--fg:#e2eaef;--line:#2d3d47;--surface:#16222a;--good:#72c479;--bad:#f07068;--accent:#53c4ba}}"
+        "body{font-family:system-ui;margin:0;padding:20px;background:var(--bg);color:var(--fg)}"
+        "table{border-collapse:collapse;width:100%;background:var(--surface)}td,th{border:1px solid var(--line);padding:6px;font-size:14px;text-align:left}"
+        "th{background:var(--bg)}.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;"
+        "padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}"
+        ".bar.down{border-color:var(--bad)}.bar.down b{color:var(--bad)}.bar.up b{color:var(--good)}"
+        ".btns{display:flex;flex-wrap:wrap;gap:6px}button,.btn{font:inherit;font-size:13px;padding:6px 10px;border-radius:6px;"
+        "border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;text-decoration:none}"
+        "button:hover,.btn:hover{background:var(--accent);color:var(--surface)}.hint{opacity:.75;font-size:14px}"
+        "</style><script>async function act(p,b){await fetch(p,{method:'POST',headers:{'content-type':'application/json'},"
+        "body:JSON.stringify(b)});location.reload()}</script>"
+        f"</head><body><h1>{title}</h1>{body}</body></html>"
     )
-

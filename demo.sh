@@ -22,7 +22,7 @@ STARTED_PID=""
 if ! services_up; then
   mkdir -p logs
   echo "Services not running. Starting them (output in logs/services.log) ..."
-  ./run.sh > logs/services.log 2>&1 &
+  OPEN_BROWSER=0 ./run.sh > logs/services.log 2>&1 &
   STARTED_PID=$!
   trap 'kill $STARTED_PID 2>/dev/null || true' EXIT
   for _ in $(seq 1 40); do

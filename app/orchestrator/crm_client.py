@@ -46,3 +46,22 @@ class CrmClient:
         if body.get("result") not in {"created", "duplicate"}:
             raise CrmError(f"Unexpected CRM confirmation: {body}", retryable=False)
         return body
+
+    # --- read-only views and admin controls used by the control center UI --------------
+    def list_tasks(self) -> list[dict[str, Any]]:
+        return self._send("GET", "/tasks").json()
+
+    def list_interactions(self) -> list[dict[str, Any]]:
+        return self._send("GET", "/interactions").json()
+
+    def get_failure(self) -> str:
+        return self._send("GET", "/admin/failure").json()["failure_mode"]
+
+    def set_failure(self, mode: str) -> dict[str, Any]:
+        return self._send("POST", "/admin/failure", json={"mode": mode}).json()
+
+    def reset(self) -> dict[str, Any]:
+        return self._send("POST", "/admin/reset").json()
+
+    def set_contact(self, account_id: str, fields: dict[str, str]) -> dict[str, Any]:
+        return self._send("POST", f"/admin/accounts/{account_id}/contact", json=fields).json()

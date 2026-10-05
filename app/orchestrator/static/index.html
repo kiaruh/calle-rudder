@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solaria Control Center</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%230d6b66%27/%3E%3C/svg%3E">
+<style>
+/* Layout: sticky status header, tab bar, main column + activity sidebar (stacks on narrow screens). */
+:root{
+  --bg:#f3f6f7; --surface:#fff; --fg:#13212a; --muted:#5a6b77; --line:#d2dbe1;
+  --accent:#0d6b66; --accent-soft:#dcefed; --warn:#9a5d00; --warn-soft:#fbefd9;
+  --bad:#b3261e; --bad-soft:#f8e1df; --good:#2d7a34; --good-soft:#e1f1e2;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e161b; --surface:#152129; --fg:#e2eaef; --muted:#94a6b2; --line:#2b3b45;
+  --accent:#53c4ba; --accent-soft:#163430; --warn:#f0aa36; --warn-soft:#33270f;
+  --bad:#f07068; --bad-soft:#3a1a18; --good:#72c479; --good-soft:#18301a; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
+header h1{font-size:18px;margin:0}
+header h1 small{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:600 12px/1 var(--mono);padding:6px 9px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.chip.ok{color:var(--good);border-color:var(--good)} .chip.warn{color:var(--warn);border-color:var(--warn)} .chip.bad{color:var(--bad);border-color:var(--bad)}
+nav{display:flex;flex-wrap:wrap;gap:4px;padding:10px 20px 0;max-width:1400px;margin:0 auto}
+nav button{font:inherit;border:1px solid var(--line);border-bottom:none;background:transparent;color:var(--muted);padding:8px 14px;border-radius:8px 8px 0 0;cursor:pointer}
+nav button[aria-selected=true]{background:var(--surface);color:var(--fg);font-weight:600}
+nav a{margin-left:auto;align-self:center;color:var(--accent);font-weight:600;text-decoration:none;padding:8px 4px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;padding:0 20px 40px;max-width:1400px;margin:0 auto}
+@media (max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}}
+main{background:var(--surface);border:1px solid var(--line);border-radius:0 10px 10px 10px;padding:20px;min-width:0}
+aside{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;align-self:start;position:sticky;top:70px;max-height:calc(100vh - 90px);overflow:auto;min-width:0}
+h2{font-size:20px;margin:0 0 4px} h3{font-size:16px;margin:0}
+p{margin:0;max-width:75ch} .muted{color:var(--muted)}
+section.tab{display:flex;flex-direction:column;gap:18px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card .step{font:600 11px var(--mono);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button.act,a.act{font:600 14px/1 system-ui,sans-serif;padding:9px 13px;border-radius:7px;border:1px solid var(--accent);background:var(--accent);color:var(--surface);cursor:pointer;text-decoration:none;display:inline-block}
+button.act.secondary{background:transparent;color:var(--accent)}
+button.act.danger{background:var(--bad);border-color:var(--bad)}
+button.act:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details.term summary{cursor:pointer;color:var(--muted);font-size:13px}
+pre,code{font-family:var(--mono);font-size:12.5px}
+pre{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow-x:auto;margin:6px 0 0;white-space:pre-wrap;word-break:break-all}
+.scen{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.scen .card{gap:6px}
+.tag{font:600 11px var(--mono);color:var(--muted)}
+.say{font-style:italic}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 11px var(--mono);text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--accent-soft)}
+.pill{display:inline-block;font:600 11px/1 var(--mono);padding:4px 7px;border-radius:999px;white-space:nowrap;background:var(--bg);border:1px solid var(--line)}
+.pill.good{background:var(--good-soft);color:var(--good);border-color:transparent}
+.pill.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.pill.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.pill.info{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+input[type=checkbox]{width:18px;height:18px;padding:0;margin:2px 0 0;flex:none;accent-color:var(--accent)}
+input:not([type=checkbox]),select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0}
+.form{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.consent{flex-direction:row;align-items:flex-start;gap:8px;color:var(--fg);font-size:14px}
+.result{border-left:3px solid var(--accent);padding:8px 12px;background:var(--bg);border-radius:0 6px 6px 0;font-size:14px}
+.result.bad{border-color:var(--bad)} .result.good{border-color:var(--good)}
+.events{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.events div{border-left:3px solid var(--line);padding:2px 8px}
+.events .ok{border-color:var(--good)} .events .warn{border-color:var(--warn)} .events .error{border-color:var(--bad)} .events .info{border-color:var(--accent)}
+.events time{font:11px var(--mono);color:var(--muted);display:block}
+.transcript{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto}
+.turn{padding:6px 10px;border-radius:8px;max-width:85%;font-size:14px}
+.turn.bot{background:var(--accent-soft);align-self:flex-start}
+.turn.user{background:var(--bg);border:1px solid var(--line);align-self:flex-end}
+.turn b{font:600 11px var(--mono);display:block;color:var(--muted)}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);width:min(980px,94vw);max-height:90vh;padding:0;overflow:auto}
+dialog::backdrop{background:rgb(0 0 0 / .45)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.dlg-body{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.dlg-body>div{min-width:0;display:flex;flex-direction:column;gap:8px}
+.callout{background:var(--warn-soft);border:1px solid var(--warn);border-radius:8px;padding:10px 12px;font-size:14px}
+ol.howto{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Solaria Control Center <small>CALL-E payment reminders · port 8000</small></h1>
+  <div class="chips" id="chips"><span class="chip">loading…</span></div>
+</header>
+
+<nav role="tablist">
+  <button role="tab" data-tab="demo" aria-selected="true">Demo</button>
+  <button role="tab" data-tab="live" aria-selected="false">Call my phone</button>
+  <button role="tab" data-tab="results" aria-selected="false">Results</button>
+  <button role="tab" data-tab="trouble" aria-selected="false">Troubleshoot</button>
+  <a href="/learn">Learn the project ↗</a>
+</nav>
+
+<div class="layout">
+<main>
+
+<!-- ============================ DEMO ============================ -->
+<section class="tab" id="tab-demo">
+  <div>
+    <h2>Run the demo</h2>
+    <p class="muted">Simulated mode: no real calls are made. CALL-E's side of the call is scripted, and everything else
+      really runs: the CRM is a separate service on :8001, and the guards, webhook, verification, rules and outbox are real code.
+      Suggested order for the interview: 1 → 2 → Results tab → 4 → 5.</p>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <span class="step">Step 1</span><h3>Start fresh</h3>
+      <p>Reseeds the CRM with 8 fictional customers and clears call history.</p>
+      <div class="row"><button class="act" data-action="reset">Reset everything</button></div>
+      <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/reset</pre></details>
+    </div>
+    <div class="card">
+      <span class="step">Step 2</span><h3>Run the reminder campaign</h3>
+      <p>Reads all accounts from the CRM and checks each one before dialing. 6 calls go to CALL-E. 2 are blocked: one has no phone, one is do-not-call.</p>
+      <div class="row"><button class="act" data-action="campaign">Run campaign (8 accounts)</button></div>
+      <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/campaign -H 'content-type: application/json' -d '{}'</pre></details>
+    </div>
+    <div class="card">
+      <span class="step">Step 3</span><h3>See what happened</h3>
+      <p>Results arrive about 3 seconds later through the webhook. Open the Results tab, and click a call to read the transcript, the extracted result, and what the CRM stored.</p>
+      <div class="row"><button class="act secondary" data-goto="results">Open Results</button>
+        <a class="act secondary" href="http://127.0.0.1:8001/" target="_blank" rel="noopener">Open CRM :8001 ↗</a></div>
+    </div>
+    <div class="card">
+      <span class="step">Step 4</span><h3>Break the integration</h3>
+      <p>Places a call, then takes the CRM down before the result comes back. Expected result: the call shows <code>crm_sync_failed</code>, the outbox has 1 pending item, and nothing claims success.</p>
+      <div class="row"><button class="act danger" data-action="outage">Run outage scenario</button></div>
+      <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/outage-scenario</pre></details>
+    </div>
+    <div class="card">
+      <span class="step">Step 5</span><h3>Recover</h3>
+      <p>Restores the CRM and re-sends the pending write. The CRM confirms with 201, and exactly one task is created.</p>
+      <div class="row"><button class="act" data-action="restore">Restore CRM + retry outbox</button></div>
+      <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/crm/restore-and-retry</pre></details>
+    </div>
+    <div class="card">
+      <span class="step">Manual controls</span><h3>CRM failure switch</h3>
+      <p>Inject failures by hand. A timeout makes the CRM answer after 6 seconds, so the orchestrator gives up after 3.</p>
+      <div class="row">
+        <button class="act secondary" data-crm="error">Outage (503)</button>
+        <button class="act secondary" data-crm="timeout">Slow (timeout)</button>
+        <button class="act secondary" data-crm="none">Healthy</button>
+        <button class="act secondary" data-action="retry">Retry outbox</button>
+      </div>
+      <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/crm/failure -H 'content-type: application/json' -d '{"mode":"error"}'
+curl -X POST localhost:8000/api/outbox/retry</pre></details>
+    </div>
+  </div>
+
+  <div>
+    <h2>Simulate one conversation</h2>
+    <p class="muted">Each button runs one simulated call for María Fernanda (ACC-1001) with a scripted customer. These are the same conversations you can act out yourself on the "Call my phone" tab.</p>
+  </div>
+  <div class="scen" id="scenarios"></div>
+  <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/simulate -H 'content-type: application/json' -d '{"scenario":"promise_ambiguous"}'</pre></details>
+
+  <div id="last-result" class="result" hidden></div>
+</section>
+
+<!-- ============================ LIVE ============================ -->
+<section class="tab" id="tab-live" hidden>
+  <div>
+    <h2>Call my phone with real CALL-E</h2>
+    <p class="muted">This places a <b>real phone call</b> from CALL-E to your phone. You play the customer, María Fernanda López García.
+      The agent ("Sofía") will speak Spanish, confirm your name, remind you of the fictional $2,450 MXN installment, and ask when you'll pay.
+      Each call uses CALL-E credits; new accounts get 100 free credits.</p>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <span class="step">Step 1 · CALL-E dashboard</span><h3>Get an API key</h3>
+      <ol class="howto">
+        <li>Sign up or log in at <a href="https://www.heycall-e.com/" target="_blank" rel="noopener">heycall-e.com</a>.</li>
+        <li>Open <a href="https://dashboard.heycall-e.com/account/api-keys" target="_blank" rel="noopener">Dashboard → Account → API keys</a> and create a key.</li>
+        <li>Paste it below. It's kept in this server's memory only. Add <code>CALLE_API_KEY=…</code> to <code>.env</code> to keep it across restarts.</li>
+      </ol>
+      <label for="api-key">CALL-E API key<input id="api-key" type="password" autocomplete="off" placeholder="paste key"></label>
+      <div class="row"><button class="act" data-action="savekey">Save &amp; verify key</button></div>
+      <div id="key-result" class="result" hidden></div>
+    </div>
+
+    <div class="card">
+      <span class="step">Step 2</span><h3>Your phone</h3>
+      <div class="form">
+        <label for="country">Country (CALL-E supported)<select id="country"></select></label>
+        <label for="phone">Phone in E.164<input id="phone" inputmode="tel" placeholder="+52 55 1234 5678"></label>
+        <label for="locale">Language of the call<select id="locale">
+          <option value="es-MX">Spanish (Mexico)</option><option value="en-US">English</option>
+          <option value="es-ES">Spanish (Spain)</option><option value="pt-BR">Portuguese (Brazil)</option></select></label>
+        <label for="tz">Your time zone (for the 08:00–21:00 rule)<input id="tz"></label>
+      </div>
+      <p class="muted" style="font-size:13px">Mexico uses an international line on CALL-E, so the caller ID may show a foreign number. Only countries on CALL-E's list can be called.</p>
+    </div>
+
+    <div class="card">
+      <span class="step">Step 3</span><h3>Place the call</h3>
+      <label class="consent" for="consent"><input id="consent" type="checkbox"> This is my own phone (or I'm authorised to call it), and I understand a real call will be placed.</label>
+      <div class="row"><button class="act danger" data-action="callme">Call me now</button>
+        <button class="act secondary" data-mode="simulated">Back to simulated mode</button></div>
+      <div id="live-result" class="result" hidden></div>
+      <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/live/key -H 'content-type: application/json' -d '{"api_key":"YOUR_KEY"}'
+curl -X POST localhost:8000/api/live/call-me -H 'content-type: application/json' \
+  -d '{"phone":"+52XXXXXXXXXX","region":"MX","locale":"es-MX","timezone":"America/Mexico_City","consent":true}'
+curl -X POST localhost:8000/calls/CALL_ID/sync      # repeat until "processed"</pre></details>
+    </div>
+  </div>
+
+  <div>
+    <h2>What to say on the call</h2>
+    <p class="muted">Pick one script per call to reproduce a test case. After the call, open the Results tab to compare what CALL-E extracted with what you said.</p>
+  </div>
+  <div class="scen" id="scripts"></div>
+</section>
+
+<!-- ============================ RESULTS ============================ -->
+<section class="tab" id="tab-results" hidden>
+  <div><h2>Calls</h2><p class="muted">Click a row for the transcript, the extracted result, and the CRM record. Refreshes every 3 seconds.</p></div>
+  <div class="tbl"><table><thead><tr><th>Account</th><th>Call</th><th>State</th><th>Outcome</th><th>CRM status</th><th>Detail</th></tr></thead><tbody id="calls"></tbody></table></div>
+  <div><h2>CRM: accounts</h2><p class="muted">The customer's system of record (mock, on :8001).</p></div>
+  <div class="tbl"><table><thead><tr><th>Account</th><th>Name</th><th>Phone</th><th>Due</th><th>Status</th></tr></thead><tbody id="accounts"></tbody></table></div>
+  <div><h2>CRM: follow-up tasks</h2><p class="muted">The output other teams act on.</p></div>
+  <div class="tbl"><table><thead><tr><th>Account</th><th>Type</th><th>Team</th><th>Priority</th><th>Due</th><th>Description</th></tr></thead><tbody id="tasks"></tbody></table></div>
+  <div class="cards">
+    <div class="card"><h3>Outbox (CRM writes waiting for confirmation)</h3><div class="tbl"><table><thead><tr><th>Call</th><th>State</th><th>Tries</th></tr></thead><tbody id="outbox"></tbody></table></div></div>
+    <div class="card"><h3>SMS payment links (simulated, never sent)</h3><div id="sms" class="muted">none</div></div>
+  </div>
+</section>
+
+<!-- ============================ TROUBLESHOOT ============================ -->
+<section class="tab" id="tab-trouble" hidden>
+  <div><h2>Health checks</h2><p class="muted">Checks each part of the chain: services, CRM, CALL-E key and network, webhook, outbox, and stuck calls.</p></div>
+  <div class="row"><button class="act" data-action="checks">Run checks</button></div>
+  <div class="tbl"><table><thead><tr><th>Check</th><th>State</th><th>Detail</th><th>How to fix</th></tr></thead><tbody id="checks"><tr><td colspan="4" class="muted">Press "Run checks".</td></tr></tbody></table></div>
+  <details class="term"><summary>Terminal equivalent</summary><pre>curl localhost:8000/api/troubleshoot
+curl localhost:8000/api/status
+tail -f logs/crm.log            # CRM server log (orchestrator logs print in the ./run.sh terminal)</pre></details>
+
+  <div><h2>Common problems</h2></div>
+  <div class="tbl"><table><thead><tr><th>You see</th><th>Why</th><th>Fix</th></tr></thead><tbody>
+    <tr><td><code>Connection refused</code></td><td>Services not running</td><td><code>./run.sh</code> in its own terminal, or <code>./demo.sh</code></td></tr>
+    <tr><td><code>zsh: unknown file attribute</code></td><td>zsh ran text after <code>#</code> as part of the command</td><td>Paste commands one line at a time, without the comments</td></tr>
+    <tr><td><code>address already in use</code></td><td>An old server still holds the port</td><td><code>lsof -i :8000</code> then <code>kill &lt;PID&gt;</code></td></tr>
+    <tr><td><code>outside_calling_window</code></td><td>Local time outside 08:00–21:00 for that customer</td><td>Simulated buttons use a demo clock (12:00 CDMX). For live calls, check the time-zone field, or set <code>CALL_WINDOW</code> in <code>.env</code></td></tr>
+    <tr><td><code>invalid_phone</code></td><td>Not E.164, or doesn't match the country</td><td>Format: <code>+52</code> then 10 digits for Mexico, no spaces</td></tr>
+    <tr><td><code>Refusing live call: … allowlist</code></td><td>Safety guard: live calls only go to numbers you entered</td><td>Use "Call my phone", or set <code>CALLE_ALLOWED_PHONES</code></td></tr>
+    <tr><td>Key rejected (401/403)</td><td>Wrong or revoked key</td><td>Create a new key in the CALL-E dashboard</td></tr>
+    <tr><td>CALL-E create fails with 422</td><td>CALL-E rejected part of the request (for example <code>result_schema</code>, region or locale)</td><td>Read the error detail in the activity log. This is a finding for the test log</td></tr>
+    <tr><td>Call stuck in <code>submitted</code></td><td>No webhook reached your laptop (normal without ngrok)</td><td>Results → open the call → "Sync from CALL-E". The live tab polls automatically</td></tr>
+    <tr><td><code>crm_sync_failed</code></td><td>The CRM was down when the result arrived</td><td>Demo tab → "Restore CRM + retry outbox"</td></tr>
+  </tbody></table></div>
+  <div id="recent-errors"></div>
+</section>
+</main>
+
+<aside>
+  <h3>Activity</h3>
+  <p class="muted" style="font-size:13px;margin-bottom:8px">What the orchestrator just did, newest first.</p>
+  <div class="events" id="events"></div>
+</aside>
+</div>
+
+<dialog id="detail">
+  <div class="dlg-head"><h3 id="dlg-title">Call</h3><div class="row"><button class="act secondary" id="dlg-sync">Sync from CALL-E</button><button class="act secondary" id="dlg-close">Close</button></div></div>
+  <div class="dlg-body" id="dlg-body"></div>
+</dialog>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let SCEN = [], openCall = null, livePoll = null;
+
+async function api(method, path, body) {
+  const res = await fetch(path, {method, headers: body ? {"content-type": "application/json"} : {}, body: body ? JSON.stringify(body) : undefined});
+  let data; try { data = await res.json(); } catch { data = {}; }
+  return {ok: res.ok, status: res.status, data};
+}
+function show(el, ok, html) { el.hidden = false; el.className = "result " + (ok ? "good" : "bad"); el.innerHTML = html; }
+function errText(r) { return esc(r.data.detail || JSON.stringify(r.data)); }
+function pill(v) {
+  const s = String(v ?? "");
+  const cls = /synced|ok|promise_to_pay|healthy|created/.test(s) ? "good" : /fail|error|blocked|refused|dispute|dead/.test(s) ? "bad" :
+              /review|pending|submitted|submitting|callback|wrong|no_contact|warn|paid_claimed|hardship/.test(s) ? "warn" : "info";
+  return s ? `<span class="pill ${cls}">${esc(s)}</span>` : "";
+}
+
+// ---------- tabs
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => tab(b.dataset.tab)));
+function tab(name) {
+  document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === name));
+  document.querySelectorAll("section.tab").forEach(s => s.hidden = s.id !== "tab-" + name);
+  try { localStorage.setItem("tab", name); } catch {}
+}
+document.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => tab(b.dataset.goto)));
+
+// ---------- actions
+const last = $("#last-result");
+const actions = {
+  async reset() { const r = await api("POST", "/api/reset"); show(last, r.ok, r.ok ? "Reset done. The CRM has 8 fresh accounts." : errText(r)); },
+  async campaign() {
+    const r = await api("POST", "/api/campaign", {});
+    if (!r.ok) return show(last, false, errText(r));
+    const sub = r.data.results.filter(x => x.result === "submitted").length;
+    const blk = r.data.results.filter(x => x.result === "blocked").map(x => `${x.account_id} (${x.reason})`);
+    const skip = r.data.results.filter(x => x.result.startsWith("skipped")).length;
+    show(last, true, `Campaign (${r.data.mode}): <b>${sub}</b> calls submitted. Blocked before CALL-E: ${esc(blk.join(", ") || "none")}.` +
+      (skip ? ` ${skip} skipped: already called this cycle. Press Reset to start over.` : "") + " Results arrive in about 3 seconds.");
+  },
+  async outage() {
+    const r = await api("POST", "/api/outage-scenario");
+    show(last, r.ok, r.ok ? "Call placed and CRM taken down. In about 5 seconds the call shows <b>crm_sync_failed</b>, and the outbox gets a pending item. Then press Restore CRM + retry outbox." : errText(r));
+  },
+  async restore() {
+    const r = await api("POST", "/api/crm/restore-and-retry");
+    if (!r.ok) return show(last, false, errText(r));
+    const n = r.data.retried.length, okn = r.data.retried.filter(x => x.crm_sync === "synced").length;
+    show(last, okn === n, n ? `CRM restored. Outbox retry: ${okn}/${n} delivered, and the CRM confirmed each one.` : "CRM restored. The outbox was empty.");
+  },
+  async retry() { const r = await api("POST", "/api/outbox/retry"); show(last, r.ok, r.ok ? `Retried ${r.data.retried.length} item(s): ${esc(r.data.retried.map(x => x.crm_sync).join(", ") || "nothing pending")}` : errText(r)); },
+  async savekey() {
+    const el = $("#key-result"), key = $("#api-key").value.trim();
+    if (!key) return show(el, false, "Paste your API key first.");
+    const r = await api("POST", "/api/live/key", {api_key: key});
+    show(el, r.ok && r.data.ok, r.ok ? esc(r.data.detail) : errText(r));
+    $("#api-key").value = "";
+  },
+  async callme() {
+    const el = $("#live-result");
+    const body = {phone: $("#phone").value, region: $("#country").value, locale: $("#locale").value,
+                  timezone: $("#tz").value, consent: $("#consent").checked};
+    try { localStorage.setItem("phone", body.phone); localStorage.setItem("country", body.region); } catch {}
+    const r = await api("POST", "/api/live/call-me", body);
+    if (!r.ok) return show(el, false, errText(r));
+    show(el, true, `Calling now. Call id <code>${esc(r.data.call_id)}</code>. Answer your phone. This page checks CALL-E every 5 seconds.`);
+    startLivePoll(r.data.call_id);
+  },
+  async checks() {
+    const r = await api("GET", "/api/troubleshoot");
+    $("#checks").innerHTML = r.data.checks.map(c => `<tr><td>${esc(c.check)}</td><td>${pill(c.state)}</td><td>${esc(c.detail)}</td><td>${esc(c.fix)}</td></tr>`).join("");
+    $("#recent-errors").innerHTML = r.data.recent_errors.length ? "<h3>Recent errors</h3>" +
+      r.data.recent_errors.map(e => `<pre>${esc(e.at)} ${esc(e.message)}\n${esc(e.detail || "")}</pre>`).join("") : "";
+  },
+};
+document.querySelectorAll("[data-action]").forEach(b => b.addEventListener("click", async () => {
+  b.disabled = true; try { await actions[b.dataset.action](); await refresh(); } finally { b.disabled = false; }
+}));
+document.querySelectorAll("[data-crm]").forEach(b => b.addEventListener("click", async () => {
+  const r = await api("POST", "/api/crm/failure", {mode: b.dataset.crm});
+  show(last, r.ok, r.ok ? `CRM failure mode: <b>${esc(b.dataset.crm)}</b>` : errText(r)); refresh();
+}));
+document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", async () => {
+  const r = await api("POST", "/api/mode", {mode: b.dataset.mode});
+  show($("#live-result"), r.ok, r.ok ? `Mode is now <b>${esc(r.data.mode.toUpperCase())}</b>.` : errText(r)); refresh();
+}));
+
+function startLivePoll(callId) {
+  clearInterval(livePoll);
+  const el = $("#live-result");
+  livePoll = setInterval(async () => {
+    const r = await api("POST", `/calls/${callId}/sync`);
+    const d = r.data;
+    if (d.result === "not_terminal") { show(el, true, `Call <code>${esc(callId)}</code> status at CALL-E: ${pill(d.status)} (checking again in 5s)`); return; }
+    if (d.result === "verify_failed") { show(el, false, `Could not read the call from CALL-E: ${esc(d.detail)}. Retrying…`); return; }
+    clearInterval(livePoll);
+    show(el, d.crm_sync === "synced", `Finished. Outcome ${pill(d.outcome)} → CRM ${pill(d.crm_status)} ${d.review_reasons?.length ? "(" + esc(d.review_reasons.join(", ")) + ")" : ""}. <a href="#" id="open-live">Open transcript</a>`);
+    $("#open-live")?.addEventListener("click", e => { e.preventDefault(); openDetail(callId); });
+    refresh();
+  }, 5000);
+}
+
+// ---------- scenarios + scripts
+async function loadScenarios() {
+  SCEN = (await api("GET", "/api/scenarios")).data;
+  $("#scenarios").innerHTML = SCEN.map(s => `<div class="card"><span class="tag">${esc(s.test)}</span><h3>${esc(s.title)}</h3>
+    <p class="say">“${esc(s.say)}”</p><p class="muted" style="font-size:13px">Expect: ${esc(s.expect)}</p>
+    <div class="row"><button class="act secondary" data-sim="${esc(s.id)}">Simulate</button></div></div>`).join("");
+  $("#scripts").innerHTML = SCEN.filter(s => s.id !== "result_validation_failed").map(s => `<div class="card"><span class="tag">${esc(s.test)}</span><h3>${esc(s.title)}</h3>
+    <p class="say">You say: “${esc(s.say)}”</p><p class="muted" style="font-size:13px">Expect: ${esc(s.expect)}</p></div>`).join("");
+  document.querySelectorAll("[data-sim]").forEach(b => b.addEventListener("click", async () => {
+    b.disabled = true;
+    const r = await api("POST", "/api/simulate", {scenario: b.dataset.sim});
+    const row = r.ok ? r.data.results[0] : null;
+    show(last, r.ok && row.result === "submitted", r.ok ? `Simulated <b>${esc(b.dataset.sim)}</b>: ${esc(row.result)} ${esc(row.call_id || row.reason || "")}. The result appears in Results in about 3 seconds.` : errText(r));
+    b.disabled = false; refresh();
+  }));
+}
+
+// ---------- detail dialog
+async function openDetail(callId) {
+  openCall = callId;
+  const r = await api("GET", `/api/calls/${callId}/detail`);
+  const d = r.data;
+  $("#dlg-title").textContent = `${d.orchestrator?.account_id || ""} · ${callId}`;
+  const tr = (d.transcript || []).map(t => `<div class="turn ${t.speaker === "user" ? "user" : "bot"}"><b>${t.speaker === "user" ? "Customer" : "Agent"}</b>${esc(t.text)}</div>`).join("") || "<p class='muted'>No transcript (yet).</p>";
+  $("#dlg-body").innerHTML = `
+    <div><h3>Conversation</h3><p class="muted">CALL-E status: ${pill(d.calle_status)} ${d.calle_error ? "· " + esc(d.calle_error) : ""}</p>
+      <p>${esc(d.summary || "")}</p><div class="transcript">${tr}</div></div>
+    <div><h3>What CALL-E extracted</h3><pre>${esc(JSON.stringify(d.structured_result, null, 2))}</pre>
+      <h3>What the orchestrator decided</h3><p>State ${pill(d.orchestrator?.state)} · outcome ${pill(d.orchestrator?.outcome)} · CRM ${pill(d.orchestrator?.crm_status)}</p>
+      <h3>What the CRM stored</h3><pre>${esc(JSON.stringify(d.crm_interaction, null, 2))}</pre>
+      <details><summary>Request sent to CALL-E (task prompt + schema)</summary><pre>${esc(JSON.stringify(d.request_sent, null, 2))}</pre></details></div>`;
+  if (!$("#detail").open) $("#detail").showModal();
+}
+$("#dlg-close").addEventListener("click", () => $("#detail").close());
+$("#dlg-sync").addEventListener("click", async () => { if (openCall) { await api("POST", `/calls/${openCall}/sync`); openDetail(openCall); refresh(); } });
+
+// ---------- live refresh
+async function refresh() {
+  const r = await api("GET", "/api/overview");
+  if (!r.ok) return;
+  const d = r.data, st = d.status;
+  $("#chips").innerHTML = [
+    `<span class="chip ${st.mode === "live" ? "bad" : "ok"}">CALL-E: ${esc(st.mode.toUpperCase())}</span>`,
+    `<span class="chip ${st.crm === "healthy" ? "ok" : "bad"}">CRM: ${esc(st.crm)}</span>`,
+    `<span class="chip ${st.api_key_set ? "ok" : "warn"}">API key: ${st.api_key_set ? "set" : "not set"}</span>`,
+    `<span class="chip">Webhook: ${esc(String(st.webhook).startsWith("http") ? "on" : "polling")}</span>`,
+  ].join("");
+  $("#calls").innerHTML = d.calls.map(c => `<tr class="click" data-call="${esc(c.call_id || "")}"><td>${esc(c.account_id)}</td><td><code>${esc(c.call_id || "—")}</code></td>
+    <td>${pill(c.state)}</td><td>${pill(c.outcome)}</td><td>${pill(c.crm_status)}</td><td class="muted">${esc((c.detail || "").slice(0, 90))}</td></tr>`).join("")
+    || `<tr><td colspan="6" class="muted">No calls yet. Run the campaign on the Demo tab.</td></tr>`;
+  document.querySelectorAll("tr[data-call]").forEach(tr => tr.addEventListener("click", () => { if (tr.dataset.call && !tr.dataset.call.startsWith("local-")) openDetail(tr.dataset.call); }));
+  $("#accounts").innerHTML = d.accounts ? d.accounts.map(a => `<tr><td>${esc(a.account_id)}</td><td>${esc(a.full_name)}</td><td><code>${esc(a.phone_e164 ? a.phone_e164.slice(0, 5) + "…" + a.phone_e164.slice(-2) : "missing")}</code></td>
+    <td>$${Number(a.amount_due_mxn).toLocaleString("en-US", {minimumFractionDigits: 2})} · ${esc(a.due_date)}</td><td>${pill(a.status)}</td></tr>`).join("")
+    : `<tr><td colspan="5">${pill("CRM unavailable")} The CRM is down or in outage mode. This is expected during step 4.</td></tr>`;
+  $("#tasks").innerHTML = d.tasks ? (d.tasks.slice().reverse().map(t => `<tr><td>${esc(t.account_id)}</td><td>${esc(t.type)}</td><td>${esc(t.team)}</td><td>${pill(t.priority === "high" ? "high" : t.priority)}</td>
+    <td>${esc(t.due_date || "")}</td><td>${esc(t.description)}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">No tasks yet.</td></tr>`)
+    : `<tr><td colspan="6">${pill("CRM unavailable")}</td></tr>`;
+  $("#outbox").innerHTML = d.outbox.map(o => `<tr><td><code>${esc(o.call_id)}</code></td><td>${pill(o.state)}</td><td>${esc(o.attempts)}</td></tr>`).join("") || `<tr><td colspan="3" class="muted">empty</td></tr>`;
+  $("#sms").innerHTML = d.notifications.length ? d.notifications.map(n => `<div>${esc(n.account_id)}: ${esc(n.body)}</div>`).join("") : "none";
+  $("#events").innerHTML = d.events.map(e => `<div class="${esc(e.level)}"><time>${esc(e.at.slice(11, 19))} UTC</time>${esc(e.message)}${e.detail ? `<br><span class="muted">${esc(String(e.detail).slice(0, 160))}</span>` : ""}</div>`).join("")
+    || `<p class="muted">Nothing yet. Press Reset, then Run campaign.</p>`;
+}
+
+// ---------- init
+(async function init() {
+  const st = (await api("GET", "/api/status")).data;
+  $("#country").innerHTML = Object.entries(st.regions).map(([r, c]) => `<option value="${r}">${r} (${c})</option>`).join("");
+  let saved = {}; try { saved = {phone: localStorage.getItem("phone"), country: localStorage.getItem("country"), tab: localStorage.getItem("tab")}; } catch {}
+  $("#country").value = saved.country || "MX";
+  if (saved.phone) $("#phone").value = saved.phone;
+  $("#tz").value = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Mexico_City";
+  if (saved.tab && $("#tab-" + saved.tab)) tab(saved.tab);
+  await loadScenarios();
+  await refresh();
+  setInterval(refresh, 3000);
+})();
+</script>
+</body>
+</html>

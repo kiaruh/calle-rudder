@@ -16,8 +16,16 @@ trap cleanup EXIT INT TERM
 
 $PY -m uvicorn app.crm.main:create_app --factory --host 127.0.0.1 --port 8001 --log-level warning > logs/crm.log 2>&1 &
 $PY -m uvicorn app.orchestrator.main:create_app --factory --host 127.0.0.1 --port 8000 --log-level info &
-echo "Mock CRM      -> http://127.0.0.1:8001   (SIMULATED system)"
-echo "Orchestrator  -> http://127.0.0.1:8000   (CALL-E mode: ${CALLE_MODE:-simulated})"
-echo "API docs      -> http://127.0.0.1:8000/docs  and  http://127.0.0.1:8001/docs"
+echo
+echo "  Control center  ->  http://127.0.0.1:8000/        (start here: demo buttons, call my phone, troubleshoot)"
+echo "  Project guide   ->  http://127.0.0.1:8000/learn   (diagrams + docs)"
+echo "  Mock CRM        ->  http://127.0.0.1:8001/"
+echo "  API docs        ->  http://127.0.0.1:8000/docs  and  http://127.0.0.1:8001/docs"
+echo "  CALL-E mode     ->  ${CALLE_MODE:-simulated} (switch to live from the 'Call my phone' tab)"
+echo
 echo "Press Ctrl+C to stop."
+# Open the control center in the browser (macOS 'open' / Linux 'xdg-open'). Disable with OPEN_BROWSER=0.
+if [ "${OPEN_BROWSER:-1}" = "1" ]; then
+  (sleep 2; if command -v open >/dev/null; then open http://127.0.0.1:8000/; elif command -v xdg-open >/dev/null; then xdg-open http://127.0.0.1:8000/ >/dev/null 2>&1; fi) &
+fi
 wait

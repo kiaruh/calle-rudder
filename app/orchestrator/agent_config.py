@@ -116,11 +116,20 @@ def mask_phone(phone: str) -> str:
     return phone[:5] + "*" * max(len(phone) - 7, 0) + phone[-2:] if phone else ""
 
 
+def language_line(locale: str) -> str:
+    lang = (locale or "es-MX").split("-")[0]
+    return {
+        "es": "Speak natural, polite Mexican Spanish (usted)." if locale == "es-MX" else "Speak natural, polite Spanish (usted).",
+        "en": "Speak natural, polite English.",
+        "pt": "Speak natural, polite Brazilian Portuguese.",
+    }.get(lang, f"Speak in the language for locale {locale}.")
+
+
 def build_task(account: dict[str, Any], call_date: str) -> str:
     """Natural-language instructions sent to CALL-E for one account."""
     amount = f"${account['amount_due_mxn']:,.2f} MXN"
     return f"""You are {AGENT_NAME}, a virtual assistant (AI) calling on behalf of {COMPANY}, a consumer lender in Mexico.
-Speak natural, polite Mexican Spanish (usted). Keep the call under 3 minutes. Today is {call_date}.
+{language_line(account.get("locale") or "es-MX")} Keep the call under 3 minutes. Today is {call_date}.
 
 PURPOSE: a courtesy reminder that installment #{account['installment_number']} of the customer's "{account['product']}"
 for {amount} is due on {account['due_date']}, and to learn if and when they plan to pay.
@@ -152,7 +161,8 @@ def build_request(account: dict[str, Any], *, call_date: str, cycle: str, webhoo
     """Full CALL-E POST /v1/calls body (minus the Idempotency-Key header)."""
     body: dict[str, Any] = {
         "task": build_task(account, call_date),
-        "recipients": [{"phones": [account["phone_e164"]], "region": "MX", "locale": "es-MX"}],
+        "recipients": [{"phones": [account["phone_e164"]], "region": account.get("region") or "MX",
+                        "locale": account.get("locale") or "es-MX"}],
         "result_schema": RESULT_SCHEMA,
         "metadata": {
             "account_id": account["account_id"],

@@ -15,6 +15,27 @@ from zoneinfo import ZoneInfo
 
 # Mexican numbers: +52 followed by 10 digits.
 MX_E164 = re.compile(r"^\+52\d{10}$")
+E164 = re.compile(r"^\+[1-9]\d{7,14}$")
+
+# CALL-E supported destinations (from the CALL-E integrations README): region -> calling code.
+CALLING_CODES = {
+    "US": "+1", "CA": "+1", "AU": "+61", "BD": "+880", "BR": "+55", "DE": "+49", "ES": "+34", "FI": "+358",
+    "GB": "+44", "ID": "+62", "IN": "+91", "JP": "+81", "MX": "+52", "MY": "+60", "NL": "+31", "PH": "+63",
+    "PK": "+92", "PL": "+48", "SG": "+65", "TH": "+66", "TR": "+90", "VN": "+84",
+}
+
+
+def validate_phone(phone: str, region: str) -> str | None:
+    """Return an error message, or None if the number is acceptable for that region."""
+    if region not in CALLING_CODES:
+        return f"Region {region} is not in CALL-E's supported list."
+    if region == "MX":
+        return None if MX_E164.match(phone) else "Not a valid Mexican E.164 number (+52 followed by 10 digits)."
+    if not E164.match(phone):
+        return "Not a valid E.164 number (+, country code, number; no spaces)."
+    if not phone.startswith(CALLING_CODES[region]):
+        return f"Number does not start with {CALLING_CODES[region]}, the calling code for {region}."
+    return None
 
 
 def _window() -> tuple[time, time]:
@@ -35,8 +56,9 @@ def check_account(account: dict[str, Any], now_utc: datetime) -> GuardResult:
     phone = (account.get("phone_e164") or "").strip()
     if not phone:
         return GuardResult(False, "missing_phone", "Account has no phone number on file.")
-    if not MX_E164.match(phone):
-        return GuardResult(False, "invalid_phone", "Phone is not a valid Mexican E.164 number (+52 + 10 digits).")
+    error = validate_phone(phone, account.get("region") or "MX")
+    if error:
+        return GuardResult(False, "invalid_phone", error)
     if account.get("do_not_call"):
         return GuardResult(False, "do_not_call", "Customer opted out of calls.")
     if not account.get("amount_due_mxn") or not account.get("due_date"):

@@ -16,4 +16,4 @@ fi
 echo "Dependencies installed. Running tests ..."
 .venv/bin/python -m pytest -q
 echo
-echo "Ready. Next:  ./run.sh   (terminal 1)   then   ./demo.sh   (terminal 2)"
+echo "Ready. Next: ./run.sh   (opens the control center at http://127.0.0.1:8000/)"

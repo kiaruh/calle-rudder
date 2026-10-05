@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solaria Project Guide</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%230d6b66%27/%3E%3C/svg%3E">
+<style>
+/* Layout: left table of contents + one reading column; figures span the column. */
+:root{
+  --bg:#f3f6f7; --surface:#fff; --fg:#13212a; --muted:#566874; --line:#c4d0d7;
+  --accent:#0d6b66; --accent-soft:#dcefed; --warn:#b86f00; --warn-soft:#fbf0dc; --bad:#b3261e; --bad-soft:#f8e1df; --good:#2d7a34; --good-soft:#e1f1e2;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e161b; --surface:#152129; --fg:#e2eaef; --muted:#93a5b1; --line:#2d3d47;
+  --accent:#53c4ba; --accent-soft:#16332f; --warn:#f0aa36; --warn-soft:#33270f; --bad:#f07068; --bad-soft:#3a1a18; --good:#72c479; --good-soft:#18301a; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.top{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
+.top a{color:var(--accent);font-weight:600;text-decoration:none}
+.wrap{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)} .toc{position:static!important}}
+.toc{position:sticky;top:16px;align-self:start;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.toc a{color:var(--muted);text-decoration:none;padding:3px 8px;border-left:2px solid var(--line)}
+.toc a:hover{color:var(--accent);border-color:var(--accent)}
+article{display:flex;flex-direction:column;gap:40px;min-width:0}
+section{display:flex;flex-direction:column;gap:12px;scroll-margin-top:16px}
+h1{font-size:32px;margin:0;line-height:1.15} h2{font-size:22px;margin:0} h3{font-size:16px;margin:0}
+p{margin:0;max-width:72ch} .muted{color:var(--muted)}
+.eyebrow{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.box ul,.box ol{margin:0;padding-left:20px}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+figcaption{font-size:14px;color:var(--muted)}
+.scroll{overflow-x:auto}
+code,pre{font-family:var(--mono);font-size:13px}
+code{background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;margin:0}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px var(--mono);text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.callout{background:var(--warn-soft);border:1px solid var(--warn);border-radius:8px;padding:10px 14px}
+select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+#doc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 22px;min-width:0;overflow-x:auto}
+#doc h1{font-size:24px} #doc h2{font-size:19px;margin-top:18px} #doc table{margin:10px 0} #doc td,#doc th{border:1px solid var(--line)}
+#doc p{margin:8px 0} #doc .mermaid{background:#fff;border-radius:8px;padding:8px;margin:10px 0;overflow-x:auto}
+svg.dg{display:block;width:100%;height:auto;min-width:640px;color:var(--fg);font-family:var(--mono)}
+.dg .box{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.dg .zone{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.2;stroke-dasharray:6 4}
+.dg .ext{fill:var(--bg);stroke:var(--muted);stroke-width:1.5}
+.dg .hot{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1.5}
+.dg .t{font-size:13px;font-weight:600;fill:currentColor}
+.dg .s{font-size:11px;fill:var(--muted)}
+.dg .lbl{font-size:11px;fill:currentColor}
+.dg .lbl-warn{font-size:11px;fill:var(--warn);font-weight:600}
+.dg .zone-t{font-size:12px;font-weight:600;fill:var(--accent)}
+.dg .ln{fill:none;stroke:currentColor;stroke-width:1.5}
+.dg .ln-warn{fill:none;stroke:var(--warn);stroke-width:1.8;stroke-dasharray:5 4}
+.dg .num{fill:var(--fg)} .dg .num-t{font-size:11px;font-weight:600;fill:var(--bg)}
+.dg .ah{fill:currentColor} .dg .ah-warn{fill:var(--warn)}
+</style>
+</head>
+<body>
+<div class="top"><strong>Solaria project guide</strong><span><a href="/">← Control center</a> · <a href="http://127.0.0.1:8001/">CRM :8001</a> · <a href="/docs">API docs (Swagger)</a></span></div>
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <a href="#start">Start here</a>
+  <a href="#calle">What CALL-E is</a>
+  <a href="#dashboard">CALL-E dashboard: what to do</a>
+  <a href="#repo">What this repo does</a>
+  <a href="#map">System diagram</a>
+  <a href="#layers">Who decides what</a>
+  <a href="#code">Code map</a>
+  <a href="#terminal">Terminal cheat sheet</a>
+  <a href="#docs">All documents</a>
+</nav>
+<article>
+
+<section id="start">
+  <span class="eyebrow">Start here</span>
+  <h1>CALL-E makes the phone call. This repo decides what the call means for the business.</h1>
+  <p>A fictional Mexican lender, Financiera Solaria, wants an AI agent to remind customers of an upcoming
+    installment and record the outcome in its CRM. CALL-E (by AI Rudder) does the phone part: it dials,
+    holds the conversation in Spanish and returns a structured result. This repo is the glue. It decides who to call,
+    tells CALL-E what to do, checks the result, and writes a status and a follow-up task into the CRM.</p>
+</section>
+
+<section id="calle">
+  <span class="eyebrow">The product</span>
+  <h2>What CALL-E is</h2>
+  <div class="two">
+    <div class="box"><h3>For a person (the website)</h3>
+      <p>At <a href="https://www.heycall-e.com/" target="_blank" rel="noopener">heycall-e.com</a> you describe a goal in plain language
+        ("call this number and confirm Friday's appointment") and give a phone number. CALL-E plans the call and asks
+        about any missing details before dialing. It then holds the conversation and gives you a summary, transcript and
+        structured result.</p></div>
+    <div class="box"><h3>For a developer (what this repo uses)</h3>
+      <ul><li><b>Developer API / SDK:</b> <code>POST /v1/calls</code> with a <code>task</code>, recipients, a <code>result_schema</code>, metadata and a webhook URL. <code>GET /v1/calls/{id}</code> reads the result.</li>
+        <li><b>MCP / agent plugins:</b> <code>plan_call</code> → <code>run_call</code> → <code>get_call_run</code>, used from Claude Code, Cursor and similar tools.</li>
+        <li><b>Webhooks</b> fire on <code>call.completed</code>, <code>call.failed</code> and <code>call.result_validation_failed</code>. They are unsigned.</li></ul></div>
+  </div>
+  <div class="two">
+    <div class="box"><h3>Goal-driven, not scripted</h3><p>You don't draw a dialogue tree. You write the goal and rules (the "task") and the shape of the answer you need (the "schema"). CALL-E handles the conversation, including voicemail, IVR menus and interruptions.</p></div>
+    <div class="box"><h3>Mexico</h3><p>Supported (<code>MX</code>, Spanish and English) but through an <b>international</b> line, which CALL-E describes as mainly for development and testing. A real pilot needs a local number or a SIP trunk.</p></div>
+  </div>
+</section>
+
+<section id="dashboard">
+  <span class="eyebrow">Your checklist</span>
+  <h2>What to do in the CALL-E dashboard</h2>
+  <div class="box"><ol>
+    <li>Create an account at <a href="https://www.heycall-e.com/" target="_blank" rel="noopener">heycall-e.com</a>. New accounts get 100 free credits (about US$1).</li>
+    <li>Optional, to explore the product: place one call to your own phone from the CALL-E web app by typing a goal and your number. This is the "customer experience" the assignment asks you to explore.</li>
+    <li>Create an API key: <a href="https://dashboard.heycall-e.com/account/api-keys" target="_blank" rel="noopener">dashboard.heycall-e.com/account/api-keys</a>. Copy it.</li>
+    <li>Paste it in this app: Control center → <b>Call my phone</b> → step 1. Or put <code>CALLE_API_KEY=...</code> in <code>.env</code> and restart.</li>
+    <li>Enter your phone and press <b>Call me now</b>. Answer, and play the customer using one of the scripts.</li>
+    <li>Afterwards, check usage under <a href="https://dashboard.heycall-e.com/account/billing" target="_blank" rel="noopener">dashboard → billing</a>.</li>
+  </ol></div>
+  <p class="callout">These steps follow CALL-E's public README; the dashboard's exact labels may differ. Only countries on CALL-E's
+    supported list can be called (US, CA, MX, ES, BR, GB, DE, IN, and others). The selector on the "Call my phone" tab lists them.</p>
+</section>
+
+<section id="repo">
+  <span class="eyebrow">This repository</span>
+  <h2>What this repo does</h2>
+  <div class="tbl"><table>
+    <tr><th>Piece</th><th>Port</th><th>Real or simulated</th><th>Job</th></tr>
+    <tr><td>Orchestrator + control center</td><td>8000</td><td>Real</td><td>Runs the campaign, the pre-call checks, the CALL-E requests, the webhook, verification, business rules and CRM writes. Also serves this UI.</td></tr>
+    <tr><td>Mock CRM</td><td>8001</td><td>Real HTTP, mock system</td><td>The customer's system of record: accounts, call interactions, follow-up tasks. Outages can be switched on.</td></tr>
+    <tr><td>CALL-E</td><td>cloud</td><td>Live or simulated</td><td>Live: real calls through the official SDK. Simulated: scripted Spanish conversations in the same data shape.</td></tr>
+  </table></div>
+</section>
+
+<section id="map">
+  <span class="eyebrow">System diagram</span>
+  <h2>Who talks to whom</h2>
+  <figure>
+    <div class="scroll"><svg class="dg" viewBox="0 0 960 430" role="img" aria-label="Mock CRM sends account context to the orchestrator; the orchestrator's guards and agent config build a CALL-E request; CALL-E calls the customer and sends an unsigned webhook back; the orchestrator re-reads the call from the CALL-E API, applies business rules, and writes the outcome to the CRM through an outbox.">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-warn" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+
+      <!-- CRM -->
+      <rect class="ext" x="20" y="150" width="150" height="130" rx="8"/>
+      <text class="t" x="95" y="180" text-anchor="middle">Mock CRM</text>
+      <text class="s" x="95" y="198" text-anchor="middle">:8001 · simulated</text>
+      <text class="s" x="95" y="226" text-anchor="middle">accounts</text>
+      <text class="s" x="95" y="242" text-anchor="middle">interactions</text>
+      <text class="s" x="95" y="258" text-anchor="middle">follow-up tasks</text>
+
+      <!-- Orchestrator zone -->
+      <rect class="zone" x="250" y="30" width="470" height="370" rx="12"/>
+      <text class="zone-t" x="266" y="54">Orchestrator :8000 · this repo</text>
+
+      <!-- outbound lane -->
+      <text class="s" x="266" y="84">OUTBOUND</text>
+      <rect class="box" x="266" y="94" width="130" height="58" rx="6"/>
+      <text class="t" x="331" y="119" text-anchor="middle">Guards</text>
+      <text class="s" x="331" y="137" text-anchor="middle">phone · DNC · 08–21</text>
+      <rect class="box" x="420" y="94" width="130" height="58" rx="6"/>
+      <text class="t" x="485" y="119" text-anchor="middle">Agent config</text>
+      <text class="s" x="485" y="137" text-anchor="middle">task + schema</text>
+      <rect class="box" x="574" y="94" width="130" height="58" rx="6"/>
+      <text class="t" x="639" y="119" text-anchor="middle">CALL-E gateway</text>
+      <text class="s" x="639" y="137" text-anchor="middle">live SDK | sim</text>
+      <line class="ln" x1="396" y1="123" x2="418" y2="123" marker-end="url(#a)"/>
+      <line class="ln" x1="550" y1="123" x2="572" y2="123" marker-end="url(#a)"/>
+
+      <!-- inbound lane -->
+      <text class="s" x="266" y="270">INBOUND</text>
+      <rect class="box" x="266" y="280" width="130" height="58" rx="6"/>
+      <text class="t" x="331" y="305" text-anchor="middle">Outbox</text>
+      <text class="s" x="331" y="323" text-anchor="middle">pending → synced</text>
+      <rect class="box" x="420" y="280" width="130" height="58" rx="6"/>
+      <text class="t" x="485" y="305" text-anchor="middle">Business rules</text>
+      <text class="s" x="485" y="323" text-anchor="middle">status + task</text>
+      <rect class="hot" x="574" y="280" width="130" height="58" rx="6"/>
+      <text class="t" x="639" y="305" text-anchor="middle">Webhook rx</text>
+      <text class="s" x="639" y="323" text-anchor="middle">id check · dedupe</text>
+      <line class="ln" x1="574" y1="309" x2="552" y2="309" marker-end="url(#a)"/>
+      <line class="ln" x1="420" y1="309" x2="398" y2="309" marker-end="url(#a)"/>
+      <text class="lbl" x="562" y="356" text-anchor="middle">verified</text>
+      <text class="lbl" x="408" y="356" text-anchor="middle">decision</text>
+
+      <!-- re-fetch: webhook -> gateway -->
+      <line class="ln" x1="660" y1="280" x2="660" y2="154" marker-end="url(#a)"/>
+      <text class="lbl" x="668" y="214">re-fetch</text>
+      <text class="lbl" x="668" y="228">call by id</text>
+
+      <!-- CALL-E -->
+      <rect class="ext" x="790" y="70" width="150" height="150" rx="8"/>
+      <text class="t" x="865" y="100" text-anchor="middle">CALL-E</text>
+      <text class="s" x="865" y="118" text-anchor="middle">AI Rudder</text>
+      <text class="s" x="865" y="146" text-anchor="middle">plans · dials</text>
+      <text class="s" x="865" y="162" text-anchor="middle">talks · extracts</text>
+      <text class="s" x="865" y="178" text-anchor="middle">structured_result</text>
+
+      <!-- Customer -->
+      <circle class="ext" cx="865" cy="340" r="42"/>
+      <text class="t" x="865" y="337" text-anchor="middle">Customer</text>
+      <text class="s" x="865" y="353" text-anchor="middle">+52 phone</text>
+
+      <!-- 1 CRM -> guards -->
+      <polyline class="ln" points="170,190 214,190 214,123 264,123" marker-end="url(#a)"/>
+      <text class="lbl" x="178" y="108">GET account</text>
+      <!-- 2 gateway -> CALL-E -->
+      <polyline class="ln" points="704,110 788,110" marker-end="url(#a)"/>
+      <text class="lbl" x="712" y="100">POST /v1/calls</text>
+      <polyline class="ln" points="788,136 704,136" marker-end="url(#a)"/>
+      <text class="lbl" x="712" y="152">GET /v1/calls/id</text>
+      <!-- 3 CALL-E <-> customer -->
+      <line class="ln" x1="865" y1="222" x2="865" y2="296" marker-start="url(#a)" marker-end="url(#a)"/>
+      <text class="lbl" x="873" y="256">call · es-MX</text>
+      <!-- 4 webhook -->
+      <polyline class="ln-warn" points="800,220 800,300 706,300" marker-end="url(#aw)"/>
+      <text class="lbl-warn" x="712" y="290">webhook · unsigned</text>
+      <!-- 6 outbox -> CRM -->
+      <polyline class="ln" points="266,309 214,309 214,250 172,250" marker-end="url(#a)"/>
+      <text class="lbl" x="178" y="330">POST outcome</text>
+      <text class="lbl" x="178" y="344">201 = success</text>
+
+      <!-- step numbers -->
+      <g><circle class="num" cx="214" cy="157" r="9"/><text class="num-t" x="214" y="161" text-anchor="middle">1</text></g>
+      <g><circle class="num" cx="746" cy="123" r="9"/><text class="num-t" x="746" y="127" text-anchor="middle">2</text></g>
+      <g><circle class="num" cx="865" cy="276" r="9"/><text class="num-t" x="865" y="280" text-anchor="middle">3</text></g>
+      <g><circle class="num" cx="760" cy="300" r="9"/><text class="num-t" x="760" y="304" text-anchor="middle">4</text></g>
+      <g><circle class="num" cx="660" cy="190" r="9"/><text class="num-t" x="660" y="194" text-anchor="middle">5</text></g>
+      <g><circle class="num" cx="214" cy="280" r="9"/><text class="num-t" x="214" y="284" text-anchor="middle">6</text></g>
+    </svg></div>
+    <figcaption>1 read the account · 2 create the call · 3 the conversation · 4 webhook (only a signal) · 5 re-read the call from the API (the trusted source) · 6 write to the CRM through the outbox. "201 = success" means the CRM's own confirmation.</figcaption>
+  </figure>
+</section>
+
+<section id="layers">
+  <span class="eyebrow">Responsibility</span>
+  <h2>Who decides what</h2>
+  <div class="two">
+    <div class="box"><h3>Instructions (prompt)</h3><p>What the agent says: AI disclosure, confirming it's the right person, the reminder, clarifying once, handling exceptions, and things it must never do. File: <code>agent_config.build_task</code>. Shown in each call's "Request sent to CALL-E".</p></div>
+    <div class="box"><h3>Workflow config (schema)</h3><p>The shape of the answer: enum outcomes with <code>unknown</code>, an ISO date, how certain the promise was, the evidence quote. Also region/locale, metadata and the idempotency key. File: <code>agent_config.RESULT_SCHEMA</code>.</p></div>
+    <div class="box"><h3>External logic (code)</h3><p>Who may be called and when (<code>guards.py</code>). What an answer means: status, task, team, priority (<code>outcomes.py</code>). A promise only counts if it's specific, firm, and at most 7 days after the due date.</p></div>
+  </div>
+</section>
+
+<section id="code">
+  <span class="eyebrow">Code map</span>
+  <h2>Where things live</h2>
+  <div class="tbl"><table>
+    <tr><th>File</th><th>What it does</th></tr>
+    <tr><td><code>app/crm/main.py</code></td><td>Mock CRM service: accounts, call-outcome writes (idempotent), tasks, failure injection, the :8001 page</td></tr>
+    <tr><td><code>app/orchestrator/main.py</code></td><td>Campaign, webhook receiver, sync (polling), outbox retry</td></tr>
+    <tr><td><code>app/orchestrator/agent_config.py</code></td><td>The voice agent: task prompt, result schema, request builder</td></tr>
+    <tr><td><code>app/orchestrator/guards.py</code></td><td>Pre-call checks: phone format by country, do-not-call, calling window</td></tr>
+    <tr><td><code>app/orchestrator/outcomes.py</code></td><td>Business rules: CALL-E result → CRM status + task</td></tr>
+    <tr><td><code>app/orchestrator/calle_gateway.py</code></td><td>CALL-E adapter: live (official SDK, allowlist) or simulated</td></tr>
+    <tr><td><code>app/orchestrator/control.py</code> + <code>static/</code></td><td>This UI and its <code>/api/*</code> endpoints</td></tr>
+    <tr><td><code>app/simulator/scenarios/*.json</code></td><td>The scripted conversations used in simulated mode</td></tr>
+    <tr><td><code>tests/test_workflow.py</code></td><td>End-to-end tests, including the 4 required ones (plus tests/test_control.py)</td></tr>
+  </table></div>
+</section>
+
+<section id="terminal">
+  <span class="eyebrow">Terminal</span>
+  <h2>Doing the same from the terminal</h2>
+  <p>Every button calls a JSON endpoint, so you can do everything with <code>curl</code>. Paste one line at a time in zsh.</p>
+<pre><code>./setup.sh                          once: venv + dependencies + tests
+./run.sh                            start CRM :8001 + orchestrator :8000 (Ctrl+C stops)
+./demo.sh                           narrated terminal demo (starts services if needed)
+.venv/bin/python -m pytest -v       run all tests
+
+curl localhost:8000/api/status
+curl -X POST localhost:8000/api/reset
+curl -X POST localhost:8000/api/campaign -H 'content-type: application/json' -d '{}'
+curl localhost:8000/calls
+curl localhost:8001/accounts/ACC-1001
+curl localhost:8001/tasks
+curl -X POST localhost:8000/api/simulate -H 'content-type: application/json' -d '{"scenario":"human_requested"}'
+curl -X POST localhost:8000/api/outage-scenario
+curl -X POST localhost:8000/api/crm/restore-and-retry
+curl localhost:8000/api/calls/CALL_ID/detail
+curl -X POST localhost:8000/calls/CALL_ID/sync
+curl localhost:8000/api/troubleshoot
+curl localhost:8000/agent-config                       the result schema sent to CALL-E</code></pre>
+  <p class="muted">Full, interactive API reference: <a href="/docs">localhost:8000/docs</a> and <a href="http://127.0.0.1:8001/docs">localhost:8001/docs</a>. You can try every endpoint from the browser there.</p>
+</section>
+
+<section id="docs">
+  <span class="eyebrow">Documents</span>
+  <h2>All project documents</h2>
+  <p>The interview documents from <code>docs/</code>, with their diagrams. Start with 01 → 06, then ARCHITECTURE.</p>
+  <label for="docsel" class="muted">Document <select id="docsel"></select></label>
+  <div id="doc"><p class="muted">Loading…</p></div>
+</section>
+
+</article>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+const sel = document.getElementById("docsel"), out = document.getElementById("doc");
+try { window.mermaid && mermaid.initialize({startOnLoad: false, theme: "default", securityLevel: "strict"}); } catch {}
+async function load(name) {
+  const md = await (await fetch("/api/docs/" + encodeURIComponent(name))).text();
+  if (!window.marked) { out.innerHTML = ""; const pre = document.createElement("pre"); pre.textContent = md; out.appendChild(pre); return; }
+  out.innerHTML = marked.parse(md);
+  out.querySelectorAll("code.language-mermaid").forEach(code => {
+    const div = document.createElement("div"); div.className = "mermaid"; div.textContent = code.textContent;
+    code.parentElement.replaceWith(div);
+  });
+  out.querySelectorAll("a[href$='.md']").forEach(a => {
+    const stem = a.getAttribute("href").split("/").pop().replace(/\.md$/, "");
+    a.addEventListener("click", e => { e.preventDefault(); sel.value = stem; load(stem); });
+  });
+  try { if (window.mermaid) await mermaid.run({nodes: out.querySelectorAll(".mermaid")}); } catch (e) { console.warn(e); }
+}
+(async () => {
+  const names = await (await fetch("/api/docs")).json();
+  sel.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join("");
+  const first = names.includes("ARCHITECTURE") ? "ARCHITECTURE" : names[0];
+  sel.value = first; load(first);
+  sel.addEventListener("change", () => load(sel.value));
+})();
+</script>
+</body>
+</html>

@@ -4,24 +4,26 @@
   POST /calle/webhook                 CALL-E terminal event -> verify via API -> rules -> CRM write
   POST /calls/{call_id}/sync          polling fallback when no webhook arrives (e.g. no public URL)
   POST /outbox/retry                  re-send CRM writes that failed earlier
-  GET  /calls, /outbox, /notifications, /         inspection for the demo
+  GET  /calls, /outbox, /notifications            inspection
+  GET  /  and  /learn  and  /api/*                control center UI (see control.py)
 """
 
 from __future__ import annotations
 
 import json
 import os
+from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from . import agent_config
-from .calle_gateway import CalleGateway, GatewayError, build_gateway
+from . import agent_config, control
+from .calle_gateway import CalleGateway, GatewayError, SimulatedCalleGateway, build_gateway
 from .crm_client import CrmClient, CrmError
 from .guards import check_account
 from .outcomes import decide
@@ -38,18 +40,50 @@ class CampaignIn(BaseModel):
     now: str | None = None  # ISO timestamp override for demos/tests; default = real clock
 
 
+class Runtime:
+    """Mutable runtime state, so the control center can switch CALL-E mode without a restart."""
+
+    def __init__(self, gw: CalleGateway, crm: CrmClient, store: Store):
+        self.gw = gw
+        self.crm = crm
+        self.store = store
+        self.sim = gw if isinstance(gw, SimulatedCalleGateway) else None
+        self.live = None if self.sim else gw
+        self.api_key = os.environ.get("CALLE_API_KEY") or None
+        if self.live is None and self.api_key:
+            try:  # key in .env but started in simulated mode: live is one click away in the UI
+                from .calle_gateway import LiveCalleGateway
+                allowed = {p.strip() for p in os.environ.get("CALLE_ALLOWED_PHONES", "").split(",") if p.strip()}
+                self.live = LiveCalleGateway(self.api_key, allowed)
+            except ImportError:
+                pass
+        self.events: deque[dict[str, Any]] = deque(maxlen=200)
+
+    def webhook_url(self) -> str | None:
+        if self.gw.mode == "live":
+            return os.environ.get("PUBLIC_WEBHOOK_URL") or None  # None -> poll /calls/{id}/sync
+        return os.environ.get("SIM_WEBHOOK_URL", "http://127.0.0.1:8000/calle/webhook")
+
+    def log(self, level: str, message: str, **data: Any) -> None:
+        self.events.appendleft({"at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                                "level": level, "message": message, **data})
+
+
 def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None, db_path: str | None = None) -> FastAPI:
-    app = FastAPI(title="Solaria Payment Reminder Orchestrator", version="2.0")
-    gw = gateway or build_gateway()
-    crm_client = crm or CrmClient.from_url(os.environ.get("CRM_BASE_URL", "http://127.0.0.1:8001"))
-    store = Store(db_path or os.environ.get("ORCH_DB", str(ROOT / "data" / "orchestrator.sqlite3")))
-    webhook_url = os.environ.get("PUBLIC_WEBHOOK_URL") if gw.mode == "live" else os.environ.get(
-        "SIM_WEBHOOK_URL", "http://127.0.0.1:8000/calle/webhook")
-    app.state.store, app.state.gateway, app.state.crm = store, gw, crm_client
+    app = FastAPI(title="Solaria Payment Reminder Orchestrator", version="3.0")
+    rt = Runtime(
+        gateway or build_gateway(),
+        crm or CrmClient.from_url(os.environ.get("CRM_BASE_URL", "http://127.0.0.1:8001")),
+        Store(db_path or os.environ.get("ORCH_DB", str(ROOT / "data" / "orchestrator.sqlite3"))),
+    )
+    store, crm_client = rt.store, rt.crm
+    app.state.rt = rt
+    app.state.store, app.state.crm = store, crm_client
 
     # ------------------------------------------------------------------ outbound
     @app.post("/campaigns/payment-reminders")
     def run_campaign(body: CampaignIn) -> dict[str, Any]:
+        gw = rt.gw
         now_utc = datetime.fromisoformat(body.now) if body.now else datetime.now(timezone.utc)
         call_date = now_utc.astimezone(ZoneInfo("America/Mexico_City")).date().isoformat()
         try:
@@ -58,6 +92,7 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
             )
         except CrmError as exc:
             # Could not read customer context: place no calls at all.
+            rt.log("error", f"Campaign aborted: CRM read failed ({exc})")
             raise HTTPException(502, f"Campaign aborted, CRM read failed: {exc}") from exc
 
         results = []
@@ -76,19 +111,22 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
                         "new_status": "contact_data_missing", "review_reasons": [guard.code],
                         "task": {"type": "fix_contact_data", "team": "data_quality", "priority": "normal",
                                  "due_date": None, "description": f"Reminder call blocked: {guard.detail}"}})
+                rt.log("warn", f"{acc['account_id']} blocked before CALL-E: {guard.code}", detail=guard.detail)
                 results.append({"account_id": acc["account_id"], "result": "blocked", "reason": guard.code, "detail": guard.detail})
                 continue
 
-            request = agent_config.build_request(acc, call_date=call_date, cycle=body.cycle, webhook_url=webhook_url)
+            request = agent_config.build_request(acc, call_date=call_date, cycle=body.cycle, webhook_url=rt.webhook_url())
             # Save intent + idempotency key BEFORE the network call, so a crash cannot cause a double call.
             store.save_intent(key, acc, body.cycle, call_date, request, "submitting")
             try:
                 created = gw.create_call(request, key)
             except GatewayError as exc:
                 store.update_request(key, state="submit_failed", detail=str(exc))
+                rt.log("error", f"{acc['account_id']}: CALL-E create failed", detail=str(exc))
                 results.append({"account_id": acc["account_id"], "result": "submit_failed", "detail": str(exc)})
                 continue
             store.update_request(key, call_id=created["id"], state="submitted")
+            rt.log("info", f"{acc['account_id']}: call submitted to CALL-E ({gw.mode})", call_id=created["id"])
             results.append({"account_id": acc["account_id"], "result": "submitted", "call_id": created["id"],
                             "phone": agent_config.mask_phone(acc["phone_e164"])})
         return {"mode": gw.mode, "call_date": call_date, "results": results}
@@ -102,14 +140,18 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
             event = json.loads(raw)
             event_id, event_type, call_id = event["id"], event["type"], event["data"]["id"]
         except (ValueError, KeyError, TypeError):
+            rt.log("warn", "Webhook rejected: malformed body")
             return JSONResponse({"error": "malformed event"}, status_code=400)
         # Webhooks are unsigned: header/body id equality is a consistency check, NOT authentication.
         if header_event_id != event_id or event_type not in EVENT_TYPES:
+            rt.log("warn", "Webhook rejected: event id/type check failed", call_id=call_id)
             return JSONResponse({"error": "event id/type check failed"}, status_code=400)
         if store.get_by_call_id(call_id) is None:
+            rt.log("warn", "Webhook ignored: unknown call id", call_id=call_id)
             return JSONResponse({"result": "ignored", "reason": "unknown call id"}, status_code=202)
         if store.get_event(event_id) is None:
             store.save_event(event_id, call_id, event_type, raw.decode())
+        rt.log("info", f"Webhook received: {event_type}", call_id=call_id)
         result = process_call(call_id, trigger=f"webhook:{event_type}")
         return JSONResponse(result, status_code=result.pop("_http", 200))
 
@@ -126,9 +168,10 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
             return {"result": "duplicate", "call_id": call_id, "crm_sync": "synced"}
         # Trust boundary: the webhook body is only a wake-up signal. Re-read the call from CALL-E.
         try:
-            snapshot = gw.get_call(call_id)
+            snapshot = rt.gw.get_call(call_id)
         except GatewayError as exc:
             store.update_request(req["idempotency_key"], detail=f"verify failed: {exc}")
+            rt.log("error", "Could not verify call with CALL-E API", call_id=call_id, detail=str(exc))
             return {"result": "verify_failed", "call_id": call_id, "detail": str(exc), "_http": 503}
         if snapshot.get("status") not in TERMINAL:
             return {"result": "not_terminal", "call_id": call_id, "status": snapshot.get("status"), "_http": 202}
@@ -149,12 +192,14 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
         if crm["crm_sync"] != "synced":
             # Do NOT report success. The event is durably queued in the outbox for retry.
             store.update_request(req["idempotency_key"], state="crm_sync_failed", detail=crm["error"])
+            rt.log("error", f"{account['account_id']}: CRM write failed, queued in outbox", call_id=call_id, detail=crm["error"])
             return {"result": "received_crm_sync_failed", "call_id": call_id, "outcome": decision.outcome,
                     "crm_sync": "pending_retry", "error": crm["error"], "_http": 202}
         store.update_request(req["idempotency_key"], state="synced", detail=trigger)
         if decision.send_payment_link:
             store.add_notification(account["account_id"], call_id, "sms",
                                    f"Solaria: enlace de pago para su referencia {account['payment_reference']}")
+        rt.log("ok", f"{account['account_id']}: {decision.outcome} -> CRM {decision.new_status}", call_id=call_id)
         return {"result": "processed", "call_id": call_id, "outcome": decision.outcome,
                 "crm_status": decision.new_status, "review_reasons": decision.review_reasons,
                 "crm_sync": "synced", "crm_confirmation": crm["confirmation"]}
@@ -168,6 +213,9 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
             if crm["crm_sync"] == "synced":
                 if req:
                     store.update_request(req["idempotency_key"], state="synced", detail="outbox retry")
+                rt.log("ok", f"Outbox retry delivered {item['call_id']} to CRM")
+            else:
+                rt.log("error", f"Outbox retry failed for {item['call_id']}", detail=crm["error"])
             out.append({"call_id": item["call_id"], **crm})
         return {"retried": out}
 
@@ -179,7 +227,7 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
     @app.get("/calls/{call_id}/snapshot")
     def snapshot(call_id: str) -> dict[str, Any]:
         try:
-            return gw.get_call(call_id)
+            return rt.gw.get_call(call_id)
         except GatewayError as exc:
             raise HTTPException(502, str(exc)) from exc
 
@@ -195,25 +243,7 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
     def agent_cfg() -> dict[str, Any]:
         return {"schema_version": agent_config.SCHEMA_VERSION, "result_schema": agent_config.RESULT_SCHEMA}
 
-    @app.get("/", response_class=HTMLResponse)
-    def view() -> str:
-        rows = "".join(
-            f"<tr><td>{r['account_id']}</td><td>{r['call_id'] or ''}</td><td><b>{r['state']}</b></td>"
-            f"<td>{r['outcome'] or ''}</td><td>{r['crm_status'] or ''}</td><td>{(r['detail'] or '')[:90]}</td></tr>"
-            for r in store.list_requests()
-        )
-        ob = "".join(f"<tr><td>{o['call_id']}</td><td>{o['state']}</td><td>{o['attempts']}</td><td>{o['last_error'] or ''}</td></tr>"
-                     for o in store.outbox_all())
-        return (
-            "<!doctype html><html><head><meta charset='utf-8'><meta http-equiv='refresh' content='3'><title>Orchestrator</title>"
-            "<style>body{font-family:system-ui;margin:24px}table{border-collapse:collapse;width:100%}"
-            "td,th{border:1px solid #ddd;padding:6px;font-size:14px;text-align:left}th{background:#eee}</style></head><body>"
-            f"<h1>Payment Reminder Orchestrator</h1><p>CALL-E mode: <b>{gw.mode.upper()}</b></p>"
-            "<h2>Calls</h2><table><tr><th>Account</th><th>Call id</th><th>State</th><th>Outcome</th><th>CRM status</th><th>Detail</th></tr>"
-            f"{rows}</table><h2>CRM outbox</h2><table><tr><th>Call</th><th>State</th><th>Attempts</th><th>Last error</th></tr>{ob}</table>"
-            "</body></html>"
-        )
-
+    control.register(app, rt, run_campaign=run_campaign, retry_outbox=retry_outbox, sync_call=process_call)
     return app
 
 
@@ -227,4 +257,3 @@ def _write_crm(store: Store, crm: CrmClient, account_id: str, call_id: str, payl
         return {"crm_sync": "failed", "retryable": exc.retryable, "error": str(exc)}
     store.outbox_mark(call_id, "synced")
     return {"crm_sync": "synced", "confirmation": confirmation}
-

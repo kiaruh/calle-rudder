@@ -42,6 +42,15 @@ class Store:
                 """
             )
 
+    def reset(self) -> None:
+        with closing(self._c()) as c, c:
+            c.executescript("DELETE FROM call_requests; DELETE FROM webhook_events; DELETE FROM outbox; DELETE FROM notifications;")
+
+    def last_webhook(self) -> dict[str, Any] | None:
+        with closing(self._c()) as c:
+            r = c.execute("SELECT event_id, call_id, type, received_at FROM webhook_events ORDER BY received_at DESC LIMIT 1").fetchone()
+            return dict(r) if r else None
+
     def _c(self) -> sqlite3.Connection:
         c = sqlite3.connect(self.path)
         c.row_factory = sqlite3.Row
