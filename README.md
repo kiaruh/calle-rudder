@@ -28,12 +28,17 @@ collections team can act on. All customer data is fictional.
 
 ## Quick start (simulated, 2 minutes)
 
+Needs Python 3.11 or newer (tested on 3.11 and 3.14). The scripts create a local `.venv`, so there's no global
+`pip install`. That matters on macOS/Homebrew, where `pip` is missing and global installs are blocked.
+
 ```bash
-pip install -r requirements.txt
-python3 -m pytest -v               # 17 tests, including the 4 required ones
-./run.sh                           # terminal 1: CRM :8001 + orchestrator :8000
-python3 scripts/demo.py            # terminal 2: narrated demo, press Enter between acts
+./setup.sh      # once: creates .venv, installs dependencies, runs the 17 tests
+./run.sh        # terminal 1: CRM :8001 + orchestrator :8000 (Ctrl+C to stop)
+./demo.sh       # terminal 2: narrated demo, press Enter between acts
 ```
+
+To run the tests again: `.venv/bin/python -m pytest -v`. If `python3` is older than 3.11, point setup at a
+newer one: `PYTHON=python3.13 ./setup.sh`.
 
 Dashboards (refresh every 3 s): orchestrator http://127.0.0.1:8000/ · CRM http://127.0.0.1:8001/ ·
 Swagger UI at `/docs` on both.
@@ -44,7 +49,7 @@ Swagger UI at `/docs` on both.
 2. `cp .env.example .env` and set `CALLE_MODE=live`, `CALLE_API_KEY=...`, and `CALLE_ALLOWED_PHONES=+52XXXXXXXXXX`
    (a phone you own). Any other number is refused before the API is called.
 3. Optional: expose :8000 with `ngrok http 8000` and set `PUBLIC_WEBHOOK_URL=https://<id>.ngrok.app/calle/webhook`.
-4. `./run.sh`, then point a fictional account at your phone and start the call:
+4. `./setup.sh` (once), `./run.sh`, then point a fictional account at your phone and start the call:
    ```bash
    curl -X POST localhost:8001/admin/accounts/ACC-1001/phone -H 'content-type: application/json' -d '{"phone_e164":"+52XXXXXXXXXX"}'
    curl -X POST localhost:8000/campaigns/payment-reminders -H 'content-type: application/json' -d '{"account_ids":["ACC-1001"]}'

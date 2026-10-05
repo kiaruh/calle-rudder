@@ -1,7 +1,9 @@
-fastapi==0.115.14
+fastapi>=0.115,<1
 uvicorn>=0.30
 httpx>=0.27
 pydantic>=2.7
 pytest>=8
+# Time-zone data for zoneinfo on systems without an OS tz database (e.g. Windows)
+tzdata
 # Official CALL-E Python SDK - only needed for CALLE_MODE=live
 calle-ai==0.7.0
