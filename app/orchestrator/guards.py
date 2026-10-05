@@ -24,17 +24,38 @@ CALLING_CODES = {
     "PK": "+92", "PL": "+48", "SG": "+65", "TH": "+66", "TR": "+90", "VN": "+84",
 }
 
+# Requested for testing but NOT on CALL-E's published list. Calls are attempted so CALL-E's real
+# answer (most likely a rejection, or a request to use a SIP integration) is visible, not hidden.
+UNLISTED_CALLING_CODES = {"AR": "+54", "CN": "+86"}
+
+COUNTRY_NAMES = {
+    "US": "United States", "CA": "Canada", "AU": "Australia", "BD": "Bangladesh", "BR": "Brazil", "DE": "Germany",
+    "ES": "Spain", "FI": "Finland", "GB": "United Kingdom", "ID": "Indonesia", "IN": "India", "JP": "Japan",
+    "MX": "Mexico", "MY": "Malaysia", "NL": "Netherlands", "PH": "Philippines", "PK": "Pakistan", "PL": "Poland",
+    "SG": "Singapore", "TH": "Thailand", "TR": "Turkey", "VN": "Viet Nam", "AR": "Argentina", "CN": "China",
+}
+
+
+def country_options() -> list[dict[str, object]]:
+    """Dropdown data: supported countries first (by name), then the unlisted ones."""
+    def row(code: str, cc: str, supported: bool) -> dict[str, object]:
+        return {"code": code, "name": COUNTRY_NAMES.get(code, code), "calling_code": cc, "supported": supported}
+    listed = sorted((row(c, cc, True) for c, cc in CALLING_CODES.items()), key=lambda r: r["name"])
+    unlisted = sorted((row(c, cc, False) for c, cc in UNLISTED_CALLING_CODES.items()), key=lambda r: r["name"])
+    return listed + unlisted
+
 
 def validate_phone(phone: str, region: str) -> str | None:
     """Return an error message, or None if the number is acceptable for that region."""
-    if region not in CALLING_CODES:
+    codes = {**CALLING_CODES, **UNLISTED_CALLING_CODES}
+    if region not in codes:
         return f"Region {region} is not in CALL-E's supported list."
     if region == "MX":
         return None if MX_E164.match(phone) else "Not a valid Mexican E.164 number (+52 followed by 10 digits)."
     if not E164.match(phone):
         return "Not a valid E.164 number (+, country code, number; no spaces)."
-    if not phone.startswith(CALLING_CODES[region]):
-        return f"Number does not start with {CALLING_CODES[region]}, the calling code for {region}."
+    if not phone.startswith(codes[region]):
+        return f"Number does not start with {codes[region]}, the calling code for {region}."
     return None
 
 

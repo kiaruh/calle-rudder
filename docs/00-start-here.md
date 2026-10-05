@@ -63,7 +63,11 @@ Every button has a "Terminal equivalent" showing the `curl` command that does th
 6. Press **Back to simulated mode** when you're done.
 
 Things to know:
-- **Only CALL-E-supported countries can be called.** The dropdown lists them: US, CA, MX, ES, BR, GB, DE, IN and others.
+- **Countries.** The dropdown lists CALL-E's supported countries (US, CA, MX, SG, ES, BR, GB, DE, IN and others).
+  **Argentina (+54) and China (+86)** are also listed, marked "not on CALL-E's list". The app sends the call, but CALL-E will
+  most likely reject it, and the rejection message is shown. CALL-E's guidance for unlisted destinations is a SIP integration.
+  Formats: Argentina mobile `+54 9` + area code + number (e.g. `+5491123456789`); China mobile `+86` + 11 digits;
+  Singapore `+65` + 8 digits (supported, English).
 - **Mexico uses an international line**, so the caller ID may look foreign. Mention this in the interview: it's a pilot blocker.
 - **Calling hours.** The guard blocks calls outside 08:00–21:00 in your time zone. That's on purpose; it's a compliance rule.
 - **No webhook needed.** Without a public URL, the app polls CALL-E. Optionally, `ngrok http 8000` plus

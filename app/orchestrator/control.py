@@ -23,7 +23,7 @@ from pydantic import BaseModel
 from . import agent_config
 from .calle_gateway import GatewayError, LiveCalleGateway, SimulatedCalleGateway
 from .crm_client import CrmError
-from .guards import CALLING_CODES, validate_phone
+from .guards import CALLING_CODES, UNLISTED_CALLING_CODES, country_options, validate_phone
 from .outcomes import extract_result
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -125,6 +125,7 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
             "crm": "unreachable" if crm_mode == "unreachable" else ("healthy" if crm_mode == "none" else f"outage:{crm_mode}"),
             "allowed_phones": [agent_config.mask_phone(p) for p in sorted(getattr(rt.live, "allowed", set()))],
             "regions": CALLING_CODES,
+            "countries": country_options(),
         }
 
     @app.get("/api/overview")
@@ -257,10 +258,14 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
         except CrmError as exc:
             raise HTTPException(502, f"CRM not reachable: {exc}") from exc
         rt.log("warn", f"LIVE call requested to {agent_config.mask_phone(phone)} as {body.account_id}")
+        if body.region in UNLISTED_CALLING_CODES:
+            rt.log("warn", f"{body.region} is not on CALL-E's published region list; CALL-E may reject this call")
         result = run_campaign(CampaignIn(account_ids=[body.account_id], cycle=f"live-{ts()}"))
         row = result["results"][0]
         if row["result"] != "submitted":
-            raise HTTPException(409, f"Call not placed: {row.get('reason') or row['result']}: {row.get('detail', '')}")
+            hint = (f" ({body.region} is not on CALL-E's published region list: CALL-E suggests a SIP integration "
+                    "for unlisted destinations.)") if body.region in UNLISTED_CALLING_CODES else ""
+            raise HTTPException(409, f"Call not placed: {row.get('reason') or row['result']}: {row.get('detail', '')}{hint}")
         return {"call_id": row["call_id"], "mode": "live",
                 "next": "Answer your phone. This page polls CALL-E every 5 seconds until the call is finished."}
 

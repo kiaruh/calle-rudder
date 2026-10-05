@@ -119,7 +119,9 @@ def mask_phone(phone: str) -> str:
 def language_line(locale: str) -> str:
     lang = (locale or "es-MX").split("-")[0]
     return {
-        "es": "Speak natural, polite Mexican Spanish (usted)." if locale == "es-MX" else "Speak natural, polite Spanish (usted).",
+        "es": {"es-MX": "Speak natural, polite Mexican Spanish (usted).",
+               "es-AR": "Speak natural, polite Argentine Spanish (usted)."}.get(locale, "Speak natural, polite Spanish (usted)."),
+        "zh": "Speak natural, polite Mandarin Chinese.",
         "en": "Speak natural, polite English.",
         "pt": "Speak natural, polite Brazilian Portuguese.",
     }.get(lang, f"Speak in the language for locale {locale}.")

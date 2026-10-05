@@ -81,6 +81,8 @@ class FakeCalle:
             return httpx.Response(401, json={"error": {"code": "unauthorized", "message": "Invalid API key"}})
         if request.method == "POST" and request.url.path == "/v1/calls":
             import json
+            if json.loads(request.content)["recipients"][0].get("region") in {"AR", "CN"}:
+                return httpx.Response(422, json={"error": {"code": "unsupported_region", "message": "Region is not supported"}})
             self.created.append({"body": json.loads(request.content), "idem": request.headers.get("idempotency-key")})
             return httpx.Response(201, json={"id": "call_live_1", "object": "call", "status": "queued"})
         if request.method == "GET" and request.url.path == "/v1/calls/call_live_1":
@@ -160,3 +162,33 @@ def test_call_me_end_to_end_with_fake_calle(env):
     assert interaction["source"] == "calle_live"
     detail = env.orch.get(f"/api/calls/{call_id}/detail").json()
     assert detail["transcript"][1]["text"] == "El viernes pago."
+
+
+def test_country_dropdown_includes_argentina_china_singapore(env):
+    countries = {c["code"]: c for c in env.orch.get("/api/status").json()["countries"]}
+    assert countries["SG"]["supported"] is True and countries["SG"]["calling_code"] == "+65"
+    assert countries["AR"] == {"code": "AR", "name": "Argentina", "calling_code": "+54", "supported": False}
+    assert countries["CN"] == {"code": "CN", "name": "China", "calling_code": "+86", "supported": False}
+
+
+@pytest.mark.parametrize("phone,region,ok", [
+    ("+5491123456789", "AR", True), ("+8613812345678", "CN", True), ("+6581234567", "SG", True),
+    ("+525512345678", "AR", False), ("+5491123456789", "ZZ", False),
+])
+def test_phone_validation_new_countries(phone, region, ok):
+    from app.orchestrator.guards import validate_phone
+    assert (validate_phone(phone, region) is None) is ok
+
+
+def test_unlisted_country_rejection_is_reported_not_hidden(env):
+    gw, fake = fake_gateway()
+    rt(env).live, rt(env).api_key = gw, "good-key"
+    r = env.orch.post("/api/live/call-me", json={
+        "phone": "+5491123456789", "region": "AR", "locale": "es-AR",
+        "timezone": tz_where_it_is_noon(), "consent": True})
+    assert r.status_code == 409
+    detail = r.json()["detail"]
+    assert "submit_failed" in detail and "Region is not supported" in detail and "SIP" in detail
+    assert fake.created == []
+    events = env.orch.get("/api/overview").json()["events"]
+    assert any("not on CALL-E's published region list" in e["message"] for e in events)

@@ -194,14 +194,16 @@ curl -X POST localhost:8000/api/outbox/retry</pre></details>
     <div class="card">
       <span class="step">Step 2</span><h3>Your phone</h3>
       <div class="form">
-        <label for="country">Country (CALL-E supported)<select id="country"></select></label>
+        <label for="country">Country<select id="country"></select></label>
         <label for="phone">Phone in E.164<input id="phone" inputmode="tel" placeholder="+52 55 1234 5678"></label>
         <label for="locale">Language of the call<select id="locale">
           <option value="es-MX">Spanish (Mexico)</option><option value="en-US">English</option>
-          <option value="es-ES">Spanish (Spain)</option><option value="pt-BR">Portuguese (Brazil)</option></select></label>
+          <option value="es-ES">Spanish (Spain)</option><option value="es-AR">Spanish (Argentina)</option>
+          <option value="pt-BR">Portuguese (Brazil)</option><option value="zh-CN">Chinese (Mandarin)</option></select></label>
         <label for="tz">Your time zone (for the 08:00–21:00 rule)<input id="tz"></label>
       </div>
-      <p class="muted" style="font-size:13px">Mexico uses an international line on CALL-E, so the caller ID may show a foreign number. Only countries on CALL-E's list can be called.</p>
+      <p id="country-note" class="callout" hidden></p>
+      <p class="muted" style="font-size:13px">Mexico uses an international line on CALL-E, so the caller ID may show a foreign number. Countries marked "not on CALL-E's list" are offered for testing; CALL-E will most likely reject them.</p>
     </div>
 
     <div class="card">
@@ -445,9 +447,22 @@ async function refresh() {
 // ---------- init
 (async function init() {
   const st = (await api("GET", "/api/status")).data;
-  $("#country").innerHTML = Object.entries(st.regions).map(([r, c]) => `<option value="${r}">${r} (${c})</option>`).join("");
+  const opt = c => `<option value="${esc(c.code)}">${esc(c.name)} (${esc(c.calling_code)})${c.supported ? "" : " · not on CALL-E's list"}</option>`;
+  $("#country").innerHTML =
+    `<optgroup label="Supported by CALL-E">${st.countries.filter(c => c.supported).map(opt).join("")}</optgroup>` +
+    `<optgroup label="Not on CALL-E's published list (may be rejected)">${st.countries.filter(c => !c.supported).map(opt).join("")}</optgroup>`;
+  const NOTES = {
+    AR: "Argentina is not on CALL-E's published list, so CALL-E will most likely reject the call. Mobile format: +54 9 + area code + number, e.g. +5491123456789. Choose Spanish (Argentina).",
+    CN: "China is not on CALL-E's published list, so CALL-E will most likely reject the call. Mobile format: +86 + 11 digits, e.g. +8613812345678.",
+    SG: "Singapore is supported by CALL-E (English, international line). Format: +65 + 8 digits, e.g. +6581234567. Choose English.",
+    MX: "Mexico: +52 + 10 digits, e.g. +525512345678. CALL-E calls Mexico from an international number.",
+  };
+  const countryNote = () => { const n = NOTES[$("#country").value]; $("#country-note").hidden = !n; $("#country-note").textContent = n || ""; };
+  $("#country").addEventListener("change", countryNote);
   let saved = {}; try { saved = {phone: localStorage.getItem("phone"), country: localStorage.getItem("country"), tab: localStorage.getItem("tab")}; } catch {}
   $("#country").value = saved.country || "MX";
+  if (!$("#country").value) $("#country").value = "MX";
+  countryNote();
   if (saved.phone) $("#phone").value = saved.phone;
   $("#tz").value = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Mexico_City";
   if (saved.tab && $("#tab-" + saved.tab)) tab(saved.tab);
