@@ -147,14 +147,17 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
         store.update_request(req["idempotency_key"], outcome=decision.outcome, crm_status=decision.new_status)
         crm = _write_crm(store, crm_client, account["account_id"], call_id, payload)
         if crm["crm_sync"] != "synced":
-            print(f"WARNING: CRM write failed for {call_id}: {crm['error']}")
+            # Do NOT report success. The event is durably queued in the outbox for retry.
+            store.update_request(req["idempotency_key"], state="crm_sync_failed", detail=crm["error"])
+            return {"result": "received_crm_sync_failed", "call_id": call_id, "outcome": decision.outcome,
+                    "crm_sync": "pending_retry", "error": crm["error"], "_http": 202}
         store.update_request(req["idempotency_key"], state="synced", detail=trigger)
         if decision.send_payment_link:
             store.add_notification(account["account_id"], call_id, "sms",
                                    f"Solaria: enlace de pago para su referencia {account['payment_reference']}")
         return {"result": "processed", "call_id": call_id, "outcome": decision.outcome,
                 "crm_status": decision.new_status, "review_reasons": decision.review_reasons,
-                "crm_sync": "synced", "crm_confirmation": crm.get("confirmation")}
+                "crm_sync": "synced", "crm_confirmation": crm["confirmation"]}
 
     @app.post("/outbox/retry")
     def retry_outbox() -> dict[str, Any]:

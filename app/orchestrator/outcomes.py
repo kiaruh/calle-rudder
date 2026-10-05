@@ -96,7 +96,25 @@ def decide(snapshot: dict[str, Any], account: dict[str, Any], call_date: str) ->
         reasons.append("right_party_not_confirmed")
 
     if outcome == "promise_to_pay":
-        promise = _parse_date(fields["promise_date"]) or _parse_date(account.get("due_date"))
+        promise = _parse_date(fields["promise_date"])
+        due = _parse_date(account.get("due_date"))
+        today = _parse_date(call_date)
+        if promise is None:
+            reasons.append("promise_without_specific_date")
+        elif today and promise < today:
+            reasons.append("promise_date_in_past")
+        elif due and promise > due + timedelta(days=PTP_MAX_DAYS_AFTER_DUE):
+            reasons.append(f"promise_date_beyond_policy_{PTP_MAX_DAYS_AFTER_DUE}d_after_due")
+        if result.get("promise_certainty") != "firm":
+            reasons.append(f"promise_certainty_{result.get('promise_certainty')}")
+        if reasons:
+            return Decision(
+                outcome="promise_to_pay", new_status="needs_review",
+                task=_task("confirm_promise", "collections_agents", "normal",
+                           f"Customer indicated intent to pay but it is not a valid promise ({', '.join(reasons)}). "
+                           "Agent to confirm a specific date.", due=call_date),
+                review_reasons=reasons, fields=fields,
+            )
         return Decision(
             outcome="promise_to_pay", new_status="promise_to_pay",
             task=_task("verify_payment", "collections_ops", "low",
