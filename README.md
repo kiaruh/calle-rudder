@@ -32,10 +32,18 @@ Needs Python 3.11 or newer (tested on 3.11 and 3.14). The scripts create a local
 `pip install`. That matters on macOS/Homebrew, where `pip` is missing and global installs are blocked.
 
 ```bash
-./setup.sh      # once: creates .venv, installs dependencies, runs the 17 tests
-./run.sh        # terminal 1: CRM :8001 + orchestrator :8000 (Ctrl+C to stop)
-./demo.sh       # terminal 2: narrated demo, press Enter between acts
+./setup.sh
+./demo.sh
 ```
+
+- `./setup.sh` runs once. It creates `.venv`, installs dependencies and runs the 17 tests.
+- `./demo.sh` starts the CRM (:8001) and orchestrator (:8000) if they aren't running, then plays the narrated
+  demo. Press Enter between acts.
+- To keep the services and dashboards running on their own, run `./run.sh` in one terminal (Ctrl+C stops it)
+  and `./demo.sh` in a second terminal.
+
+Paste the commands one line at a time. zsh doesn't treat `#` as a comment in interactive shells, so text after
+a `#` gets run as part of the command.
 
 To run the tests again: `.venv/bin/python -m pytest -v`. If `python3` is older than 3.11, point setup at a
 newer one: `PYTHON=python3.13 ./setup.sh`.

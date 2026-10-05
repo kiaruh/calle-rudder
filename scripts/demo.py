@@ -45,7 +45,11 @@ def wait_for(predicate, timeout=20):
 
 def main() -> None:
     h = httpx.Client(timeout=15)
-    h.post(f"{CRM}/admin/reset")
+    try:
+        h.post(f"{CRM}/admin/reset")
+        h.get(f"{ORCH}/calls").raise_for_status()
+    except httpx.HTTPError:
+        sys.exit("Can't reach the services on :8000/:8001. Start them with ./run.sh, or use ./demo.sh, which starts them for you.")
 
     act("ACT 1 - Input: customer context in the CRM (fictional data)")
     show(h.get(f"{CRM}/accounts/ACC-1001").json())
