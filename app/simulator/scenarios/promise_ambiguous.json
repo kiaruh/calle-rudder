@@ -1,0 +1,28 @@
+{
+  "_note": "SIMULATED call. Transcript and structured_result are scripted, not produced by CALL-E.",
+  "event_type": "call.completed",
+  "status": "completed",
+  "task_completed": true,
+  "summary": "Holder confirmed identity; said they would try to pay at the end of the month when they get paid. No specific day after one clarification.",
+  "evidence": ["Holder: 'Pues a fin de mes, si me pagan a tiempo.'"],
+  "transcript_turns": [
+    {"speaker": "bot", "text": "Buenas tardes, le habla Sofía, asistente virtual de Financiera Solaria. ¿Hablo con José Luis Hernández Ruiz?"},
+    {"speaker": "user", "text": "Sí, él habla."},
+    {"speaker": "bot", "text": "Le recuerdo que su pago número 7 por 1,890 pesos con 50 centavos vence el 8 de octubre. ¿Qué día tiene pensado pagar?"},
+    {"speaker": "user", "text": "Uy, pues luego, cuando me paguen."},
+    {"speaker": "bot", "text": "Entiendo. ¿Me podría indicar un día aproximado?"},
+    {"speaker": "user", "text": "Pues a fin de mes, si me pagan a tiempo."},
+    {"speaker": "bot", "text": "De acuerdo, lo dejo anotado. Un asesor podría contactarle para confirmar. Gracias por su tiempo."}
+  ],
+  "structured_result": {
+    "right_party": "confirmed",
+    "outcome": "promise_to_pay",
+    "promise_date": "",
+    "promise_certainty": "tentative",
+    "payment_channel": "unknown",
+    "callback_window": "",
+    "needs_human": "no",
+    "customer_notes": "Intends to pay around end of month, conditional on receiving salary. No firm date.",
+    "outcome_evidence": "Pues a fin de mes, si me pagan a tiempo."
+  }
+}

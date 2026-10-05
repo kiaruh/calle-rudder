@@ -1,0 +1,26 @@
+{
+  "_note": "SIMULATED call. Transcript and structured_result are scripted, not produced by CALL-E.",
+  "event_type": "call.completed",
+  "status": "completed",
+  "task_completed": false,
+  "summary": "Holder's sister answered. Agent did not disclose the reason for the call and asked for a good time to call back.",
+  "evidence": ["Callee: 'No, ella no está, soy su hermana.'"],
+  "transcript_turns": [
+    {"speaker": "bot", "text": "Buenas tardes, le habla Sofía, asistente virtual de Financiera Solaria. ¿Podría comunicarme con Guadalupe Torres Vega?"},
+    {"speaker": "user", "text": "No, ella no está, soy su hermana. ¿De qué se trata?"},
+    {"speaker": "bot", "text": "Es un asunto personal para ella. ¿Sabe a qué hora podríamos encontrarla?"},
+    {"speaker": "user", "text": "En la noche, después de las ocho."},
+    {"speaker": "bot", "text": "Muchas gracias, volveremos a llamar. Buenas tardes."}
+  ],
+  "structured_result": {
+    "right_party": "wrong_person",
+    "outcome": "wrong_party",
+    "promise_date": "",
+    "promise_certainty": "not_applicable",
+    "payment_channel": "unknown",
+    "callback_window": "en la noche después de las 8",
+    "needs_human": "no",
+    "customer_notes": "Sister answered; holder not available. Nothing about the loan was disclosed.",
+    "outcome_evidence": "No, ella no está, soy su hermana."
+  }
+}

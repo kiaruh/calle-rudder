@@ -1,0 +1,13 @@
+{
+  "_note": "SIMULATED: call happened but CALL-E could not extract a schema-valid result.",
+  "event_type": "call.result_validation_failed",
+  "status": "completed",
+  "task_completed": false,
+  "summary": "Conversation was cut short; result could not be validated.",
+  "evidence": [],
+  "transcript_turns": [
+    {"speaker": "bot", "text": "Buenas tardes, le habla Sofía, asistente virtual de Financiera Solaria..."},
+    {"speaker": "user", "text": "¿Bueno? ¿Bueno? No se oye..."}
+  ],
+  "structured_result": null
+}

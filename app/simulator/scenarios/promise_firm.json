@@ -1,0 +1,27 @@
+{
+  "_note": "SIMULATED call. Transcript and structured_result are scripted, not produced by CALL-E.",
+  "event_type": "call.completed",
+  "status": "completed",
+  "task_completed": true,
+  "summary": "Holder confirmed identity and committed to pay the full installment on Friday 9 October via SPEI.",
+  "evidence": ["Holder: 'El viernes nueve hago la transferencia por SPEI, los 2,450.'"],
+  "transcript_turns": [
+    {"speaker": "bot", "text": "Buenas tardes, le habla Sofía, asistente virtual de Financiera Solaria. ¿Podría comunicarme con María Fernanda López García?"},
+    {"speaker": "user", "text": "Sí, soy yo."},
+    {"speaker": "bot", "text": "Gracias. Le llamo para recordarle que su pago número 4 por 2,450 pesos vence el 8 de octubre. ¿Qué día tiene pensado realizarlo?"},
+    {"speaker": "user", "text": "El viernes nueve hago la transferencia por SPEI, los 2,450."},
+    {"speaker": "bot", "text": "Perfecto, entonces registro su pago de 2,450 pesos el viernes 9 de octubre por SPEI. Le enviaremos un enlace de pago por SMS. ¡Que tenga buen día!"}
+  ],
+  "structured_result": {
+    "right_party": "confirmed",
+    "outcome": "promise_to_pay",
+    "promise_date": "2026-10-09",
+    "promise_certainty": "firm",
+    "promise_amount_mxn": 2450.0,
+    "payment_channel": "spei_transfer",
+    "callback_window": "",
+    "needs_human": "no",
+    "customer_notes": "Will pay full installment by SPEI one day after the due date.",
+    "outcome_evidence": "El viernes nueve hago la transferencia por SPEI, los 2,450."
+  }
+}

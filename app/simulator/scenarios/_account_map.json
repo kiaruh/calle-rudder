@@ -1,0 +1,8 @@
+{
+  "ACC-1001": "promise_firm",
+  "ACC-1002": "promise_ambiguous",
+  "ACC-1003": "human_requested",
+  "ACC-1005": "wrong_party",
+  "ACC-1006": "already_paid",
+  "ACC-1007": "no_answer_failed"
+}

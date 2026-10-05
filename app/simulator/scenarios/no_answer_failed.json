@@ -1,0 +1,12 @@
+{
+  "_note": "SIMULATED call. Terminal failure: nobody answered.",
+  "event_type": "call.failed",
+  "status": "failed",
+  "attempt_status": "failed",
+  "failure_code": "no_answer",
+  "task_completed": false,
+  "summary": "No one answered the call.",
+  "evidence": [],
+  "transcript_turns": [],
+  "structured_result": null
+}

@@ -1,0 +1,28 @@
+{
+  "_note": "SIMULATED call. Transcript and structured_result are scripted, not produced by CALL-E.",
+  "event_type": "call.completed",
+  "status": "completed",
+  "task_completed": true,
+  "summary": "Holder confirmed identity, did not want to continue with a virtual assistant and asked for a human advisor tomorrow after 5pm.",
+  "evidence": ["Holder: 'Prefiero hablar con una persona, no con una grabación.'"],
+  "transcript_turns": [
+    {"speaker": "bot", "text": "Buenas tardes, le habla Sofía, asistente virtual de Financiera Solaria. ¿Hablo con Ana Sofía Ramírez Morales?"},
+    {"speaker": "user", "text": "Sí, ¿qué pasó?"},
+    {"speaker": "bot", "text": "Le llamo para recordarle que su pago número 12 por 3,200 pesos vence el 8 de octubre."},
+    {"speaker": "user", "text": "Prefiero hablar con una persona, no con una grabación."},
+    {"speaker": "bot", "text": "Claro, con gusto un asesor le devolverá la llamada. ¿Qué horario le conviene?"},
+    {"speaker": "user", "text": "Mañana después de las cinco."},
+    {"speaker": "bot", "text": "Perfecto, un asesor le llamará mañana después de las 5 de la tarde. Gracias."}
+  ],
+  "structured_result": {
+    "right_party": "confirmed",
+    "outcome": "human_requested",
+    "promise_date": "",
+    "promise_certainty": "not_applicable",
+    "payment_channel": "unknown",
+    "callback_window": "mañana después de las 5 pm",
+    "needs_human": "yes",
+    "customer_notes": "Prefers to speak with a human advisor. Requested callback tomorrow after 5pm.",
+    "outcome_evidence": "Prefiero hablar con una persona, no con una grabación."
+  }
+}

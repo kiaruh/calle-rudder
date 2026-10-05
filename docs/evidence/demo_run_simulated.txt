@@ -1,0 +1,310 @@
+
+==============================================================================
+ACT 1 - Input: customer context in the CRM (fictional data)
+==============================================================================
+{
+  "account_id": "ACC-1001",
+  "full_name": "María Fernanda López García",
+  "first_name": "María Fernanda",
+  "phone_e164": "+525500000101",
+  "timezone": "America/Mexico_City",
+  "city": "Ciudad de México",
+  "product": "Préstamo Personal Solaria",
+  "installment_number": 4,
+  "amount_due_mxn": 2450.0,
+  "due_date": "2026-10-08",
+  "payment_reference": "SOL-7781-1001",
+  "do_not_call": false,
+  "status": "upcoming_due",
+  "updated_at": "2026-10-05T14:09:51+00:00"
+}
+
+==============================================================================
+ACT 2 - Run the payment-reminder campaign (guards run before any call)
+==============================================================================
+{
+  "mode": "simulated",
+  "call_date": "2026-10-05",
+  "results": [
+    {
+      "account_id": "ACC-1001",
+      "result": "submitted",
+      "call_id": "call_sim_817751fb7e09",
+      "phone": "+5255******01"
+    },
+    {
+      "account_id": "ACC-1002",
+      "result": "submitted",
+      "call_id": "call_sim_f1bfbe2d7346",
+      "phone": "+5281******02"
+    },
+    {
+      "account_id": "ACC-1003",
+      "result": "submitted",
+      "call_id": "call_sim_1e7c323b02d1",
+      "phone": "+5233******03"
+    },
+    {
+      "account_id": "ACC-1004",
+      "result": "blocked",
+      "reason": "missing_phone",
+      "detail": "Account has no phone number on file."
+    },
+    {
+      "account_id": "ACC-1005",
+      "result": "submitted",
+      "call_id": "call_sim_bb0812b018a4",
+      "phone": "+5299******05"
+    },
+    {
+      "account_id": "ACC-1006",
+      "result": "submitted",
+      "call_id": "call_sim_6b22c4efe27e",
+      "phone": "+5222******06"
+    },
+    {
+      "account_id": "ACC-1007",
+      "result": "submitted",
+      "call_id": "call_sim_2ed9c9a9b7ea",
+      "phone": "+5244******07"
+    },
+    {
+      "account_id": "ACC-1008",
+      "result": "blocked",
+      "reason": "do_not_call",
+      "detail": "Customer opted out of calls."
+    }
+  ]
+}
+
+==============================================================================
+ACT 3 - CALL-E finishes calls and POSTs webhooks; orchestrator verifies + writes CRM
+==============================================================================
+[
+  {
+    "account_id": "ACC-1001",
+    "state": "synced",
+    "outcome": "promise_to_pay",
+    "crm_status": "promise_to_pay",
+    "detail": "webhook:call.completed"
+  },
+  {
+    "account_id": "ACC-1002",
+    "state": "synced",
+    "outcome": "promise_to_pay",
+    "crm_status": "needs_review",
+    "detail": "webhook:call.completed"
+  },
+  {
+    "account_id": "ACC-1003",
+    "state": "synced",
+    "outcome": "human_requested",
+    "crm_status": "callback_requested",
+    "detail": "webhook:call.completed"
+  },
+  {
+    "account_id": "ACC-1004",
+    "state": "blocked:missing_phone",
+    "outcome": null,
+    "crm_status": null,
+    "detail": "Account has no phone number on file."
+  },
+  {
+    "account_id": "ACC-1005",
+    "state": "synced",
+    "outcome": "wrong_party",
+    "crm_status": "wrong_party_contact",
+    "detail": "webhook:call.completed"
+  },
+  {
+    "account_id": "ACC-1006",
+    "state": "synced",
+    "outcome": "already_paid",
+    "crm_status": "paid_claimed",
+    "detail": "webhook:call.completed"
+  },
+  {
+    "account_id": "ACC-1007",
+    "state": "synced",
+    "outcome": "no_contact",
+    "crm_status": "no_contact",
+    "detail": "webhook:call.failed"
+  },
+  {
+    "account_id": "ACC-1008",
+    "state": "blocked:do_not_call",
+    "outcome": null,
+    "crm_status": null,
+    "detail": "Customer opted out of calls."
+  }
+]
+
+CRM follow-up tasks (output another team acts on):
+[
+  {
+    "account_id": "ACC-1004",
+    "type": "fix_contact_data",
+    "team": "data_quality",
+    "priority": "normal",
+    "due_date": null,
+    "description": "Reminder call blocked: Account has no phone number on file."
+  },
+  {
+    "account_id": "ACC-1001",
+    "type": "verify_payment",
+    "team": "collections_ops",
+    "priority": "low",
+    "due_date": "2026-10-10",
+    "description": "Promise to pay 2450.0 MXN on 2026-10-09. Verify payment received; if not, schedule follow-up."
+  },
+  {
+    "account_id": "ACC-1005",
+    "type": "verify_contact_data",
+    "team": "data_quality",
+    "priority": "normal",
+    "due_date": null,
+    "description": "Someone other than the holder answered. Debt was not disclosed. Verify phone ownership. Suggested callback: en la noche después de las 8"
+  },
+  {
+    "account_id": "ACC-1002",
+    "type": "confirm_promise",
+    "team": "collections_agents",
+    "priority": "normal",
+    "due_date": "2026-10-05",
+    "description": "Customer indicated intent to pay but it is not a valid promise (promise_without_specific_date, promise_certainty_tentative). Agent to confirm a specific date."
+  },
+  {
+    "account_id": "ACC-1007",
+    "type": "review_no_contact",
+    "team": "collections_ops",
+    "priority": "normal",
+    "due_date": null,
+    "description": "CALL-E call call_sim_2ed9c9a9b7ea ended as 'failed'. Review contact strategy; no automatic redial."
+  },
+  {
+    "account_id": "ACC-1003",
+    "type": "human_callback",
+    "team": "collections_agents",
+    "priority": "high",
+    "due_date": null,
+    "description": "Customer asked for a human advisor. Preferred time: mañana después de las 5 pm."
+  },
+  {
+    "account_id": "ACC-1006",
+    "type": "reconcile_payment",
+    "team": "finance",
+    "priority": "normal",
+    "due_date": null,
+    "description": "Customer states installment already paid. Reconcile before any further contact."
+  }
+]
+
+==============================================================================
+ACT 4 - Field mapping for one call: CALL-E structured_result -> CRM interaction
+==============================================================================
+CALL-E structured_result:
+{
+  "right_party": "confirmed",
+  "outcome": "promise_to_pay",
+  "promise_date": "2026-10-09",
+  "promise_certainty": "firm",
+  "promise_amount_mxn": 2450.0,
+  "payment_channel": "spei_transfer",
+  "callback_window": "",
+  "needs_human": "no",
+  "customer_notes": "Will pay full installment by SPEI one day after the due date.",
+  "outcome_evidence": "El viernes nueve hago la transferencia por SPEI, los 2,450."
+}
+CRM interaction record:
+{
+  "call_id": "call_sim_817751fb7e09",
+  "account_id": "ACC-1001",
+  "created_at": "2026-10-05T14:09:55+00:00",
+  "source": "calle_simulated",
+  "outcome": "promise_to_pay",
+  "new_status": "promise_to_pay",
+  "promise_date": "2026-10-09",
+  "promise_amount_mxn": 2450.0,
+  "payment_channel": "spei_transfer",
+  "callback_window": null,
+  "notes": "Will pay full installment by SPEI one day after the due date.",
+  "evidence": "El viernes nueve hago la transferencia por SPEI, los 2,450.",
+  "review_reasons": [],
+  "task": {
+    "type": "verify_payment",
+    "team": "collections_ops",
+    "priority": "low",
+    "due_date": "2026-10-10",
+    "description": "Promise to pay 2450.0 MXN on 2026-10-09. Verify payment received; if not, schedule follow-up."
+  }
+}
+
+==============================================================================
+ACT 5 - Integration failure: CRM goes down while a call is in progress
+==============================================================================
+{
+  "mode": "simulated",
+  "call_date": "2026-10-05",
+  "results": [
+    {
+      "account_id": "ACC-1001",
+      "result": "submitted",
+      "call_id": "call_sim_693123d4f45e",
+      "phone": "+5255******01"
+    }
+  ]
+}
+{
+  "failure_mode": "error"
+}
+...waiting for CALL-E webhook...
+[
+  {
+    "account_id": "ACC-1001",
+    "state": "crm_sync_failed",
+    "outcome": "promise_to_pay",
+    "detail": "CRM 503 on POST /accounts/ACC-1001/call-outcomes: {\"error\":\"crm_unavailable\",\"detail\":\"Injected failure (SIMULATED outage)\"}"
+  }
+]
+Outbox:
+[
+  {
+    "call_id": "call_sim_693123d4f45e",
+    "account_id": "ACC-1001",
+    "state": "pending",
+    "attempts": 1,
+    "last_error": "CRM 503 on POST /accounts/ACC-1001/call-outcomes: {\"error\":\"crm_unavailable\",\"detail\":\"Injected failure (SIMULATED outage)\"}",
+    "updated_at": "2026-10-05T14:09:58+00:00"
+  }
+]
+
+==============================================================================
+ACT 6 - CRM recovers; outbox retry delivers exactly once
+==============================================================================
+{
+  "failure_mode": "none"
+}
+{
+  "retried": [
+    {
+      "call_id": "call_sim_693123d4f45e",
+      "crm_sync": "synced",
+      "confirmation": {
+        "result": "created",
+        "call_id": "call_sim_693123d4f45e",
+        "account_status": "promise_to_pay",
+        "task_id": 8
+      }
+    }
+  ]
+}
+[
+  {
+    "account_id": "ACC-1001",
+    "state": "synced",
+    "outcome": "promise_to_pay",
+    "crm_status": "promise_to_pay"
+  }
+]
+
+Done 2026-10-05T14:09:59+00:00. Dashboards: http://127.0.0.1:8000/  http://127.0.0.1:8001/

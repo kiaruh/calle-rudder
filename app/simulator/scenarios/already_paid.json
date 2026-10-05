@@ -1,0 +1,26 @@
+{
+  "_note": "SIMULATED call. Transcript and structured_result are scripted, not produced by CALL-E.",
+  "event_type": "call.completed",
+  "status": "completed",
+  "task_completed": true,
+  "summary": "Holder says they paid yesterday at OXXO.",
+  "evidence": ["Holder: 'Ya pagué ayer en el OXXO, tengo mi ticket.'"],
+  "transcript_turns": [
+    {"speaker": "bot", "text": "Buenas tardes, le habla Sofía, asistente virtual de Financiera Solaria. ¿Hablo con Ricardo Gómez Navarro?"},
+    {"speaker": "user", "text": "Sí, soy yo."},
+    {"speaker": "bot", "text": "Le recuerdo que su pago número 9 por 2,875 pesos vence el 8 de octubre."},
+    {"speaker": "user", "text": "Ya pagué ayer en el OXXO, tengo mi ticket."},
+    {"speaker": "bot", "text": "Muchas gracias, verificaremos su pago. Que tenga buen día."}
+  ],
+  "structured_result": {
+    "right_party": "confirmed",
+    "outcome": "already_paid",
+    "promise_date": "",
+    "promise_certainty": "not_applicable",
+    "payment_channel": "oxxo",
+    "callback_window": "",
+    "needs_human": "no",
+    "customer_notes": "Says paid yesterday at OXXO and has the receipt.",
+    "outcome_evidence": "Ya pagué ayer en el OXXO, tengo mi ticket."
+  }
+}
