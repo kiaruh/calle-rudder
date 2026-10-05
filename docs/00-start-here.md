@@ -84,6 +84,8 @@ Open **http://127.0.0.1:8000/learn**. It covers what CALL-E is, what the repo do
 a code map, a terminal cheat sheet, and all the documents in `docs/` rendered with their diagrams.
 
 ## 6. Interview-day checklist
+The full step-by-step for every assignment section is in [07-interview-playbook.md](07-interview-playbook.md).
+
 - [ ] `./run.sh` is running before the call starts. Browser tabs open: control center, CRM :8001, `/learn`.
 - [ ] Press **Reset everything** right before presenting.
 - [ ] Optional live moment: API key saved, phone entered, one script chosen. Do it once beforehand to check it works.

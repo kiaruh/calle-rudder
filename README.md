@@ -102,4 +102,5 @@ docs/evidence/                  Captured test runs (v1 fail -> v2 pass) and demo
 4. [Test log](docs/04-test-log.md)
 5. [Decision log](docs/05-decision-log.md)
 6. [Presentation outline + rollout recommendation + Q&A prep](docs/06-presentation.md)
-7. [Architecture](docs/ARCHITECTURE.md)
+7. [Interview playbook: step by step for sections 1-6](docs/07-interview-playbook.md)
+8. [Architecture](docs/ARCHITECTURE.md)

@@ -69,6 +69,7 @@ svg.dg{display:block;width:100%;height:auto;min-width:640px;color:var(--fg);font
 <div class="top"><strong>Solaria project guide</strong><span><a href="/">← Control center</a> · <a href="http://127.0.0.1:8001/">CRM :8001</a> · <a href="/docs">API docs (Swagger)</a></span></div>
 <div class="wrap">
 <nav class="toc" aria-label="Contents">
+  <a href="/learn?doc=07-interview-playbook">Interview playbook</a>
   <a href="#start">Start here</a>
   <a href="#calle">What CALL-E is</a>
   <a href="#dashboard">CALL-E dashboard: what to do</a>
@@ -321,7 +322,9 @@ async function load(name) {
 (async () => {
   const names = await (await fetch("/api/docs")).json();
   sel.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join("");
-  const first = names.includes("ARCHITECTURE") ? "ARCHITECTURE" : names[0];
+  const wanted = new URLSearchParams(location.search).get("doc");
+  const first = names.includes(wanted) ? wanted : (names.includes("ARCHITECTURE") ? "ARCHITECTURE" : names[0]);
+  if (wanted) document.getElementById("docs").scrollIntoView();
   sel.value = first; load(first);
   sel.addEventListener("change", () => load(sel.value));
 })();
