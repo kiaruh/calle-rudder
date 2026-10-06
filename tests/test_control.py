@@ -192,3 +192,41 @@ def test_unlisted_country_rejection_is_reported_not_hidden(env):
     assert fake.created == []
     events = env.orch.get("/api/overview").json()["events"]
     assert any("not on CALL-E's published region list" in e["message"] for e in events)
+
+
+# ---------------------------------------------------------------- API key handling
+def patch_live_factory(monkeypatch):
+    import app.orchestrator.control as control
+
+    def factory(key, allowed):
+        gw, _ = fake_gateway(key)
+        gw.allowed = allowed
+        return gw
+    monkeypatch.setattr(control, "LiveCalleGateway", factory)
+
+
+def test_pasted_text_is_refused_as_key(env, monkeypatch):
+    patch_live_factory(monkeypatch)
+    pasted = "What the orchestrator just did, newest first.  14:38:26 UTC CALL-E API key saved in memory"
+    r = env.orch.post("/api/live/key", json={"api_key": pasted})
+    assert r.status_code == 422 and "spaces or line breaks" in r.json()["detail"]
+    assert env.orch.post("/api/live/key", json={"api_key": "short"}).status_code == 422
+    assert env.orch.get("/api/status").json()["api_key_set"] is False
+
+
+def test_good_key_saved_masked_and_rejected_key_keeps_previous(env, monkeypatch):
+    patch_live_factory(monkeypatch)
+    good = "good-key"  # the fake CALL-E accepts exactly this bearer token
+    r = env.orch.post("/api/live/key", json={"api_key": "Bearer " + good + "-padding-to-20"})
+    assert r.json()["rejected"] is True  # wrong token -> 401 from fake CALL-E, not saved
+    assert env.orch.get("/api/status").json()["api_key_set"] is False
+
+    import app.orchestrator.control as control
+    monkeypatch.setattr(control, "clean_key", lambda raw: raw.strip())  # allow the short fake token
+    ok = env.orch.post("/api/live/key", json={"api_key": good}).json()
+    assert ok["ok"] is True and "recognised the key" in ok["detail"]
+    assert env.orch.get("/api/status").json()["api_key_set"] is True
+
+    bad = env.orch.post("/api/live/key", json={"api_key": "bad-key"}).json()
+    assert bad["rejected"] is True and "previous key" in bad["detail"]
+    assert rt(env).api_key == good  # the working key is still in use

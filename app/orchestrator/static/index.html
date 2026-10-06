@@ -86,13 +86,39 @@ dialog::backdrop{background:rgb(0 0 0 / .45)}
 .dlg-body>div{min-width:0;display:flex;flex-direction:column;gap:8px}
 .callout{background:var(--warn-soft);border:1px solid var(--warn);border-radius:8px;padding:10px 12px;font-size:14px}
 ol.howto{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.guide{max-width:1400px;margin:0 auto;padding:0 20px 14px}
+.guide-box{background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.guide-top{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.guide-top h2{font-size:18px}
+.guide-sec{font:600 12px var(--mono);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.gbox{border-radius:8px;padding:10px 12px;background:var(--bg);min-width:0;font-size:14.5px}
+.gbox b.l{display:block;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.gbox.say{background:var(--accent-soft)} .gbox.say p{font-size:16px;font-style:italic;max-width:none}
+.gbox.why{background:var(--warn-soft)}
+.dots{display:flex;flex-wrap:wrap;gap:4px}
+.dots button{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:600 11px var(--mono);cursor:pointer;padding:0}
+.dots button.on{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+.dots button.done{border-color:var(--accent);color:var(--accent)}
+.speak{display:none;background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:14px}
+.speak b{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);display:block}
+body.notes .speak{display:block}
+.flash{outline:3px solid var(--warn)!important;outline-offset:4px;border-radius:8px;animation:pulse 1s ease-in-out 3}
+@keyframes pulse{50%{outline-color:transparent}}
+.gloss dt{font-weight:600;margin-top:6px} .gloss dd{margin:0 0 0 0;color:var(--muted);font-size:14px}
+.gloss{columns:2 320px;column-gap:24px} .gloss div{break-inside:avoid}
+.toggle{font:600 12px var(--mono);padding:6px 10px;border-radius:999px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.flash{animation:none}}
 </style>
 </head>
 <body>
 <header>
   <h1>Solaria Control Center <small>CALL-E payment reminders · port 8000</small></h1>
-  <div class="chips" id="chips"><span class="chip">loading…</span></div>
+  <div class="row">
+    <div class="chips" id="chips"><span class="chip">loading…</span></div>
+    <button class="toggle" id="toggle-guide" aria-pressed="true">Presenter guide: on</button>
+    <button class="toggle" id="toggle-notes" aria-pressed="true">"Say this" notes: on</button>
+  </div>
 </header>
 
 <nav role="tablist">
@@ -103,6 +129,30 @@ ol.howto{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
   <a href="/learn?doc=07-interview-playbook" style="margin-left:auto">Interview playbook</a>
   <a href="/learn" style="margin-left:12px">Learn the project ↗</a>
 </nav>
+
+<div class="guide" id="guide">
+  <div class="guide-box" aria-live="polite">
+    <div class="guide-top">
+      <div><span class="guide-sec" id="g-sec"></span><h2 id="g-title"></h2></div>
+      <div class="row">
+        <button class="act secondary" id="g-prev">← Back</button>
+        <button class="act" id="g-show">Show me where</button>
+        <button class="act" id="g-next">Next step →</button>
+      </div>
+    </div>
+    <div class="guide-grid">
+      <div class="gbox"><b class="l">1. Do this</b><span id="g-do"></span></div>
+      <div class="gbox"><b class="l">2. You should see</b><span id="g-see"></span></div>
+      <div class="gbox say"><b class="l">3. Say out loud</b><p id="g-say"></p></div>
+      <div class="gbox why"><b class="l">What this means (plain words)</b><span id="g-why"></span></div>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <div class="dots" id="g-dots" aria-label="Steps"></div>
+      <details><summary class="muted" style="cursor:pointer">Glossary: words you'll hear</summary>
+        <dl class="gloss" id="gloss"></dl></details>
+    </div>
+  </div>
+</div>
 
 <div class="layout">
 <main>
@@ -119,30 +169,35 @@ ol.howto{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
     <div class="card">
       <span class="step">Step 1</span><h3>Start fresh</h3>
       <p>Reseeds the CRM with 8 fictional customers and clears call history.</p>
+      <p class="speak"><b>Say this</b>Preparation only, nothing to say. It gives you a clean start.</p>
       <div class="row"><button class="act" data-action="reset">Reset everything</button></div>
       <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/reset</pre></details>
     </div>
     <div class="card">
       <span class="step">Step 2</span><h3>Run the reminder campaign</h3>
       <p>Reads all accounts from the CRM and checks each one before dialing. 6 calls go to CALL-E. 2 are blocked: one has no phone, one is do-not-call.</p>
+      <p class="speak"><b>Say this</b>"The system read 8 customers from the CRM. Two were never called: one has no phone number and one asked not to be called. My code checks that before anything reaches CALL-E."</p>
       <div class="row"><button class="act" data-action="campaign">Run campaign (8 accounts)</button></div>
       <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/campaign -H 'content-type: application/json' -d '{}'</pre></details>
     </div>
     <div class="card">
       <span class="step">Step 3</span><h3>See what happened</h3>
       <p>Results arrive about 3 seconds later through the webhook. Open the Results tab, and click a call to read the transcript, the extracted result, and what the CRM stored.</p>
+      <p class="speak"><b>Say this</b>"When a call ends, CALL-E notifies my system, which double-checks the result with CALL-E and writes a status and a follow-up task into the CRM."</p>
       <div class="row"><button class="act secondary" data-goto="results">Open Results</button>
         <a class="act secondary" href="http://127.0.0.1:8001/" target="_blank" rel="noopener">Open CRM :8001 ↗</a></div>
     </div>
     <div class="card">
       <span class="step">Step 4</span><h3>Break the integration</h3>
       <p>Places a call, then takes the CRM down before the result comes back. Expected result: the call shows <code>crm_sync_failed</code>, the outbox has 1 pending item, and nothing claims success.</p>
+      <p class="speak"><b>Say this</b>"Now I break the customer's CRM in the middle of a call. Watch: the system doesn't pretend it worked. It says 'failed, pending retry' and keeps the result safe."</p>
       <div class="row"><button class="act danger" data-action="outage">Run outage scenario</button></div>
       <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/outage-scenario</pre></details>
     </div>
     <div class="card">
       <span class="step">Step 5</span><h3>Recover</h3>
       <p>Restores the CRM and re-sends the pending write. The CRM confirms with 201, and exactly one task is created.</p>
+      <p class="speak"><b>Say this</b>"The CRM is back. The saved result is delivered exactly once, with no duplicate and nothing lost. I only call it success when the CRM itself confirms."</p>
       <div class="row"><button class="act" data-action="restore">Restore CRM + retry outbox</button></div>
       <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/crm/restore-and-retry</pre></details>
     </div>
@@ -187,9 +242,14 @@ curl -X POST localhost:8000/api/outbox/retry</pre></details>
         <li>Open <a href="https://dashboard.heycall-e.com/account/api-keys" target="_blank" rel="noopener">Dashboard → Account → API keys</a> and create a key.</li>
         <li>Paste it below. It's kept in this server's memory only. Add <code>CALLE_API_KEY=…</code> to <code>.env</code> to keep it across restarts.</li>
       </ol>
-      <label for="api-key">CALL-E API key<input id="api-key" type="password" autocomplete="off" placeholder="paste key"></label>
-      <div class="row"><button class="act" data-action="savekey">Save &amp; verify key</button></div>
+      <label for="api-key"><span>CALL-E API key: one long word, often starting with <code>iams_live_</code></span>
+        <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="paste only the key"></label>
+      <div class="row"><button class="act" data-action="savekey">Save &amp; verify key</button>
+        <button class="act secondary" id="key-show" type="button">Show what I pasted</button></div>
+      <p class="muted" id="key-inuse" style="font-size:13px">No key saved yet.</p>
       <div id="key-result" class="result" hidden></div>
+      <p class="speak"><b>Tip</b>Copy the key from the CALL-E dashboard right before pasting. If you copy anything else in between
+        (like text from this page), the clipboard holds that instead. Use "Show what I pasted" to check.</p>
     </div>
 
     <div class="card">
@@ -332,11 +392,14 @@ const actions = {
   },
   async retry() { const r = await api("POST", "/api/outbox/retry"); show(last, r.ok, r.ok ? `Retried ${r.data.retried.length} item(s): ${esc(r.data.retried.map(x => x.crm_sync).join(", ") || "nothing pending")}` : errText(r)); },
   async savekey() {
-    const el = $("#key-result"), key = $("#api-key").value.trim();
+    const el = $("#key-result"), key = $("#api-key").value.trim().replace(/^bearer\s+/i, "");
     if (!key) return show(el, false, "Paste your API key first.");
+    if (/\s/.test(key)) return show(el, false, "That's not an API key: it has spaces or line breaks, so other text was pasted. " +
+      "Go to the CALL-E dashboard, copy the key again, and paste it here. Use \"Show what I pasted\" to check.");
     const r = await api("POST", "/api/live/key", {api_key: key});
     show(el, r.ok && r.data.ok, r.ok ? esc(r.data.detail) : errText(r));
-    $("#api-key").value = "";
+    if (r.ok && r.data.ok) $("#api-key").value = "";
+    refresh();
   },
   async callme() {
     const el = $("#live-result");
@@ -418,6 +481,11 @@ async function openDetail(callId) {
 $("#dlg-close").addEventListener("click", () => $("#detail").close());
 $("#dlg-sync").addEventListener("click", async () => { if (openCall) { await api("POST", `/calls/${openCall}/sync`); openDetail(openCall); refresh(); } });
 
+$("#key-show").addEventListener("click", () => {
+  const i = $("#api-key"), hidden = i.type === "password";
+  i.type = hidden ? "text" : "password"; $("#key-show").textContent = hidden ? "Hide key" : "Show what I pasted";
+});
+
 // ---------- live refresh
 async function refresh() {
   const r = await api("GET", "/api/overview");
@@ -429,6 +497,7 @@ async function refresh() {
     `<span class="chip ${st.api_key_set ? "ok" : "warn"}">API key: ${st.api_key_set ? "set" : "not set"}</span>`,
     `<span class="chip">Webhook: ${esc(String(st.webhook).startsWith("http") ? "on" : "polling")}</span>`,
   ].join("");
+  $("#key-inuse").innerHTML = st.api_key_hint ? `Key in use: <code>${esc(st.api_key_hint)}</code> (saved in memory until ./run.sh stops)` : "No key saved yet.";
   $("#calls").innerHTML = d.calls.map(c => `<tr class="click" data-call="${esc(c.call_id || "")}"><td>${esc(c.account_id)}</td><td><code>${esc(c.call_id || "—")}</code></td>
     <td>${pill(c.state)}</td><td>${pill(c.outcome)}</td><td>${pill(c.crm_status)}</td><td class="muted">${esc((c.detail || "").slice(0, 90))}</td></tr>`).join("")
     || `<tr><td colspan="6" class="muted">No calls yet. Run the campaign on the Demo tab.</td></tr>`;
@@ -445,8 +514,154 @@ async function refresh() {
     || `<p class="muted">Nothing yet. Press Reset, then Run campaign.</p>`;
 }
 
+// ---------- presenter guide (follows docs/07-interview-playbook.md)
+const GUIDE = [
+  {sec: "Before you start", title: "Start from a clean slate", tab: "demo", target: '[data-action="reset"]',
+   do: 'Check the Terminal window running <code>./run.sh</code> is still open (closing it stops everything). Then click <b>Reset everything</b>.',
+   see: 'A green box: "Reset done. The CRM has 8 fresh accounts." The Activity panel on the right says "Reset".',
+   say: "(Nothing yet. This is preparation, so do it before the interviewers join.)",
+   why: "It puts the fake customer database back to 8 fresh customers and clears old calls, so the demo always starts the same way."},
+  {sec: "Section 1 · Objective", title: "Open with your one-line summary", tab: "demo",
+   do: "Nothing to click. Read the line on the right out loud, in your own words.",
+   see: "—",
+   say: "I built a small payment-reminder workflow for a lender in Mexico using CALL-E. I focused on making it honest: it never records an outcome that didn't happen, and never claims a CRM update that didn't really happen.",
+   why: "They grade four things: turning a customer need into a solution, connecting systems, testing, and explaining decisions. Every next step shows one of them."},
+  {sec: "Section 2 · Preparation", title: "Say what you checked before building", tab: "demo",
+   do: 'Mention what you explored: the <a href="https://www.heycall-e.com/" target="_blank" rel="noopener">CALL-E website</a> (you had it call your phone), the <a href="https://github.com/CALLE-AI/call-e-integrations" target="_blank" rel="noopener">integrations repo</a> and the <a href="https://github.com/CALLE-AI/awesome-phone-call-agents" target="_blank" rel="noopener">examples repo</a>.',
+   see: "—",
+   say: "Before designing, I checked what CALL-E supports. Mexico in Spanish is supported, but through an international number. CALL-E returns a structured result I define. And its notifications aren't signed, so I double-check every result.",
+   why: "The assignment asks you to confirm capabilities before building. This shows you didn't assume; you checked."},
+  {sec: "Section 3 · Customer scenario", title: "Show the customer and their problem", tab: "demo", target: 'a[href="http://127.0.0.1:8001/"]',
+   do: 'Click <b>Open CRM :8001</b>. It opens the customer\'s database in a new tab. Point at the list of 8 customers.',
+   see: "8 fictional customers from different Mexican cities, all with status upcoming_due.",
+   say: "Financiera Solaria is a fictional consumer lender in Mexico. The goal: call customers three days before a payment is due, remind them politely, and record one clear outcome in their CRM. The agent never negotiates, never takes payments, and never talks about the debt with anyone but the customer. Anything that needs judgment goes to a human.",
+   why: 'CRM = the company\'s customer database. Here it\'s a fake one I built, so I can also break it on purpose to test failures.'},
+  {sec: "Section 4A · Voice agent", title: "Run the reminder campaign", tab: "demo", target: '[data-action="campaign"]',
+   do: "Come back to this tab and click <b>Run campaign (8 accounts)</b>.",
+   see: '"6 calls submitted. Blocked before CALL-E: ACC-1004 (missing_phone), ACC-1008 (do_not_call)." After about 3 seconds the Activity panel fills with results.',
+   say: "The system read 8 customers. Two were never called: one has no phone number, and one asked not to be called. My code checks that before anything reaches CALL-E.",
+   why: "CALL-E only makes calls. Deciding who may be called is a business rule, so it lives in our code, where it can be tested."},
+  {sec: "Section 4A · Voice agent", title: "Show how the agent is configured", tab: "results", target: "#calls",
+   do: 'In the <b>Calls</b> table, click the first <b>ACC-1001</b> row. In the window that opens, click <b>"Request sent to CALL-E (task prompt + schema)"</b>.',
+   see: 'A long "task" text (the agent\'s instructions) and a "result_schema" (the form it fills in).',
+   say: "This is the whole agent configuration. With CALL-E you don't draw a call script. You give it a goal and rules, which is the task, and the exact form of the answer you need, which is the schema. Every answer is a fixed list of options that includes 'unknown', so it can't make things up.",
+   why: 'Task = what the agent should say and must never say. Schema = the form it fills in after the call (outcome, payment date, how sure). Close the window with "Close".'},
+  {sec: "Section 4A · Voice agent", title: "Show an exception: the customer wants a human", tab: "demo", target: '[data-sim="human_requested"]',
+   do: 'Under "Simulate one conversation", click <b>Simulate</b> on <b>Asks for a human</b>. Wait 3 seconds.',
+   see: 'Activity: "human_requested -> CRM callback_requested". In Results, the CRM tasks get a high-priority human_callback.',
+   say: "Here the customer asks for a person. The agent doesn't argue: it asks when to call back, and the CRM gets a high-priority task for a human agent.",
+   why: "The assignment asks for at least one exception. Others are ready too: wrong person answers, already paid, no answer."},
+  {sec: "Section 4B · Integration", title: "Explain the flow with the diagram", tab: "demo",
+   do: 'Open <a href="/learn#map" target="_blank" rel="noopener">Learn the project → System diagram</a> (new tab). Follow the numbers 1 to 6.',
+   see: "A diagram: Mock CRM on the left, our orchestrator in the middle, CALL-E and the customer on the right.",
+   say: "One: read the customer. Two: ask CALL-E to call. Three: the conversation. Four: CALL-E tells us it's done. Five: we double-check the result with CALL-E. Six: we write it to the CRM, and it only counts once the CRM confirms.",
+   why: 'Orchestrator = the program in the middle that I built. "Webhook" = CALL-E calling our program back when a call ends.'},
+  {sec: "Section 4B · Integration", title: "Show input, output and field mapping", tab: "results", target: "#calls",
+   do: 'Click the <b>ACC-1001</b> row again. Compare <b>"What CALL-E extracted"</b> with <b>"What the CRM stored"</b>.',
+   see: "promise_date 2026-10-09 and payment_channel spei_transfer on both sides. The CRM also has a verify_payment task due 2026-10-10.",
+   say: "The input is the customer record: name, amount, due date. The output: CALL-E extracted 'will pay on the 9th by bank transfer', and the CRM got the status 'promise to pay' plus a task to check the payment arrived on the 10th. Each field has a fixed place in the CRM; the full table is in my integration document.",
+   why: "Field mapping = which piece of information goes into which CRM column. Success is confirmed only when the CRM answers '201 created'."},
+  {sec: "Section 4B · Integration", title: "Show what happens with missing data", tab: "results", target: "#accounts",
+   do: "Look at the <b>CRM: accounts</b> table, row <b>ACC-1004</b>. Then the tasks table: <b>fix_contact_data</b>.",
+   see: "ACC-1004 has phone = missing and status contact_data_missing.",
+   say: "When data is missing, we don't call and we don't fail silently. The data team gets a task to fix the phone number.",
+   why: "The assignment asks what happens when data is missing. This is the answer."},
+  {sec: "Section 4B + Test T3 · Failure", title: "Break the CRM on purpose", tab: "demo", target: '[data-action="outage"]',
+   do: "Click <b>Run outage scenario</b>. Wait 5 seconds, then open the <b>Results</b> tab.",
+   see: 'Top chip "CRM: outage:error". The newest ACC-1001 call shows crm_sync_failed. The Outbox has 1 item, pending.',
+   say: "I take the customer's CRM down while a call is in progress. The call finished, but the CRM couldn't save it. The system says so, 'failed, pending retry', instead of pretending it worked. The result waits safely in a queue called the outbox.",
+   why: 'Outbox = a waiting list of results the CRM hasn\'t confirmed yet. "No false success" is the key point of this test.'},
+  {sec: "Section 4B + Test T3 · Recovery", title: "Bring the CRM back", tab: "demo", target: '[data-action="restore"]',
+   do: "Click <b>Restore CRM + retry outbox</b>.",
+   see: '"CRM restored. Outbox retry: 1/1 delivered, and the CRM confirmed each one." The call turns to synced.',
+   say: "Now the CRM is back. The saved result is delivered exactly once, with no duplicate and nothing lost.",
+   why: "If CALL-E sends the same notification twice, the system recognises it and doesn't create a second task."},
+  {sec: "Section 4C · Tests", title: "Run the remaining required tests", tab: "demo", target: "#scenarios",
+   do: 'Click <b>Simulate</b> on <b>Firm promise to pay</b> (Test 1) and on <b>Vague answer</b> (Test 2). Tests 3 and 4 you already did.',
+   see: "Test 1 → promise_to_pay. Test 2 → needs_review with a confirm_promise task for a human.",
+   say: "The four required tests: a normal call, an unclear answer, an integration failure, and a customer exception. Look at the unclear one: 'end of the month, if I get paid' is not recorded as a promise. It goes to a human to confirm a real date.",
+   why: "A vague promise counted as real would make the company's forecasts wrong. Better honest than optimistic."},
+  {sec: "Section 4C · Improvement", title: "Show you improved after testing", tab: "demo",
+   do: 'In a second Terminal window (inside the project folder), type these one at a time:<br><code>git log --oneline</code><br><code>cat docs/evidence/v1_test_run.txt</code><br><code>cat docs/evidence/v2_test_run.txt</code>',
+   see: "The v1 file shows 3 failed tests (including the required T2 and T3). The v2 file shows all passed.",
+   say: "My first version failed two required tests. It treated 'end of the month, if I get paid' as a promise, and when the CRM was down it still said 'saved'. I fixed both, retested, and everything passes. The git history shows both versions.",
+   why: "The assignment explicitly asks for one improvement after testing plus a retest. This is it."},
+  {sec: "Section 4C · Live call (optional)", title: "A real call to your phone", tab: "live", target: '[data-action="savekey"]',
+   do: 'In this tab: 1) paste your CALL-E key and click <b>Save &amp; verify key</b>; 2) choose your country and type your number; 3) tick the box and click <b>Call me now</b>; 4) answer and follow a script from "What to say on the call".',
+   see: '"API key accepted", then the phone rings. When you hang up, "Finished. Outcome … → CRM …" with an Open transcript link.',
+   say: "Now a real call through CALL-E. I'll play the customer, and you'll see the result land in the CRM the same way.",
+   why: 'If it fails, that\'s fine too. Say: "Live calls depend on the international number for Mexico, which is exactly the pilot risk I flagged."'},
+  {sec: "Section 5 · Decisions", title: "Explain your three main decisions", tab: "demo",
+   do: "Nothing to click. Say the three decisions. Details are in docs/05-decision-log.md.",
+   see: "—",
+   say: "One: the agent reports facts, and my code decides what they mean, because money decisions shouldn't depend on a prompt. Two: I double-check every result with CALL-E and only count CRM-confirmed writes, because notifications can be faked or the CRM can fail. Three: I kept the scope small, one reminder with no negotiation, because small and well-tested beats big and fragile.",
+   why: "For each one they may ask: the problem, the alternatives, why, the evidence, the trade-off, and what would change your mind. All are in the decision log."},
+  {sec: "Section 6 · Close", title: "Answer the four closing questions", tab: "trouble", target: '[data-action="checks"]',
+   do: 'Say the four answers. If anything breaks during the demo, come to this tab and click <b>Run checks</b>.',
+   see: "A table of health checks, each with a fix.",
+   say: "Ready for a pilot? Yes for a small, controlled pilot after one or two weeks of internal test calls, but not for full volume yet. It still needs a local Mexican phone number, the customer's compliance sign-off, and their real CRM. I'd watch right-party contact, the share of unclear answers, extraction accuracy, and above all whether promised payments actually arrive, compared against a group that only gets an SMS.",
+   why: "Full answers are in docs/06-presentation.md, slide 4 and 5."},
+];
+const GLOSSARY = [
+  ["CALL-E", "AI Rudder's product that makes phone calls with an AI voice and reports what was said."],
+  ["API", "A way for two programs to talk. Our program asks CALL-E's API to make calls."],
+  ["API key", "A password for programs. It proves the requests come from your CALL-E account. Keep it secret."],
+  ["CRM", "The company's customer database. Here it's a fake one (port 8001) that I built."],
+  ["Orchestrator", "Our program in the middle (port 8000). It decides who to call, asks CALL-E, and writes the result to the CRM."],
+  ["Simulated / live", "Simulated = scripted conversations, nothing is dialed. Live = a real call to a real phone."],
+  ["Task (prompt)", "The written instructions CALL-E's agent follows during the call."],
+  ["Result schema", "The form the agent fills in after the call: outcome, payment date, how sure, the customer's exact words."],
+  ["Webhook", "CALL-E calling our program back to say a call finished."],
+  ["Outbox", "A waiting list of results the CRM hasn't confirmed yet. Nothing in it is lost."],
+  ["Idempotency key", "A unique ID per call request, so retrying never calls the same person twice."],
+  ["E.164", "International phone format: + country code + number, no spaces (e.g. +525512345678)."],
+  ["127.0.0.1 / ports", "127.0.0.1 means your own computer. 8000 and 8001 are the two programs running on it."],
+  ["Status codes", "200/201 = OK or created, 202 = accepted but not finished, 401 = key not accepted, 404 = not found, 503 = service down."],
+];
+let gi = 0;
+function renderGuide() {
+  const g = GUIDE[gi];
+  $("#g-sec").textContent = `Step ${gi + 1} of ${GUIDE.length} · ${g.sec}`;
+  $("#g-title").textContent = g.title;
+  $("#g-do").innerHTML = g.do; $("#g-see").innerHTML = g.see; $("#g-say").textContent = g.say; $("#g-why").innerHTML = g.why;
+  $("#g-prev").disabled = gi === 0; $("#g-next").disabled = gi === GUIDE.length - 1;
+  $("#g-show").hidden = !g.target;
+  $("#g-dots").innerHTML = GUIDE.map((_, i) => `<button class="${i === gi ? "on" : i < gi ? "done" : ""}" data-gi="${i}" aria-label="Step ${i + 1}">${i + 1}</button>`).join("");
+  document.querySelectorAll("[data-gi]").forEach(b => b.addEventListener("click", () => { gi = +b.dataset.gi; goStep(); }));
+  try { localStorage.setItem("guideStep", gi); } catch {}
+}
+function highlight() {
+  const g = GUIDE[gi];
+  if (g.tab) tab(g.tab);
+  const el = g.target && document.querySelector(g.target);
+  if (!el) return;
+  el.scrollIntoView({behavior: "smooth", block: "center"});
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  setTimeout(() => el.classList.remove("flash"), 3200);
+}
+function goStep() { renderGuide(); const g = GUIDE[gi]; if (g.tab) tab(g.tab); }
+$("#g-prev").addEventListener("click", () => { if (gi > 0) { gi--; goStep(); } });
+$("#g-next").addEventListener("click", () => { if (gi < GUIDE.length - 1) { gi++; goStep(); } });
+$("#g-show").addEventListener("click", highlight);
+$("#gloss").innerHTML = GLOSSARY.map(([t, d]) => `<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join("");
+function setToggle(id, on, label, apply) {
+  const b = $(id); b.setAttribute("aria-pressed", on); b.textContent = `${label}: ${on ? "on" : "off"}`; apply(on);
+}
+function initToggles() {
+  let guideOn = true, notesOn = true;
+  try { guideOn = localStorage.getItem("guideOn") !== "0"; notesOn = localStorage.getItem("notesOn") !== "0"; gi = Math.min(+(localStorage.getItem("guideStep") || 0), GUIDE.length - 1); } catch {}
+  const applyGuide = on => { $("#guide").hidden = !on; try { localStorage.setItem("guideOn", on ? "1" : "0"); } catch {} };
+  const applyNotes = on => { document.body.classList.toggle("notes", on); try { localStorage.setItem("notesOn", on ? "1" : "0"); } catch {} };
+  setToggle("#toggle-guide", guideOn, "Presenter guide", applyGuide);
+  setToggle("#toggle-notes", notesOn, '"Say this" notes', applyNotes);
+  $("#toggle-guide").addEventListener("click", () => { guideOn = !guideOn; setToggle("#toggle-guide", guideOn, "Presenter guide", applyGuide); });
+  $("#toggle-notes").addEventListener("click", () => { notesOn = !notesOn; setToggle("#toggle-notes", notesOn, '"Say this" notes', applyNotes); });
+  renderGuide();
+}
+
 // ---------- init
 (async function init() {
+  initToggles();
   const st = (await api("GET", "/api/status")).data;
   const opt = c => `<option value="${esc(c.code)}">${esc(c.name)} (${esc(c.calling_code)})${c.supported ? "" : " · not on CALL-E's list"}</option>`;
   $("#country").innerHTML =
@@ -466,7 +681,7 @@ async function refresh() {
   countryNote();
   if (saved.phone) $("#phone").value = saved.phone;
   $("#tz").value = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Mexico_City";
-  if (saved.tab && $("#tab-" + saved.tab)) tab(saved.tab);
+  if ($("#guide").hidden && saved.tab && $("#tab-" + saved.tab)) tab(saved.tab); else if (GUIDE[gi].tab) tab(GUIDE[gi].tab);
   await loadScenarios();
   await refresh();
   setInterval(refresh, 3000);

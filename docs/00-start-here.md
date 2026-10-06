@@ -25,6 +25,9 @@ Leave that terminal open; Ctrl+C stops everything.
 
 ## 2. Rehearse the demo (no CALL-E account needed)
 
+Tip: the **Presenter guide** at the top of the control center walks you through every step: what to click, what you
+should see, what to say, and what it means in plain words. There's also a glossary.
+
 On the control center's **Demo** tab:
 
 1. **Reset everything.**

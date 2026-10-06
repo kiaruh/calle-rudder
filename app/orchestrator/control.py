@@ -86,7 +86,29 @@ class CallMeIn(BaseModel):
     consent: bool = False
 
 
-def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable, sync_call: Callable) -> None:
+def mask_key(key: str | None) -> str:
+    return f"{key[:10]}…{key[-4:]}" if key and len(key) > 16 else "****"
+
+
+def clean_key(raw: str) -> str:
+    """Accept exactly one token. Pasting other text (e.g. a log line) is the most common mistake."""
+    key = raw.strip()
+    if key.lower().startswith("bearer "):
+        key = key[7:].strip()
+    if not key:
+        raise HTTPException(422, "Paste your CALL-E API key first.")
+    if any(ch.isspace() for ch in key):
+        raise HTTPException(422, "This is not an API key: it contains spaces or line breaks, so other text was probably "
+                                 "pasted. Copy the key again from the CALL-E dashboard (API keys page) and paste only the key.")
+    if len(key) < 20 or len(key) > 400:
+        raise HTTPException(422, f"This doesn't look like a CALL-E API key ({len(key)} characters). Copy the full key again.")
+    if not all(ch.isalnum() or ch in "_-." for ch in key):
+        raise HTTPException(422, "This doesn't look like a CALL-E API key (unexpected characters). Copy the full key again.")
+    return key
+
+
+def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable, sync_call: Callable,
+             gateway_factory: Callable | None = None) -> None:
     from .main import CampaignIn  # local import to avoid a cycle
 
     def ts() -> str:
@@ -121,6 +143,7 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
         return {
             "mode": rt.gw.mode,
             "api_key_set": bool(rt.api_key),
+            "api_key_hint": mask_key(rt.api_key) if rt.api_key else None,
             "webhook": rt.webhook_url() or "polling (no PUBLIC_WEBHOOK_URL)",
             "crm": "unreachable" if crm_mode == "unreachable" else ("healthy" if crm_mode == "none" else f"outage:{crm_mode}"),
             "allowed_phones": [agent_config.mask_phone(p) for p in sorted(getattr(rt.live, "allowed", set()))],
@@ -220,19 +243,23 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
 
     @app.post("/api/live/key")
     def set_key(body: KeyIn) -> dict[str, Any]:
-        key = body.api_key.strip()
-        if len(key) < 10:
-            raise HTTPException(422, "That doesn't look like an API key.")
+        key = clean_key(body.api_key)
         try:
             allowed = set(getattr(rt.live, "allowed", set())) | {
                 p.strip() for p in os.environ.get("CALLE_ALLOWED_PHONES", "").split(",") if p.strip()}
-            rt.live = LiveCalleGateway(key, allowed)
+            candidate = (gateway_factory or LiveCalleGateway)(key, allowed)
         except ImportError as exc:
             raise HTTPException(500, "The calle-ai package is not installed. Run ./setup.sh again.") from exc
-        rt.api_key = key
-        check = rt.live.check_key()
-        rt.log("ok" if check["ok"] else "error", f"CALL-E API key saved in memory: {check['detail']}")
-        return check
+        check = candidate.check_key()
+        if check.get("rejected"):
+            # Keep the previous working key; a rejected key never replaces it.
+            if rt.api_key:
+                check["detail"] += f" Your previous key ({mask_key(rt.api_key)}) is still in use."
+            rt.log("error", f"CALL-E key {mask_key(key)} rejected; not saved")
+            return {**check, "key": mask_key(key), "in_use": mask_key(rt.api_key) if rt.api_key else None}
+        rt.live, rt.api_key = candidate, key
+        rt.log("ok" if check["ok"] else "warn", f"CALL-E API key {mask_key(key)} saved in memory: {check['detail']}")
+        return {**check, "key": mask_key(key), "in_use": mask_key(key)}
 
     @app.post("/api/live/test-key")
     def test_key() -> dict[str, Any]:

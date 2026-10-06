@@ -7,6 +7,10 @@ This follows the assignment's numbering. Every step has three parts:
 
 Do it once on your own, then do it again out loud as a rehearsal.
 
+**Easiest way to follow this:** the control center (http://127.0.0.1:8000) has a **Presenter guide** panel at the top with the same
+steps. Use Next/Back, and "Show me where" switches tab and highlights the button. Each card also has a "Say this" note.
+Turn both off with the buttons in the header once you know the flow.
+
 ---
 
 ## Step 0: Get the project running (once, ~5 min)

@@ -72,11 +72,14 @@ class LiveCalleGateway:
             self.get_call("call_keycheck_does_not_exist")
         except GatewayError as exc:
             if exc.status_code == 404:
-                return {"ok": True, "detail": "API key accepted (test read returned 404 Not Found, as expected)."}
+                return {"ok": True, "rejected": False,
+                        "detail": "API key accepted. CALL-E recognised the key (it answered 'call not found' for a test "
+                                  "call id, which is the expected answer for a valid key)."}
             if exc.status_code in (401, 403):
-                return {"ok": False, "detail": f"API key rejected ({exc.status_code}). Create a new key in the CALL-E dashboard."}
-            return {"ok": False, "detail": f"Could not verify the key: {exc}"}
-        return {"ok": True, "detail": "API key accepted."}
+                return {"ok": False, "rejected": True,
+                        "detail": f"CALL-E rejected this key ({exc.status_code}). Copy the key again from the CALL-E dashboard."}
+            return {"ok": False, "rejected": False, "detail": f"Could not verify the key (network or service problem): {exc}"}
+        return {"ok": True, "rejected": False, "detail": "API key accepted."}
 
     @staticmethod
     def _wrap(fn, op: str) -> dict[str, Any]:
