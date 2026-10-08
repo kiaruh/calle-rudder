@@ -108,6 +108,15 @@ body.notes .speak{display:block}
 .gloss dt{font-weight:600;margin-top:6px} .gloss dd{margin:0 0 0 0;color:var(--muted);font-size:14px}
 .gloss{columns:2 320px;column-gap:24px} .gloss div{break-inside:avoid}
 .toggle{font:600 12px var(--mono);padding:6px 10px;border-radius:999px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+.gcheck{display:block;font-size:13px;margin-top:8px;padding:5px 8px;border-radius:6px}
+.gcheck.ok{color:var(--good);background:var(--good-soft);font-weight:600}
+.gcheck.wait{color:var(--muted);background:var(--bg)}
+.dots button.okd{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.ghint{font:12px var(--mono);color:var(--muted)}
+#g-mini{position:fixed;right:16px;bottom:16px;z-index:30;background:var(--surface);border:2px solid var(--accent);border-radius:10px;
+  padding:10px 12px;display:flex;gap:10px;align-items:center;box-shadow:0 4px 16px rgb(0 0 0 / .18);max-width:min(520px,calc(100vw - 32px))}
+#g-mini .t{font-size:13px;font-weight:600;min-width:0}
+#g-mini .t small{display:block;font:600 10px var(--mono);color:var(--accent);letter-spacing:.05em}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.flash{animation:none}}
 </style>
 </head>
@@ -142,16 +151,28 @@ body.notes .speak{display:block}
     </div>
     <div class="guide-grid">
       <div class="gbox"><b class="l">1. Do this</b><span id="g-do"></span></div>
-      <div class="gbox"><b class="l">2. You should see</b><span id="g-see"></span></div>
+      <div class="gbox"><b class="l">2. You should see</b><span id="g-see"></span><span class="gcheck" id="g-check" hidden></span></div>
       <div class="gbox say"><b class="l">3. Say out loud</b><p id="g-say"></p></div>
       <div class="gbox why"><b class="l">What this means (plain words)</b><span id="g-why"></span></div>
     </div>
     <div class="row" style="justify-content:space-between">
-      <div class="dots" id="g-dots" aria-label="Steps"></div>
-      <details><summary class="muted" style="cursor:pointer">Glossary: words you'll hear</summary>
-        <dl class="gloss" id="gloss"></dl></details>
+      <div class="row">
+        <div class="dots" id="g-dots" aria-label="Steps"></div>
+        <span class="ghint">← → keys also work · green = result confirmed</span>
+      </div>
+      <div class="row">
+        <button class="toggle" id="g-restart" type="button">Start over</button>
+        <details><summary class="muted" style="cursor:pointer">Glossary: words you'll hear</summary>
+          <dl class="gloss" id="gloss"></dl></details>
+      </div>
     </div>
   </div>
+</div>
+
+<div id="g-mini" hidden>
+  <span class="t" id="g-mini-t"></span>
+  <button class="act secondary" id="gm-show">Show me</button>
+  <button class="act" id="gm-next">Next →</button>
 </div>
 
 <div class="layout">
@@ -491,6 +512,8 @@ async function refresh() {
   const r = await api("GET", "/api/overview");
   if (!r.ok) return;
   const d = r.data, st = d.status;
+  lastOverview = d;
+  if (!$("#guide").hidden) updateGuideCheck();
   $("#chips").innerHTML = [
     `<span class="chip ${st.mode === "live" ? "bad" : "ok"}">CALL-E: ${esc(st.mode.toUpperCase())}</span>`,
     `<span class="chip ${st.crm === "healthy" ? "ok" : "bad"}">CRM: ${esc(st.crm)}</span>`,
@@ -618,16 +641,65 @@ const GLOSSARY = [
   ["127.0.0.1 / ports", "127.0.0.1 means your own computer. 8000 and 8001 are the two programs running on it."],
   ["Status codes", "200/201 = OK or created, 202 = accepted but not finished, 401 = key not accepted, 404 = not found, 503 = service down."],
 ];
-let gi = 0;
+// Live verification: for steps with an observable result, the "You should see" box turns green
+// automatically once the orchestrator/CRM state really shows it. Keyed by step index.
+const CHECKS = {
+  0: d => d.calls.length === 0 && (d.tasks || []).length === 0 &&
+    "Confirmed: clean slate. No calls and no tasks yet.",
+  4: d => d.calls.length >= 8 && d.calls.filter(c => String(c.state).startsWith("blocked")).length >= 2 &&
+    `Confirmed: ${d.calls.length} customers processed, ${d.calls.filter(c => String(c.state).startsWith("blocked")).length} blocked before CALL-E.`,
+  5: () => $("#detail").open && $("#dlg-title").textContent.includes("ACC-") &&
+    "Confirmed: the call window is open. Find \"Request sent to CALL-E\" on its right side.",
+  6: d => d.calls.some(c => c.outcome === "human_requested") &&
+    "Confirmed: the 'asks for a human' call is recorded, and the CRM got a high-priority callback task.",
+  8: () => $("#detail").open &&
+    "Confirmed: the call window is open. Compare the two JSON boxes on the right.",
+  9: d => (d.accounts || []).some(a => a.status === "contact_data_missing") &&
+    "Confirmed: ACC-1004 shows contact_data_missing, and data_quality has a fix task.",
+  10: d => (d.outbox.some(o => o.state === "pending") || d.calls.some(c => c.state === "crm_sync_failed")) &&
+    "Confirmed: the failure is visible. A call is crm_sync_failed and the outbox holds the result.",
+  11: d => d.status.crm === "healthy" && d.outbox.length > 0 && d.outbox.every(o => o.state === "synced") &&
+    !d.calls.some(c => c.state === "crm_sync_failed") &&
+    "Confirmed: CRM healthy again and every outbox item delivered (synced).",
+  12: d => d.calls.some(c => c.crm_status === "promise_to_pay") && d.calls.some(c => c.crm_status === "needs_review") &&
+    "Confirmed: both results are on screen. A firm promise, and a vague answer routed to needs_review.",
+  14: d => d.status.api_key_set &&
+    "Confirmed: a CALL-E key is saved. You can place the live call.",
+};
+let gi = 0, lastOverview = null, guideBoxVisible = true;
+let gDone = new Set();
+try { gDone = new Set(JSON.parse(localStorage.getItem("guideDone") || "[]")); } catch {}
+function renderDots() {
+  $("#g-dots").innerHTML = GUIDE.map((_, i) =>
+    `<button class="${i === gi ? "on" : gDone.has(i) ? "okd" : i < gi ? "done" : ""}" data-gi="${i}"
+      aria-label="Step ${i + 1}${gDone.has(i) ? " (result confirmed)" : ""}">${gDone.has(i) && i !== gi ? "✓" : i + 1}</button>`).join("");
+  document.querySelectorAll("[data-gi]").forEach(b => b.addEventListener("click", () => { gi = +b.dataset.gi; goStep(true); }));
+}
+function updateGuideCheck() {
+  const el = $("#g-check"), fn = CHECKS[gi];
+  if (!fn) { el.hidden = true; return; }
+  let msg = false;
+  try { msg = fn(lastOverview || {calls: [], outbox: [], tasks: [], accounts: [], status: {}}); } catch {}
+  el.hidden = false;
+  if (msg) {
+    el.className = "gcheck ok"; el.textContent = "✓ " + msg;
+    if (!gDone.has(gi)) { gDone.add(gi); try { localStorage.setItem("guideDone", JSON.stringify([...gDone])); } catch {} renderDots(); }
+  } else {
+    el.className = "gcheck wait";
+    el.textContent = "◌ Not done yet. This line turns green by itself when the result appears.";
+  }
+}
 function renderGuide() {
   const g = GUIDE[gi];
   $("#g-sec").textContent = `Step ${gi + 1} of ${GUIDE.length} · ${g.sec}`;
   $("#g-title").textContent = g.title;
   $("#g-do").innerHTML = g.do; $("#g-see").innerHTML = g.see; $("#g-say").textContent = g.say; $("#g-why").innerHTML = g.why;
   $("#g-prev").disabled = gi === 0; $("#g-next").disabled = gi === GUIDE.length - 1;
-  $("#g-show").hidden = !g.target;
-  $("#g-dots").innerHTML = GUIDE.map((_, i) => `<button class="${i === gi ? "on" : i < gi ? "done" : ""}" data-gi="${i}" aria-label="Step ${i + 1}">${i + 1}</button>`).join("");
-  document.querySelectorAll("[data-gi]").forEach(b => b.addEventListener("click", () => { gi = +b.dataset.gi; goStep(); }));
+  $("#g-show").hidden = !g.target; $("#gm-show").hidden = !g.target;
+  $("#gm-next").disabled = gi === GUIDE.length - 1;
+  $("#g-mini-t").innerHTML = `<small>STEP ${gi + 1} OF ${GUIDE.length}</small>${esc(g.title)}`;
+  renderDots();
+  updateGuideCheck();
   try { localStorage.setItem("guideStep", gi); } catch {}
 }
 function highlight() {
@@ -639,10 +711,33 @@ function highlight() {
   el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   setTimeout(() => el.classList.remove("flash"), 3200);
 }
-function goStep() { renderGuide(); const g = GUIDE[gi]; if (g.tab) tab(g.tab); }
-$("#g-prev").addEventListener("click", () => { if (gi > 0) { gi--; goStep(); } });
-$("#g-next").addEventListener("click", () => { if (gi < GUIDE.length - 1) { gi++; goStep(); } });
+// flash=true on explicit navigation: switch tab AND point at the thing to click.
+function goStep(flash) {
+  renderGuide();
+  const g = GUIDE[gi];
+  if (g.tab) tab(g.tab);
+  if (flash && g.target) setTimeout(highlight, 150);
+}
+$("#g-prev").addEventListener("click", () => { if (gi > 0) { gi--; goStep(true); } });
+$("#g-next").addEventListener("click", () => { if (gi < GUIDE.length - 1) { gi++; goStep(true); } });
+$("#gm-next").addEventListener("click", () => { if (gi < GUIDE.length - 1) { gi++; goStep(true); } });
 $("#g-show").addEventListener("click", highlight);
+$("#gm-show").addEventListener("click", highlight);
+$("#g-restart").addEventListener("click", () => {
+  gDone.clear(); try { localStorage.setItem("guideDone", "[]"); } catch {}
+  gi = 0; goStep(false); window.scrollTo({top: 0, behavior: "smooth"});
+});
+// Arrow keys move through the steps (unless you're typing or a dialog is open).
+document.addEventListener("keydown", e => {
+  if ($("#guide").hidden || $("#detail").open) return;
+  if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if (e.key === "ArrowRight" && gi < GUIDE.length - 1) { e.preventDefault(); gi++; goStep(true); }
+  else if (e.key === "ArrowLeft" && gi > 0) { e.preventDefault(); gi--; goStep(true); }
+});
+// Follow-along bar: appears only while the guide box is scrolled out of view.
+function syncMini() { $("#g-mini").hidden = guideBoxVisible || $("#guide").hidden; }
+new IntersectionObserver(entries => { guideBoxVisible = entries[0].isIntersecting; syncMini(); })
+  .observe(document.querySelector(".guide-box"));
 $("#gloss").innerHTML = GLOSSARY.map(([t, d]) => `<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join("");
 function setToggle(id, on, label, apply) {
   const b = $(id); b.setAttribute("aria-pressed", on); b.textContent = `${label}: ${on ? "on" : "off"}`; apply(on);
@@ -650,7 +745,7 @@ function setToggle(id, on, label, apply) {
 function initToggles() {
   let guideOn = true, notesOn = true;
   try { guideOn = localStorage.getItem("guideOn") !== "0"; notesOn = localStorage.getItem("notesOn") !== "0"; gi = Math.min(+(localStorage.getItem("guideStep") || 0), GUIDE.length - 1); } catch {}
-  const applyGuide = on => { $("#guide").hidden = !on; try { localStorage.setItem("guideOn", on ? "1" : "0"); } catch {} };
+  const applyGuide = on => { $("#guide").hidden = !on; syncMini(); try { localStorage.setItem("guideOn", on ? "1" : "0"); } catch {} };
   const applyNotes = on => { document.body.classList.toggle("notes", on); try { localStorage.setItem("notesOn", on ? "1" : "0"); } catch {} };
   setToggle("#toggle-guide", guideOn, "Presenter guide", applyGuide);
   setToggle("#toggle-notes", notesOn, '"Say this" notes', applyNotes);

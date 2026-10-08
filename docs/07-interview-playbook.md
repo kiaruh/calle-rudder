@@ -8,8 +8,12 @@ This follows the assignment's numbering. Every step has three parts:
 Do it once on your own, then do it again out loud as a rehearsal.
 
 **Easiest way to follow this:** the control center (http://127.0.0.1:8000) has a **Presenter guide** panel at the top with the same
-steps. Use Next/Back, and "Show me where" switches tab and highlights the button. Each card also has a "Say this" note.
-Turn both off with the buttons in the header once you know the flow.
+steps. Pressing **Next** (or the → key) switches to the right tab and briefly highlights the exact button to click.
+Steps with a visible result have a live check in the "You should see" box: it turns **green with a ✓** by itself once the
+system really shows that result, so you know you did the step correctly; a verified step's dot turns into a green ✓.
+When you scroll away, a small **follow-along bar** at the bottom right keeps the current step and the Next button in view.
+**Start over** resets the walkthrough for another rehearsal. Each demo card also has a "Say this" note. Turn the guide and
+the notes off with the buttons in the header once you know the flow.
 
 ---
 

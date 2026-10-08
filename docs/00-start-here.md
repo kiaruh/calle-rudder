@@ -26,7 +26,10 @@ Leave that terminal open; Ctrl+C stops everything.
 ## 2. Rehearse the demo (no CALL-E account needed)
 
 Tip: the **Presenter guide** at the top of the control center walks you through every step: what to click, what you
-should see, what to say, and what it means in plain words. There's also a glossary.
+should see, what to say, and what it means in plain words. Pressing Next highlights the button to click, a green ✓
+appears automatically when a step's result is really on screen, arrow keys (← →) move between steps, and a small
+follow-along bar keeps the current step visible while you scroll. "Start over" resets it for another rehearsal.
+There's also a glossary.
 
 On the control center's **Demo** tab:
 
