@@ -73,6 +73,8 @@ svg.dg{display:block;width:100%;height:auto;min-width:640px;color:var(--fg);font
   <a href="#start">Start here</a>
   <a href="#calle">What CALL-E is</a>
   <a href="#dashboard">CALL-E dashboard: what to do</a>
+  <a href="#ownership">Who does what, where</a>
+  <a href="#assembly">Goal, script &amp; call list</a>
   <a href="#repo">What this repo does</a>
   <a href="#map">System diagram</a>
   <a href="#layers">Who decides what</a>
@@ -124,6 +126,125 @@ svg.dg{display:block;width:100%;height:auto;min-width:640px;color:var(--fg);font
   </ol></div>
   <p class="callout">These steps follow CALL-E's public README; the dashboard's exact labels may differ. Only countries on CALL-E's
     supported list can be called (US, CA, MX, ES, BR, GB, DE, IN, and others). The selector on the "Call my phone" tab lists them.</p>
+  <p><b>That is the complete list.</b> You will not build the campaign, type the goal, or upload a call list in the dashboard:
+    for this project, all of that reaches CALL-E through the API, from this repo's code. The next two sections show exactly where.</p>
+</section>
+
+
+<section id="ownership">
+  <span class="eyebrow">Your map</span>
+  <h2>Who does what, where</h2>
+  <div class="two">
+    <div class="box"><h3>On the CALL-E website</h3>
+      <p class="muted">heycall-e.com · dashboard.heycall-e.com</p>
+      <ul>
+        <li>Create the account and log in</li>
+        <li>Create (or revoke) the <b>API key</b> — the only thing this project needs from the dashboard</li>
+        <li>Watch <b>credits and usage</b> under billing after live calls</li>
+        <li>Optional: place one manual call from their web app, to feel the product as an end user</li>
+      </ul>
+      <p class="muted">Nothing else. No campaign builder, no goal typing, no list upload for this integration.</p></div>
+    <div class="box"><h3>On localhost (the UIs)</h3>
+      <p class="muted">Control center :8000 · mock CRM :8001</p>
+      <ul>
+        <li><b>Demo tab:</b> reset, run the campaign, simulate each conversation, break and restore the CRM</li>
+        <li><b>Call my phone:</b> paste the key, enter your number, place one real call</li>
+        <li><b>Results:</b> transcripts, extracted results, CRM records</li>
+        <li><b>Troubleshoot:</b> health checks with fixes</li>
+        <li><b>CRM :8001:</b> the customer database the calls read from and write to</li>
+      </ul></div>
+    <div class="box"><h3>In files &amp; terminal (you, the FDE)</h3>
+      <p class="muted">What you change when the customer asks for changes</p>
+      <ul>
+        <li><b>Call list:</b> <code>data/seed_accounts.json</code> (then Reset)</li>
+        <li><b>Goal &amp; script:</b> <code>app/orchestrator/agent_config.py</code></li>
+        <li><b>Policies:</b> <code>guards.py</code> (who/when), <code>outcomes.py</code> (what results mean)</li>
+        <li><b>Settings:</b> <code>.env</code> (key, calling window)</li>
+        <li>Every button has a <code>curl</code> equivalent for scripting</li>
+      </ul></div>
+  </div>
+  <h3>How the system talks to you, and you to it</h3>
+  <div class="tbl"><table>
+    <tr><th>Direction</th><th>Channel</th><th>What it tells you / does</th></tr>
+    <tr><td rowspan="4">System → you</td><td>Activity feed (right panel)</td><td>Every action the orchestrator just took, newest first — your live narration during the demo</td></tr>
+    <tr><td>Results tab + call window</td><td>Per call: transcript, what CALL-E extracted, what the rules decided, what the CRM stored</td></tr>
+    <tr><td>Presenter guide ✓ / outbox / chips</td><td>Green ✓ = your step really worked; outbox = results waiting for the CRM; chips = system health at a glance</td></tr>
+    <tr><td>Troubleshoot checks</td><td>What is broken and the exact fix</td></tr>
+    <tr><td rowspan="2">You → system</td><td>Buttons (or their curl commands)</td><td>Start campaigns, simulate, inject failures, retry, place a live call</td></tr>
+    <tr><td>The files above</td><td>Change the list, the script, the policies — restart <code>./run.sh</code> to apply</td></tr>
+  </table></div>
+</section>
+
+<section id="assembly">
+  <span class="eyebrow">The content pipeline</span>
+  <h2>How the goal, strategy, script and call list become a phone call</h2>
+  <figure>
+    <div class="scroll">
+    <svg class="dg" viewBox="0 0 940 300" role="img" aria-label="Three inputs — the CRM call list, the script template in agent_config.py and the result schema — are merged per customer into one CALL-E request; CALL-E then improvises the live conversation within those rules and returns a structured result.">
+      <defs><marker id="asm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+      <rect class="ext" x="20" y="20" width="240" height="72" rx="8"/>
+      <text class="t" x="140" y="44" text-anchor="middle">1 · Call list</text>
+      <text class="s" x="140" y="62" text-anchor="middle">CRM accounts (:8001)</text>
+      <text class="s" x="140" y="78" text-anchor="middle">seed: data/seed_accounts.json</text>
+      <rect class="box" x="20" y="112" width="240" height="72" rx="8"/>
+      <text class="t" x="140" y="136" text-anchor="middle">2 · Goal + script template</text>
+      <text class="s" x="140" y="154" text-anchor="middle">agent_config.build_task()</text>
+      <text class="s" x="140" y="170" text-anchor="middle">steps, exceptions, NEVERs</text>
+      <rect class="box" x="20" y="204" width="240" height="72" rx="8"/>
+      <text class="t" x="140" y="228" text-anchor="middle">3 · Answer form</text>
+      <text class="s" x="140" y="246" text-anchor="middle">RESULT_SCHEMA</text>
+      <text class="s" x="140" y="262" text-anchor="middle">outcomes list + unknown</text>
+      <polyline class="ln" points="260,56 310,56 310,128 352,128" marker-end="url(#asm)"/>
+      <line class="ln" x1="260" y1="148" x2="352" y2="148" marker-end="url(#asm)"/>
+      <polyline class="ln" points="260,240 310,240 310,168 352,168" marker-end="url(#asm)"/>
+      <text class="lbl" x="268" y="42">guards filter</text>
+      <text class="lbl" x="268" y="98">who may be called</text>
+      <rect class="zone" x="354" y="96" width="250" height="104" rx="10"/>
+      <text class="t" x="479" y="126" text-anchor="middle">One request per customer</text>
+      <text class="s" x="479" y="144" text-anchor="middle">POST /v1/calls</text>
+      <text class="s" x="479" y="160" text-anchor="middle">task + result_schema + phone</text>
+      <text class="s" x="479" y="176" text-anchor="middle">+ Idempotency-Key (never twice)</text>
+      <line class="ln" x1="604" y1="148" x2="668" y2="148" marker-end="url(#asm)"/>
+      <text class="lbl" x="612" y="138">dials</text>
+      <rect class="hot" x="670" y="96" width="250" height="104" rx="10"/>
+      <text class="t" x="795" y="122" text-anchor="middle">CALL-E improvises the</text>
+      <text class="t" x="795" y="140" text-anchor="middle">live conversation</text>
+      <text class="s" x="795" y="160" text-anchor="middle">within your rules: voicemail,</text>
+      <text class="s" x="795" y="176" text-anchor="middle">interruptions, rephrasing</text>
+      <polyline class="ln" points="795,200 795,250 612,250" marker-end="url(#asm)"/>
+      <text class="lbl" x="616" y="242">structured result → your rules → CRM</text>
+    </svg>
+    </div>
+    <figcaption>Per customer, the orchestrator merges the CRM row into the script template, attaches the answer form, and sends one request. CALL-E owns only the live conversation; everything before and after is yours.</figcaption>
+  </figure>
+
+  <div class="two">
+    <div class="box"><h3>The call list</h3>
+      <p>Lives in the <b>CRM</b> (mock, :8001), seeded from <code>data/seed_accounts.json</code> — 8 fictional customers.
+      "Run campaign" reads the whole list; the <b>guards</b> then decide who may actually be called (phone present and valid,
+      not do-not-call, 08:00–21:00 local). To change the list, edit the seed file and press Reset. "Call my phone" just
+      points María Fernanda's row (ACC-1001) at your number for one live test.</p></div>
+    <div class="box"><h3>The goal and the script</h3>
+      <p>Never typed into CALL-E's website. They are a <b>template in code</b> — <code>agent_config.build_task()</code> —
+      filled with each customer's own data:</p>
+      <pre><code>You are Sofía, a virtual assistant (AI) calling
+on behalf of Financiera Solaria...
+STEP 2 - ask the person to confirm they are {full_name}.
+STEP 3 - installment #{n} for {amount} is due on {due_date}.
+EXCEPTIONS - human requested, dispute, hardship, paid...
+NEVER: threaten · take card numbers · claim to be human.</code></pre>
+      <p>Read the exact text any call received: Results → the call → <b>"Request sent to CALL-E"</b>. To change the script,
+      edit that file and restart <code>./run.sh</code>; the next call uses it.</p></div>
+    <div class="box"><h3>The strategy (three owners)</h3>
+      <ul>
+        <li><b>Who and when</b> — your code: guards, calling window, one-call-per-cycle idempotency.</li>
+        <li><b>What to say and never say</b> — the task text above.</li>
+        <li><b>How each sentence is said live</b> — CALL-E's engine. There is no word-for-word script: it improvises within
+          your rules, which is exactly what makes it handle real people.</li>
+      </ul>
+      <p>The <b>answer form</b> (<code>RESULT_SCHEMA</code>) closes the loop: it tells CALL-E which fields to bring back —
+      fixed lists with an <code>unknown</code> option — and your rules turn that into a CRM status and a task.</p></div>
+  </div>
 </section>
 
 <section id="repo">

@@ -90,6 +90,18 @@ the webhook, the outbox and stuck calls, and says how to fix each failure. Below
 Open **http://127.0.0.1:8000/learn**. It covers what CALL-E is, what the repo does, the system diagram, who decides what,
 a code map, a terminal cheat sheet, and all the documents in `docs/` rendered with their diagrams.
 
+## 5b. Who does what, where (quick map)
+
+| Surface | You do there |
+|---|---|
+| **CALL-E website** (dashboard.heycall-e.com) | Account, **API key**, credits/usage, optionally one manual test call from their web app. Nothing else — no campaign builder, no goal typing, no list upload for this integration. |
+| **localhost UIs** (:8000 control center, :8001 CRM) | Run/reset the campaign, simulate conversations, break/restore the CRM, place a live call, read transcripts and results, health checks. |
+| **Files & terminal** (you, the FDE) | The call list (`data/seed_accounts.json` + Reset), the goal/script template (`app/orchestrator/agent_config.py`), the policies (`guards.py`, `outcomes.py`), settings (`.env`). |
+
+**Goal, strategy, script and call list:** the call list lives in the CRM; the goal+script are a code template filled per
+customer (see any call's "Request sent to CALL-E" in Results); the live sentence-by-sentence conversation is CALL-E's job,
+improvised within your rules. Full picture with a diagram: **http://127.0.0.1:8000/learn#assembly**.
+
 ## 6. Interview-day checklist
 The full step-by-step for every assignment section is in [07-interview-playbook.md](07-interview-playbook.md).
 
