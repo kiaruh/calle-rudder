@@ -108,6 +108,10 @@ body.notes .speak{display:block}
 .gloss dt{font-weight:600;margin-top:6px} .gloss dd{margin:0 0 0 0;color:var(--muted);font-size:14px}
 .gloss{columns:2 320px;column-gap:24px} .gloss div{break-inside:avoid}
 .toggle{font:600 12px var(--mono);padding:6px 10px;border-radius:999px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+[data-tip]{cursor:help}
+.tt[data-tip],th[data-tip]{text-decoration:underline dotted var(--muted);text-underline-offset:3px}
+#tip{position:fixed;z-index:99;background:var(--fg);color:var(--bg);padding:7px 10px;border-radius:7px;
+  font:13px/1.45 system-ui,sans-serif;max-width:300px;box-shadow:0 4px 14px rgb(0 0 0 / .3);pointer-events:none}
 .gcheck{display:block;font-size:13px;margin-top:8px;padding:5px 8px;border-radius:6px}
 .gcheck.ok{color:var(--good);background:var(--good-soft);font-weight:600}
 .gcheck.wait{color:var(--muted);background:var(--bg)}
@@ -158,7 +162,7 @@ body.notes .speak{display:block}
     <div class="row" style="justify-content:space-between">
       <div class="row">
         <div class="dots" id="g-dots" aria-label="Steps"></div>
-        <span class="ghint">← → keys also work · green = result confirmed</span>
+        <span class="ghint">← → keys work · green ✓ = result confirmed · hover any status or dotted word for its meaning</span>
       </div>
       <div class="row">
         <button class="toggle" id="g-restart" type="button">Start over</button>
@@ -203,14 +207,14 @@ body.notes .speak{display:block}
     </div>
     <div class="card">
       <span class="step">Step 3</span><h3>See what happened</h3>
-      <p>Results arrive about 3 seconds later through the webhook. Open the Results tab, and click a call to read the transcript, the extracted result, and what the CRM stored.</p>
+      <p>Results arrive about 3 seconds later through the <span class="tt" data-tip="A webhook is CALL-E calling our program back the moment a call ends, so results arrive by themselves instead of us asking repeatedly.">webhook</span>. Open the Results tab, and click a call to read the transcript, the extracted result, and what the CRM stored.</p>
       <p class="speak"><b>Say this</b>"When a call ends, CALL-E notifies my system, which double-checks the result with CALL-E and writes a status and a follow-up task into the CRM."</p>
       <div class="row"><button class="act secondary" data-goto="results">Open Results</button>
         <a class="act secondary" href="http://127.0.0.1:8001/" target="_blank" rel="noopener">Open CRM :8001 ↗</a></div>
     </div>
     <div class="card">
       <span class="step">Step 4</span><h3>Break the integration</h3>
-      <p>Places a call, then takes the CRM down before the result comes back. Expected result: the call shows <code>crm_sync_failed</code>, the outbox has 1 pending item, and nothing claims success.</p>
+      <p>Places a call, then takes the CRM down before the result comes back. Expected result: the call shows <code>crm_sync_failed</code>, the <span class="tt" data-tip="The outbox is a waiting list of results the CRM has not confirmed storing yet. Nothing in it is lost; a retry delivers it later, exactly once.">outbox</span> has 1 pending item, and nothing claims success.</p>
       <p class="speak"><b>Say this</b>"Now I break the customer's CRM in the middle of a call. Watch: the system doesn't pretend it worked. It says 'failed, pending retry' and keeps the result safe."</p>
       <div class="row"><button class="act danger" data-action="outage">Run outage scenario</button></div>
       <details class="term"><summary>Terminal equivalent</summary><pre>curl -X POST localhost:8000/api/outage-scenario</pre></details>
@@ -277,7 +281,7 @@ curl -X POST localhost:8000/api/outbox/retry</pre></details>
       <span class="step">Step 2</span><h3>Your phone</h3>
       <div class="form">
         <label for="country">Country<select id="country"></select></label>
-        <label for="phone">Phone in E.164<input id="phone" inputmode="tel" placeholder="+52 55 1234 5678"></label>
+        <label for="phone"><span>Phone in <span class="tt" data-tip="E.164 is the international phone format: a plus sign, the country code, then the number, with no spaces. Mexico: +52 followed by 10 digits.">E.164</span></span><input id="phone" inputmode="tel" placeholder="+52 55 1234 5678"></label>
         <label for="locale">Language of the call<select id="locale">
           <option value="es-MX">Spanish (Mexico)</option><option value="en-US">English</option>
           <option value="es-ES">Spanish (Spain)</option><option value="es-AR">Spanish (Argentina)</option>
@@ -311,13 +315,13 @@ curl -X POST localhost:8000/calls/CALL_ID/sync      # repeat until "processed"</
 <!-- ============================ RESULTS ============================ -->
 <section class="tab" id="tab-results" hidden>
   <div><h2>Calls</h2><p class="muted">Click a row for the transcript, the extracted result, and the CRM record. Refreshes every 3 seconds.</p></div>
-  <div class="tbl"><table><thead><tr><th>Account</th><th>Call</th><th>State</th><th>Outcome</th><th>CRM status</th><th>Detail</th></tr></thead><tbody id="calls"></tbody></table></div>
+  <div class="tbl"><table><thead><tr><th>Account</th><th data-tip="The id CALL-E gave this call. It links the webhook, the verified result and the CRM record together.">Call</th><th data-tip="How far this call is in the pipeline: submitted, then synced when the CRM confirms, or blocked / failed on the way.">State</th><th data-tip="What the customer said on the call, as extracted by CALL-E into the fixed list of outcomes.">Outcome</th><th data-tip="What our business rules wrote into the customer file based on that outcome. It can differ from the outcome, e.g. a vague promise becomes needs_review.">CRM status</th><th>Detail</th></tr></thead><tbody id="calls"></tbody></table></div>
   <div><h2>CRM: accounts</h2><p class="muted">The customer's system of record (mock, on :8001).</p></div>
-  <div class="tbl"><table><thead><tr><th>Account</th><th>Name</th><th>Phone</th><th>Due</th><th>Status</th></tr></thead><tbody id="accounts"></tbody></table></div>
+  <div class="tbl"><table><thead><tr><th>Account</th><th>Name</th><th>Phone</th><th>Due</th><th data-tip="The account state inside the CRM, updated after each call. Hover a value for its meaning.">Status</th></tr></thead><tbody id="accounts"></tbody></table></div>
   <div><h2>CRM: follow-up tasks</h2><p class="muted">The output other teams act on.</p></div>
   <div class="tbl"><table><thead><tr><th>Account</th><th>Type</th><th>Team</th><th>Priority</th><th>Due</th><th>Description</th></tr></thead><tbody id="tasks"></tbody></table></div>
   <div class="cards">
-    <div class="card"><h3>Outbox (CRM writes waiting for confirmation)</h3><div class="tbl"><table><thead><tr><th>Call</th><th>State</th><th>Tries</th></tr></thead><tbody id="outbox"></tbody></table></div></div>
+    <div class="card"><h3>Outbox (CRM writes waiting for confirmation)</h3><div class="tbl"><table><thead><tr><th>Call</th><th data-tip="pending = waiting to be re-sent to the CRM. synced = the CRM confirmed it. dead_letter = invalid data, needs a human.">State</th><th data-tip="How many delivery attempts were made.">Tries</th></tr></thead><tbody id="outbox"></tbody></table></div></div>
     <div class="card"><h3>SMS payment links (simulated, never sent)</h3><div id="sms" class="muted">none</div></div>
   </div>
 </section>
@@ -372,12 +376,64 @@ async function api(method, path, body) {
 }
 function show(el, ok, html) { el.hidden = false; el.className = "result " + (ok ? "good" : "bad"); el.innerHTML = html; }
 function errText(r) { return esc(r.data.detail || JSON.stringify(r.data)); }
+// Plain-language meaning of every status word, shown as a tooltip on hover (for juniors / non-technical viewers).
+const TIPS = {
+  upcoming_due: "An installment is due soon. This customer is in the reminder campaign.",
+  submitting: "Being sent to CALL-E right now.",
+  queued: "Accepted by CALL-E; the phone call has not started or finished yet.",
+  submitted: "Sent to CALL-E. The phone conversation has not finished yet.",
+  submit_failed: "CALL-E did not accept the request, so nothing was dialed. The reason is in Detail.",
+  synced: "Finished end-to-end: the CRM confirmed it stored this result.",
+  crm_sync_failed: "The call finished, but the CRM could not store the result. It waits safely in the outbox. Press Restore CRM + retry outbox.",
+  "blocked:": "Never sent to CALL-E. A pre-call safety rule stopped it; the reason is after the colon.",
+  "outage:": "An injected failure: the mock CRM is answering with errors on purpose (demo step 4).",
+  promise_to_pay: "The customer gave a firm, specific payment date. A task checks the money actually arrives.",
+  already_paid: "The customer says the installment is already paid. We record the claim; finance verifies it.",
+  paid_claimed: "Recorded as a claim, not a payment: finance must verify it before trusting it.",
+  dispute: "The customer disagrees with the amount or the debt. Reminders pause; support reviews it.",
+  hardship: "The customer says they cannot pay due to financial difficulty. A specialist reviews options.",
+  callback_requested: "The customer asked to be contacted at another time. A human will call back.",
+  human_requested: "The customer asked for a person. A human agent gets a high-priority callback task.",
+  refused: "The customer refused to talk or asked to stop calls. A supervisor reviews before any new contact.",
+  wrong_party: "Someone else answered the phone. The debt was never mentioned (privacy rule).",
+  wrong_party_contact: "Someone else answered, so nothing about the debt was said. The data team verifies the phone.",
+  no_contact: "Nobody answered, or it went to voicemail. There is no automatic redial.",
+  needs_review: "The answer was not clear enough to act on automatically, so a human decides. Honest beats optimistic.",
+  unknown: "The call did not clearly support any outcome. A human reviews the transcript.",
+  not_called: "No call was made for this account.",
+  contact_data_missing: "No valid phone number on file, so no call. The data team gets a fix task.",
+  pending: "Waiting to be re-sent to the CRM. Nothing is lost while it waits here.",
+  dead_letter: "The CRM rejected this write as invalid data. A human must fix it; retrying will not help.",
+  ok: "This check passed.",
+  warn: "Working, but read the detail.",
+  fail: "Broken. The fix is in the last column.",
+  healthy: "The mock CRM on port 8001 is answering normally.",
+  unreachable: "The CRM service is not running. Start everything with ./run.sh.",
+};
+function tipFor(s) {
+  return TIPS[s] || (s.startsWith("blocked:") && TIPS["blocked:"]) || (s.startsWith("outage:") && TIPS["outage:"]) || "";
+}
 function pill(v) {
   const s = String(v ?? "");
   const cls = /synced|ok|promise_to_pay|healthy|created/.test(s) ? "good" : /fail|error|blocked|refused|dispute|dead/.test(s) ? "bad" :
               /review|pending|submitted|submitting|callback|wrong|no_contact|warn|paid_claimed|hardship/.test(s) ? "warn" : "info";
-  return s ? `<span class="pill ${cls}">${esc(s)}</span>` : "";
+  const t = tipFor(s);
+  return s ? `<span class="pill ${cls}"${t ? ` data-tip="${esc(t)}"` : ""}>${esc(s)}</span>` : "";
 }
+// One floating tooltip for every [data-tip] element (works inside scrolling tables too).
+const tipEl = document.createElement("div");
+tipEl.id = "tip"; tipEl.hidden = true; document.body.appendChild(tipEl);
+function showTip(el) {
+  tipEl.textContent = el.getAttribute("data-tip"); tipEl.hidden = false;
+  tipEl.style.left = "0px"; tipEl.style.top = "0px";
+  const r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+  const x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8);
+  const y = r.top - h - 8;
+  tipEl.style.left = x + "px"; tipEl.style.top = (y < 8 ? r.bottom + 8 : y) + "px";
+}
+document.addEventListener("mouseover", e => { const el = e.target.closest("[data-tip]"); el ? showTip(el) : tipEl.hidden = true; });
+document.addEventListener("click", e => { const el = e.target.closest("[data-tip]"); if (el) showTip(el); });  // tap on touch screens
+document.addEventListener("scroll", () => { tipEl.hidden = true; }, true);
 
 // ---------- tabs
 document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => tab(b.dataset.tab)));
@@ -515,10 +571,16 @@ async function refresh() {
   lastOverview = d;
   if (!$("#guide").hidden) updateGuideCheck();
   $("#chips").innerHTML = [
-    `<span class="chip ${st.mode === "live" ? "bad" : "ok"}">CALL-E: ${esc(st.mode.toUpperCase())}</span>`,
-    `<span class="chip ${st.crm === "healthy" ? "ok" : "bad"}">CRM: ${esc(st.crm)}</span>`,
-    `<span class="chip ${st.api_key_set ? "ok" : "warn"}">API key: ${st.api_key_set ? "set" : "not set"}</span>`,
-    `<span class="chip">Webhook: ${esc(String(st.webhook).startsWith("http") ? "on" : "polling")}</span>`,
+    `<span class="chip ${st.mode === "live" ? "bad" : "ok"}" data-tip="${st.mode === "live"
+      ? "LIVE: real phone calls are placed, only to numbers you entered yourself."
+      : "Simulated: the conversations are scripted. Nothing is dialed, no cost."}">CALL-E: ${esc(st.mode.toUpperCase())}</span>`,
+    `<span class="chip ${st.crm === "healthy" ? "ok" : "bad"}" data-tip="${esc(tipFor(st.crm) || "State of the mock CRM on port 8001.")}">CRM: ${esc(st.crm)}</span>`,
+    `<span class="chip ${st.api_key_set ? "ok" : "warn"}" data-tip="${st.api_key_set
+      ? "A CALL-E key is saved in memory (needed only for real calls)."
+      : "No CALL-E key saved. Fine for simulated mode; add one in the Call-my-phone tab for real calls."}">API key: ${st.api_key_set ? "set" : "not set"}</span>`,
+    `<span class="chip" data-tip="${esc(String(st.webhook).startsWith("http")
+      ? "Webhook on: CALL-E pushes each finished call result to this app."
+      : "Polling: no public address, so the app asks CALL-E for the result every few seconds instead.")}">Webhook: ${esc(String(st.webhook).startsWith("http") ? "on" : "polling")}</span>`,
   ].join("");
   $("#key-inuse").innerHTML = st.api_key_hint ? `Key in use: <code>${esc(st.api_key_hint)}</code> (saved in memory until ./run.sh stops)` : "No key saved yet.";
   $("#calls").innerHTML = d.calls.map(c => `<tr class="click" data-call="${esc(c.call_id || "")}"><td>${esc(c.account_id)}</td><td><code>${esc(c.call_id || "—")}</code></td>
