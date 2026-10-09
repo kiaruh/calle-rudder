@@ -47,6 +47,7 @@ Paste these commands one line at a time:
 | **Call my phone** | Paste your CALL-E API key, enter your number, and get a **real** call. Scripts tell you what to say for each test |
 | **Results** | Calls, CRM accounts, tasks, outbox. Click a call for the transcript, the extracted result and the CRM record |
 | **Troubleshoot** | One-click health checks with fixes, plus common errors |
+| **Learn AI Rudder** | Interview study guide: 7-min explainer video, AI Rudder + CALL-E, the role (Technical CSM + FDE), what to say, STAR, Q&A, flashcards. Also at `/rudder/` |
 | **Learn** (`/learn`) | What CALL-E is, what this repo does, the system diagram, code map, terminal cheat sheet, all docs with diagrams |
 
 Also: the mock CRM at http://127.0.0.1:8001/ (with outage buttons), and Swagger API docs at `/docs` on both ports.
@@ -72,6 +73,35 @@ Mexico (`MX`, Spanish) is on CALL-E's supported list, but only through an **inte
 describes as intended mainly for development and testing. A real pilot needs a local Mexican number or a SIP trunk
 (see `docs/06-presentation.md`, rollout).
 
+## Deploy online (Netlify + Render)
+
+Netlify only hosts static pages, so the app is split in two. Both redeploy automatically on every push.
+
+```
+ Browser ──▶ Netlify (pages + video, CDN) ──proxy /api/*, /calls/*, /crm/*, /docs…──▶ Render (FastAPI backend)
+             control center, /learn, /rudder/                                        orchestrator + mock CRM at /crm
+```
+
+| Piece | Config | What it runs |
+|---|---|---|
+| **Backend on Render** (free web service) | `render.yaml` | `app/combined.py`: the orchestrator with the mock CRM mounted at `/crm`, one process. They still talk over real HTTP (loopback), so outages and retries behave as they do locally |
+| **Frontend on Netlify** | `netlify.toml` + `scripts/netlify_build.sh` | Copies `app/orchestrator/static/` to `dist/` and writes `_redirects`: static files first, everything else proxied to `BACKEND_URL` |
+
+One-time setup:
+1. **Render:** dashboard → **New → Blueprint** → pick this GitHub repo → **Apply**. Wait for the deploy, then copy the URL
+   (e.g. `https://calle-rudder-api.onrender.com`). Under the service's **Environment**, note the generated `LIVE_PASSCODE`.
+2. **Netlify:** **Add new site → Import an existing project** → GitHub → this repo. Build settings come from `netlify.toml`.
+   Under **Site configuration → Environment variables**, add `BACKEND_URL` = the Render URL, then **Deploy**.
+3. Open the Netlify URL. The control center, project guide (`/learn`), CRM (`/crm/`) and **Learn AI Rudder** (`/rudder/`) all work.
+
+Things to know:
+- **The free Render instance sleeps after ~15 min idle** and takes up to a minute to wake. The page shows a banner and retries
+  by itself. Open the site a couple of minutes before presenting.
+- **Shared demo state:** everyone who opens the site sees and changes the same CRM and calls. Press **Reset everything** before presenting.
+  The databases are reset whenever Render restarts the instance.
+- **Real calls are locked** on the public site: "Call my phone" asks for the `LIVE_PASSCODE` once per browser session, so visitors
+  can't spend your CALL-E credits. The hosted backend has a public URL, so live calls get webhooks without ngrok.
+
 ## Repository map
 
 ```
@@ -83,6 +113,9 @@ app/orchestrator/outcomes.py    Business rules: verified call result -> CRM stat
 app/orchestrator/main.py        HTTP API: campaign, webhook, sync (poll), outbox retry
 app/orchestrator/control.py     Control center API (/api/*): demo actions, live call, troubleshooting, docs
 app/orchestrator/static/        Control center (index.html) and project guide (learn.html)
+app/orchestrator/static/rudder/ Learn AI Rudder study guide (index.html), explainer video, video source (video/)
+app/combined.py                 One-process backend for hosting (orchestrator + CRM at /crm), used by render.yaml
+render.yaml, netlify.toml       Deployment: backend on Render, pages + proxy on Netlify (scripts/netlify_build.sh)
 app/orchestrator/store.py       Orchestrator state: intents, idempotency keys, webhook receipts, outbox
 app/simulator/scenarios/        Scripted calls for simulated mode (Spanish transcripts)
 data/seed_accounts.json         8 fictional customers covering each path

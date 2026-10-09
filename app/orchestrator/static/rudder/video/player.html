@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rudder Explainer Player</title>
+<style>
+  html,body{margin:0;background:#03090e;color:#eaf4f7;font:15px -apple-system,system-ui,sans-serif;height:100%}
+  .stage{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;gap:10px;padding:10px;box-sizing:border-box}
+  canvas{width:min(100%, calc((100vh - 80px) * 16 / 9));aspect-ratio:16/9;border-radius:10px;box-shadow:0 10px 60px rgba(0,0,0,.6)}
+  .bar{display:flex;gap:10px;align-items:center;width:min(100%, calc((100vh - 80px) * 16 / 9))}
+  button{background:#0f3340;color:#eaf4f7;border:1px solid #2ee6c5;border-radius:8px;padding:7px 14px;font:inherit;cursor:pointer}
+  input[type=range]{flex:1;accent-color:#2ee6c5}
+  .t{font-variant-numeric:tabular-nums;color:#8fa9b6;min-width:90px;text-align:right}
+  body.render .bar{display:none} body.render .stage{padding:0} body.render canvas{width:1920px;border-radius:0;box-shadow:none}
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="c" width="1920" height="1080"></canvas>
+  <div class="bar"><button id="play">▶ Play</button><input id="seek" type="range" min="0" max="1000" value="0"><span class="t" id="tm">0:00</span></div>
+</div>
+<script src="timeline.js" onerror="void 0"></script>
+<script src="engine.js"></script>
+<script>
+const render = new URLSearchParams(location.search).has('render');
+if (render) document.body.classList.add('render');
+MOTION.init(document.getElementById('c'));
+let T = 0, playing = false, last = 0;
+const audio = new Audio(); audio.src = 'narration.m4a'; audio.preload = 'auto';
+const seek = document.getElementById('seek'), tm = document.getElementById('tm'), btn = document.getElementById('play');
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+function draw() { MOTION.renderAt(T); seek.value = Math.round(T / MOTION.timeline.total * 1000); tm.textContent = fmt(T) + ' / ' + fmt(MOTION.timeline.total); }
+function loop(now) { if (playing) { if (!audio.paused && !isNaN(audio.duration)) T = audio.currentTime; else T += (now - last) / 1000; last = now;
+  if (T >= MOTION.timeline.total) { playing = false; btn.textContent = '▶ Play'; T = MOTION.timeline.total - 0.01; } draw(); requestAnimationFrame(loop); } }
+btn.onclick = () => { playing = !playing; btn.textContent = playing ? '❚❚ Pause' : '▶ Play';
+  if (playing) { audio.currentTime = T; audio.play().catch(() => {}); last = performance.now(); requestAnimationFrame(loop); } else audio.pause(); };
+seek.oninput = () => { T = seek.value / 1000 * MOTION.timeline.total; try { audio.currentTime = T; } catch (e) {} draw(); };
+window.renderFrame = t => { T = t; MOTION.renderAt(t); };
+if (!render) { const q = parseFloat(new URLSearchParams(location.search).get('t')); if (!isNaN(q)) T = q; }
+draw();
+</script>
+</body>
+</html>

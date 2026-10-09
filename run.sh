@@ -19,6 +19,7 @@ $PY -m uvicorn app.orchestrator.main:create_app --factory --host 127.0.0.1 --por
 echo
 echo "  Control center  ->  http://127.0.0.1:8000/        (start here: demo buttons, call my phone, troubleshoot)"
 echo "  Project guide   ->  http://127.0.0.1:8000/learn   (diagrams + docs)"
+echo "  Learn AI Rudder ->  http://127.0.0.1:8000/rudder/ (interview study guide + video; also a tab in the control center)"
 echo "  Mock CRM        ->  http://127.0.0.1:8001/"
 echo "  API docs        ->  http://127.0.0.1:8000/docs  and  http://127.0.0.1:8001/docs"
 echo "  CALL-E mode     ->  ${CALLE_MODE:-simulated} (switch to live from the 'Call my phone' tab)"

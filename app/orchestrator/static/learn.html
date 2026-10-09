@@ -66,7 +66,7 @@ svg.dg{display:block;width:100%;height:auto;min-width:640px;color:var(--fg);font
 </style>
 </head>
 <body>
-<div class="top"><strong>Solaria project guide</strong><span><a href="/">← Control center</a> · <a href="http://127.0.0.1:8001/">CRM :8001</a> · <a href="/docs">API docs (Swagger)</a></span></div>
+<div class="top"><strong>Solaria project guide</strong><span><a href="/">← Control center</a> · <a href="http://127.0.0.1:8001/" data-crm-link>CRM :8001</a> · <a href="/docs">API docs (Swagger)</a></span></div>
 <div class="wrap">
 <nav class="toc" aria-label="Contents">
   <a href="/learn?doc=07-interview-playbook">Interview playbook</a>
@@ -449,6 +449,14 @@ async function load(name) {
   sel.value = first; load(first);
   sel.addEventListener("change", () => load(sel.value));
 })();
+</script>
+<script>
+// Hosted (Netlify + Render): the CRM is at /crm/ and the terminal hints should use this site's address.
+if (!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+  document.querySelectorAll("a[data-crm-link]").forEach(a => { a.href = "/crm/"; a.textContent = "CRM"; });
+  document.querySelectorAll("pre").forEach(p => { p.textContent = p.textContent
+    .replaceAll("localhost:8001/", location.origin + "/crm/").replaceAll("localhost:8000", location.origin); });
+}
 </script>
 </body>
 </html>

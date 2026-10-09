@@ -90,6 +90,9 @@ the webhook, the outbox and stuck calls, and says how to fix each failure. Below
 Open **http://127.0.0.1:8000/learn**. It covers what CALL-E is, what the repo does, the system diagram, who decides what,
 a code map, a terminal cheat sheet, and all the documents in `docs/` rendered with their diagrams.
 
+For the interview itself, open the control center's **Learn AI Rudder** tab (or **http://127.0.0.1:8000/rudder/**): a 7-minute
+explainer video, AI Rudder and CALL-E, the role (Technical CSM + Forward Deployed Engineer), what to say, STAR stories, Q&A and flashcards.
+
 ## 5b. Who does what, where (quick map)
 
 | Surface | You do there |

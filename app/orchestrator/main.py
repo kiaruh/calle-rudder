@@ -5,7 +5,7 @@
   POST /calls/{call_id}/sync          polling fallback when no webhook arrives (e.g. no public URL)
   POST /outbox/retry                  re-send CRM writes that failed earlier
   GET  /calls, /outbox, /notifications            inspection
-  GET  /  and  /learn  and  /api/*                control center UI (see control.py)
+  GET  /  and  /learn  and  /rudder/  and  /api/*  control center UI, project guide, AI Rudder study guide (see control.py)
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -152,7 +153,9 @@ def create_app(gateway: CalleGateway | None = None, crm: CrmClient | None = None
         if store.get_event(event_id) is None:
             store.save_event(event_id, call_id, event_type, raw.decode())
         rt.log("info", f"Webhook received: {event_type}", call_id=call_id)
-        result = process_call(call_id, trigger=f"webhook:{event_type}")
+        # process_call does blocking HTTP (CALL-E re-read, CRM write): run it off the event loop so the server
+        # keeps answering, which matters when the CRM is served by this same process (app/combined.py).
+        result = await run_in_threadpool(process_call, call_id, trigger=f"webhook:{event_type}")
         return JSONResponse(result, status_code=result.pop("_http", 200))
 
     @app.post("/calls/{call_id}/sync")

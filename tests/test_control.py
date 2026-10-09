@@ -28,6 +28,16 @@ def test_pages_and_status(env):
     assert env.orch.get("/api/docs/../../etc/passwd").status_code == 404
 
 
+def test_learn_ai_rudder_tab_and_video(env):
+    assert 'data-tab="rudder"' in env.orch.get("/").text
+    assert env.orch.get("/rudder", follow_redirects=False).headers["location"] == "/rudder/"
+    guide = env.orch.get("/rudder/")
+    assert guide.status_code == 200 and "Learn AI Rudder" in guide.text
+    video = env.orch.get("/rudder/ai-rudder-explainer.mp4", headers={"Range": "bytes=0-99"})
+    assert video.status_code == 206 and video.headers["content-type"] == "video/mp4" and len(video.content) == 100
+    assert env.orch.get("/rudder/video/player.html").status_code == 200
+
+
 def test_reset_campaign_and_overview(env):
     assert env.orch.post("/api/reset").json() == {"result": "reset"}
     res = env.orch.post("/api/campaign", json={}).json()
@@ -230,3 +240,42 @@ def test_good_key_saved_masked_and_rejected_key_keeps_previous(env, monkeypatch)
     bad = env.orch.post("/api/live/key", json={"api_key": "bad-key"}).json()
     assert bad["rejected"] is True and "previous key" in bad["detail"]
     assert rt(env).api_key == good  # the working key is still in use
+
+
+# ---------------------------------------------------------------- public deployment (Netlify + Render)
+def test_live_calls_need_passcode_when_configured(env, monkeypatch):
+    monkeypatch.setenv("LIVE_PASSCODE", "s3cret")
+    assert env.orch.get("/api/status").json()["live_locked"] is True
+    for path, body in [("/api/live/key", {"api_key": "sk-x"}), ("/api/live/call-me", {"phone": "+525512345678"}),
+                       ("/api/mode", {"mode": "live"})]:
+        r = env.orch.post(path, json=body)
+        assert r.status_code == 401 and r.json()["detail"]["code"] == "live_passcode_required", path
+        assert env.orch.post(path, json=body, headers={"x-live-passcode": "wrong"}).status_code == 401
+    # Simulated mode never needs the passcode; the right passcode gets past the gate (then normal validation).
+    assert env.orch.post("/api/mode", json={"mode": "simulated"}).status_code == 200
+    assert env.orch.post("/api/mode", json={"mode": "live"}, headers={"x-live-passcode": "s3cret"}).status_code == 409
+
+
+def test_live_calls_open_locally(env, monkeypatch):
+    monkeypatch.delenv("LIVE_PASSCODE", raising=False)
+    assert env.orch.get("/api/status").json()["live_locked"] is False
+    assert env.orch.post("/api/mode", json={"mode": "live"}).status_code == 409  # no key yet, but not locked
+
+
+def test_combined_app_mounts_crm_and_pages(monkeypatch, tmp_path):
+    from fastapi.testclient import TestClient
+    from app.combined import create_app
+    for k in ("CRM_BASE_URL", "SIM_WEBHOOK_URL", "PUBLIC_WEBHOOK_URL"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv("PORT", "10000")
+    monkeypatch.setenv("RENDER_EXTERNAL_URL", "https://calle-rudder-api.onrender.com")
+    monkeypatch.setenv("CRM_DB", str(tmp_path / "crm.sqlite3"))
+    monkeypatch.setenv("ORCH_DB", str(tmp_path / "orch.sqlite3"))
+    import os
+    c = TestClient(create_app())
+    assert os.environ["CRM_BASE_URL"] == "http://127.0.0.1:10000/crm"
+    assert os.environ["PUBLIC_WEBHOOK_URL"] == "https://calle-rudder-api.onrender.com/calle/webhook"
+    assert len(c.get("/crm/accounts").json()) == 8
+    crm_page = c.get("/crm/").text
+    assert "act('admin/failure'" in crm_page and "act('/admin" not in crm_page
+    assert "Solaria Control Center" in c.get("/").text and c.get("/rudder/").status_code == 200

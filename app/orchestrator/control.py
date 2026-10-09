@@ -16,8 +16,11 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, PlainTextResponse
+import hmac
+
+from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi.responses import FileResponse, PlainTextResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import agent_config
@@ -107,6 +110,15 @@ def clean_key(raw: str) -> str:
     return key
 
 
+def require_live_passcode(x_live_passcode: str | None = Header(default=None)) -> None:
+    """Public deployments set LIVE_PASSCODE so visitors can't place real calls on your CALL-E credits.
+    Unset (local ./run.sh): no check."""
+    expected = os.environ.get("LIVE_PASSCODE")
+    if expected and not hmac.compare_digest(x_live_passcode or "", expected):
+        raise HTTPException(401, {"code": "live_passcode_required",
+                                  "message": "Real calls are locked on this public deployment. Enter the live-call passcode."})
+
+
 def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable, sync_call: Callable,
              gateway_factory: Callable | None = None) -> None:
     from .main import CampaignIn  # local import to avoid a cycle
@@ -136,6 +148,13 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
     def learn() -> FileResponse:
         return FileResponse(STATIC / "learn.html")
 
+    # "Learn AI Rudder" interview study guide + explainer video (static/rudder/, shown in the control center tab)
+    @app.get("/rudder", include_in_schema=False)
+    def rudder_redirect() -> RedirectResponse:
+        return RedirectResponse("/rudder/")
+
+    app.mount("/rudder", StaticFiles(directory=STATIC / "rudder", html=True), name="rudder")
+
     # ------------------------------------------------------------------ status
     @app.get("/api/status")
     def status() -> dict[str, Any]:
@@ -144,6 +163,7 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
             "mode": rt.gw.mode,
             "api_key_set": bool(rt.api_key),
             "api_key_hint": mask_key(rt.api_key) if rt.api_key else None,
+            "live_locked": bool(os.environ.get("LIVE_PASSCODE")),
             "webhook": rt.webhook_url() or "polling (no PUBLIC_WEBHOOK_URL)",
             "crm": "unreachable" if crm_mode == "unreachable" else ("healthy" if crm_mode == "none" else f"outage:{crm_mode}"),
             "allowed_phones": [agent_config.mask_phone(p) for p in sorted(getattr(rt.live, "allowed", set()))],
@@ -229,7 +249,9 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
 
     # ------------------------------------------------------------------ live CALL-E
     @app.post("/api/mode")
-    def set_mode(body: ModeIn) -> dict[str, Any]:
+    def set_mode(body: ModeIn, x_live_passcode: str | None = Header(default=None)) -> dict[str, Any]:
+        if body.mode == "live":
+            require_live_passcode(x_live_passcode)
         if body.mode == "simulated":
             rt.gw = ensure_sim()
         elif body.mode == "live":
@@ -241,7 +263,7 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
         rt.log("info", f"CALL-E mode is now {rt.gw.mode.upper()}")
         return status()
 
-    @app.post("/api/live/key")
+    @app.post("/api/live/key", dependencies=[Depends(require_live_passcode)])
     def set_key(body: KeyIn) -> dict[str, Any]:
         key = clean_key(body.api_key)
         try:
@@ -261,13 +283,13 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
         rt.log("ok" if check["ok"] else "warn", f"CALL-E API key {mask_key(key)} saved in memory: {check['detail']}")
         return {**check, "key": mask_key(key), "in_use": mask_key(key)}
 
-    @app.post("/api/live/test-key")
+    @app.post("/api/live/test-key", dependencies=[Depends(require_live_passcode)])
     def test_key() -> dict[str, Any]:
         if rt.live is None:
             raise HTTPException(409, "No API key yet.")
         return rt.live.check_key()
 
-    @app.post("/api/live/call-me")
+    @app.post("/api/live/call-me", dependencies=[Depends(require_live_passcode)])
     def call_me(body: CallMeIn) -> dict[str, Any]:
         if not body.consent:
             raise HTTPException(400, "Tick the box confirming this is your own phone.")

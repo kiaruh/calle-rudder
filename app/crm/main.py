@@ -20,10 +20,10 @@ Endpoints
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import sqlite3
-import time
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
@@ -116,12 +116,16 @@ def create_app(db_path: str | None = None) -> FastAPI:
     @app.middleware("http")
     async def fault_injection(request: Request, call_next):
         # Fault injection only affects business endpoints, never /admin or the HTML view.
-        if request.url.path.startswith(("/accounts", "/tasks", "/interactions")):
+        # Path relative to this app, so it also works when mounted at /crm (app/combined.py).
+        path, root = request.url.path, request.scope.get("root_path", "")
+        if root and path.startswith(root):
+            path = path[len(root):]
+        if path.startswith(("/accounts", "/tasks", "/interactions")):
             mode = app.state.failure_mode
             if mode == "error":
                 return JSONResponse({"error": "crm_unavailable", "detail": "Injected failure (SIMULATED outage)"}, status_code=503)
             if mode == "timeout":
-                time.sleep(float(os.environ.get("CRM_TIMEOUT_SLEEP", "6")))
+                await asyncio.sleep(float(os.environ.get("CRM_TIMEOUT_SLEEP", "6")))  # don't block other requests
         return await call_next(request)
 
     def account_row(c: sqlite3.Connection, account_id: str) -> dict[str, Any]:
@@ -242,12 +246,12 @@ def create_app(db_path: str | None = None) -> FastAPI:
         banner = (f"<div class='bar {'down' if mode != 'none' else 'up'}'>CRM state: <b>"
                   f"{'OUTAGE (' + mode + ')' if mode != 'none' else 'healthy'}</b>"
                   "<span class='btns'>"
-                  "<button onclick=\"act('/admin/failure',{mode:'error'})\">Simulate outage (503)</button>"
-                  "<button onclick=\"act('/admin/failure',{mode:'timeout'})\">Simulate slow CRM (timeout)</button>"
-                  "<button onclick=\"act('/admin/failure',{mode:'none'})\">Restore CRM</button>"
-                  "<button onclick=\"act('/admin/reset',{})\">Reset CRM data</button>"
-                  "<a class='btn' href='http://127.0.0.1:8000/'>Open control center (:8000)</a>"
-                  "<a class='btn' href='/docs'>API docs</a></span></div>")
+                  "<button onclick=\"act('admin/failure',{mode:'error'})\">Simulate outage (503)</button>"
+                  "<button onclick=\"act('admin/failure',{mode:'timeout'})\">Simulate slow CRM (timeout)</button>"
+                  "<button onclick=\"act('admin/failure',{mode:'none'})\">Restore CRM</button>"
+                  "<button onclick=\"act('admin/reset',{})\">Reset CRM data</button>"
+                  "<a class='btn' id='cc' href='http://127.0.0.1:8000/'>Open control center (:8000)</a>"
+                  "<a class='btn' href='docs'>API docs</a></span></div>")
         return _page(
             "Mock CRM - Financiera Solaria (SIMULATED)",
             banner +
@@ -275,6 +279,9 @@ def _page(title: str, body: str) -> str:
         "border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;text-decoration:none}"
         "button:hover,.btn:hover{background:var(--accent);color:var(--surface)}.hint{opacity:.75;font-size:14px}"
         "</style><script>async function act(p,b){await fetch(p,{method:'POST',headers:{'content-type':'application/json'},"
-        "body:JSON.stringify(b)});location.reload()}</script>"
+        "body:JSON.stringify(b)});location.reload()}"
+        # Relative paths work both on :8001/ (local) and under /crm/ (hosted). Hosted: the control center is at /.
+        "addEventListener('DOMContentLoaded',()=>{const a=document.getElementById('cc');"
+        "if(a&&location.port!=='8001'){a.href='/';a.textContent='Open control center'}})</script>"
         f"</head><body><h1>{title}</h1>{body}</body></html>"
     )
