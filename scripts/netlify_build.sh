@@ -8,10 +8,11 @@ BACKEND="${BACKEND%/}"
 rm -rf dist
 mkdir -p dist
 cp -R app/orchestrator/static/. dist/
+# Netlify ignores trailing slashes when matching rules, so "/crm" also matches "/crm/":
+# proxy both straight to the backend's /crm/ (a "/crm -> /crm/" redirect here would loop forever).
 cat > dist/_redirects <<EOF
 /learn    /learn.html         200
-/rudder   /rudder/            301
-/crm      /crm/               301
+/crm      ${BACKEND}/crm/     200
 /*        ${BACKEND}/:splat   200
 EOF
 echo "Built dist/ (backend: ${BACKEND})"
