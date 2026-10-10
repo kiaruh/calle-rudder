@@ -3,266 +3,448 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Solaria Project Guide</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%230d6b66%27/%3E%3C/svg%3E">
+<title>Learn AI Rudder</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%230d8f80'/%3E%3Cpath d='M4 9v-2M6 11V5M8 12V4M10 11V5M12 9V7' stroke='white' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
-/* Layout: left table of contents + one reading column; figures span the column. */
 :root{
-  --bg:#f3f6f7; --surface:#fff; --fg:#13212a; --muted:#566874; --line:#c4d0d7;
-  --accent:#0d6b66; --accent-soft:#dcefed; --warn:#b86f00; --warn-soft:#fbf0dc; --bad:#b3261e; --bad-soft:#f8e1df; --good:#2d7a34; --good-soft:#e1f1e2;
-  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --bg:#f4f7f8; --surface:#ffffff; --surface2:#eef3f5; --fg:#10202a; --muted:#53666f; --line:#cfdbe1;
+  --accent:#0b7f73; --accent-soft:#dbf1ee; --orange:#b85d00; --orange-soft:#fdeedd; --red:#b3261e; --red-soft:#f9e1df;
+  --green:#22743a; --green-soft:#e1f3e5; --blue:#1f5fae; --blue-soft:#e2edfa; --purple:#6741c3; --purple-soft:#eee8fb;
+  --say:#fff8e6; --say-line:#e2b54a;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace; --sans:-apple-system,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root{
-  --bg:#0e161b; --surface:#152129; --fg:#e2eaef; --muted:#93a5b1; --line:#2d3d47;
-  --accent:#53c4ba; --accent-soft:#16332f; --warn:#f0aa36; --warn-soft:#33270f; --bad:#f07068; --bad-soft:#3a1a18; --good:#72c479; --good-soft:#18301a; color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a141a; --surface:#111f27; --surface2:#162a34; --fg:#e4edf1; --muted:#93a8b3; --line:#27404c;
+  --accent:#3fd6c3; --accent-soft:#12312e; --orange:#ffad5c; --orange-soft:#33240f; --red:#ff7b72; --red-soft:#3a1a18;
+  --green:#6fd38a; --green-soft:#16301d; --blue:#7db4ff; --blue-soft:#14263d; --purple:#b9a2ff; --purple-soft:#241b3b;
+  --say:#2b2512; --say-line:#a98325; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a141a; --surface:#111f27; --surface2:#162a34; --fg:#e4edf1; --muted:#93a8b3; --line:#27404c;
+  --accent:#3fd6c3; --accent-soft:#12312e; --orange:#ffad5c; --orange-soft:#33240f; --red:#ff7b72; --red-soft:#3a1a18;
+  --green:#6fd38a; --green-soft:#16301d; --blue:#7db4ff; --blue-soft:#14263d; --purple:#b9a2ff; --purple-soft:#241b3b;
+  --say:#2b2512; --say-line:#a98325; color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
-.top{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
-.top a{color:var(--accent);font-weight:600;text-decoration:none}
-.wrap{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;max-width:1200px;margin:0 auto;padding:24px 20px 60px}
-@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)} .toc{position:static!important}}
-.toc{position:sticky;top:16px;align-self:start;display:flex;flex-direction:column;gap:4px;font-size:14px}
-.toc a{color:var(--muted);text-decoration:none;padding:3px 8px;border-left:2px solid var(--line)}
-.toc a:hover{color:var(--accent);border-color:var(--accent)}
-article{display:flex;flex-direction:column;gap:40px;min-width:0}
-section{display:flex;flex-direction:column;gap:12px;scroll-margin-top:16px}
-h1{font-size:32px;margin:0;line-height:1.15} h2{font-size:22px;margin:0} h3{font-size:16px;margin:0}
-p{margin:0;max-width:72ch} .muted{color:var(--muted)}
-.eyebrow{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
-.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.box ul,.box ol{margin:0;padding-left:20px}
-figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+.top{position:sticky;top:0;z-index:20;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 20px;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .brand{font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+.top .brand span{color:var(--accent)}
+.prog{flex:1;max-width:420px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.prog .bar{flex:1;height:8px;border-radius:5px;background:var(--surface2);overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.tools{display:flex;gap:8px}
+button,.btn{font:600 13.5px var(--sans);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+button:hover,.btn:hover{border-color:var(--accent)}
+button.on{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:32px;max-width:1240px;margin:0 auto;padding:24px 20px 80px}
+.toc{position:sticky;top:70px;align-self:start;display:flex;flex-direction:column;gap:2px;font-size:14px;max-height:calc(100vh - 90px);overflow:auto}
+.toc a{color:var(--muted);text-decoration:none;padding:4px 10px;border-left:2px solid var(--line);display:flex;justify-content:space-between;gap:6px}
+.toc a:hover,.toc a.cur{color:var(--accent);border-color:var(--accent)}
+.toc a.done::after{content:"✓";color:var(--green);font-weight:800}
+@media (max-width:920px){.wrap{grid-template-columns:minmax(0,1fr);padding:16px 16px 60px}.toc{display:none}.prog{display:none}}
+main{display:flex;flex-direction:column;gap:56px;min-width:0}
+section{display:flex;flex-direction:column;gap:14px;scroll-margin-top:80px}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.08;margin:0;letter-spacing:-.02em}
+h2{font-size:27px;margin:0;letter-spacing:-.01em;line-height:1.2}
+h3{font-size:18px;margin:6px 0 0}
+p{margin:0;max-width:75ch}
+.eyebrow{font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lead{font-size:18px;color:var(--muted);max-width:70ch}
+.muted{color:var(--muted)}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr))}
+.grid.two{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card h3{margin:0}
+.card ul,.card ol{margin:0;padding-left:20px}
+.card li{margin:3px 0}
+.stat{font-size:40px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-.02em}
+.tag{display:inline-block;font:600 12px var(--mono);padding:2px 8px;border-radius:20px;background:var(--accent-soft);color:var(--accent);margin:2px 4px 2px 0;white-space:nowrap}
+.tag.o{background:var(--orange-soft);color:var(--orange)} .tag.r{background:var(--red-soft);color:var(--red)} .tag.g{background:var(--green-soft);color:var(--green)} .tag.b{background:var(--blue-soft);color:var(--blue)} .tag.p{background:var(--purple-soft);color:var(--purple)}
+code{font:13.5px var(--mono);background:var(--surface2);padding:1px 6px;border-radius:5px}
+pre{font:13px/1.5 var(--mono);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;margin:0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 11.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--surface2)}
+tr:last-child td{border-bottom:0}
+.say{background:var(--say);border:1px solid var(--say-line);border-left:5px solid var(--say-line);border-radius:12px;padding:12px 16px;display:flex;flex-direction:column;gap:6px;position:relative}
+.say::before{content:"SAY THIS";font:800 11px var(--mono);letter-spacing:.14em;color:var(--orange)}
+.say p{max-width:none}
+.say .q{font-weight:700}
+body.practice .say>*:not(.q){filter:blur(6px);transition:filter .2s;cursor:pointer;user-select:none}
+body.practice .say.reveal>*{filter:none}
+.note{background:var(--blue-soft);border:1px solid color-mix(in srgb,var(--blue) 40%,transparent);border-radius:12px;padding:12px 16px}
+.warn{background:var(--orange-soft);border:1px solid color-mix(in srgb,var(--orange) 45%,transparent);border-radius:12px;padding:12px 16px}
+.warn b:first-child,.note b:first-child{display:block;margin-bottom:2px}
+.learned{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none;align-self:flex-start;border:1px dashed var(--line);border-radius:8px;padding:6px 10px}
+.learned input{accent-color:var(--green);width:17px;height:17px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 16px}
+details[open]{padding-bottom:14px}
+summary{cursor:pointer;padding:12px 0;font-weight:700;list-style:none;display:flex;gap:10px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";font:800 18px var(--mono);color:var(--accent);line-height:1.3;width:14px;flex:none}
+details[open] summary::before{content:"–"}
+details>div{display:flex;flex-direction:column;gap:10px}
+.qa{display:flex;flex-direction:column;gap:8px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.video{border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#050f17;aspect-ratio:16/9}
+.video video{width:100%;height:100%;display:block}
+.hero{display:flex;flex-direction:column;gap:16px}
+.thesis{font-size:21px;font-weight:700;line-height:1.4;border-left:5px solid var(--accent);padding:6px 0 6px 16px;max-width:60ch}
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:10px;padding:0;margin:0;list-style:none}
+.steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+.steps li::before{content:counter(s);width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--surface);font-weight:800;display:grid;place-items:center;font-size:14px}
+svg.dg{width:100%;height:auto;display:block;font-family:var(--mono)}
+.dg .bx{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.dg .hot{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+.dg .ext{fill:var(--orange-soft);stroke:var(--orange);stroke-width:1.5}
+.dg .t{font-size:14px;font-weight:700;fill:var(--fg)}
+.dg .s{font-size:11.5px;fill:var(--muted)}
+.dg .l{font-size:11.5px;fill:var(--fg)}
+.dg .flow{fill:none;stroke-width:2.2;stroke-dasharray:7 6;animation:flow 1.2s linear infinite}
+.dg .n{font-size:12px;font-weight:800;fill:var(--surface)}
+@keyframes flow{to{stroke-dashoffset:-26}}
+@media (prefers-reduced-motion:reduce){.dg .flow{animation:none}}
+.flash{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.fc{perspective:1200px;min-height:230px;cursor:pointer}
+.fc-in{position:relative;width:100%;min-height:230px;transition:transform .55s;transform-style:preserve-3d}
+.fc.flip .fc-in{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;padding:22px 26px;display:flex;flex-direction:column;justify-content:center;gap:10px;border:1px solid var(--line);background:var(--surface)}
+.fc-face.b{transform:rotateY(180deg);background:var(--accent-soft);border-color:var(--accent)}
+.fc-face .k{font:700 12px var(--mono);letter-spacing:.12em;color:var(--accent)}
+.fc-face .v{font-size:21px;font-weight:700;line-height:1.35}
+.fc-face.b .v{font-size:17px;font-weight:500}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+textarea{width:100%;min-height:86px;font:14.5px/1.5 var(--sans);color:var(--fg);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;resize:vertical}
+input[type=search]{font:15px var(--sans);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;width:100%;max-width:380px}
+.check{display:flex;flex-direction:column;gap:6px}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{margin-top:5px;accent-color:var(--green);width:16px;height:16px;flex:none}
+.timer{font:800 34px var(--mono);color:var(--accent)}
+.kbd{font:12px var(--mono);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px}
+footer{color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:16px}
+/* ?embed=1: shown inside the control center tab, which already has the video */
+body.embed .video,body.embed .video-note{display:none}
+
+/* Site links in the header */
+.top .links{display:flex;gap:14px;font-size:14px;font-weight:600}
+.top .links a{text-decoration:none}
+.top{flex-wrap:wrap}
+.top .links a,#practiceBtn{white-space:nowrap}
+@media (max-width:760px){.top .links{order:3;width:100%;gap:18px;font-size:13px} section{scroll-margin-top:118px}}
+@media (max-width:640px){#practiceBtn .lbl{display:none}}
+@media (max-width:360px){section{scroll-margin-top:142px}}
+@media (max-width:420px){.tag{white-space:normal}}
+body.embed .top .links{display:none}
+pre code{background:none;padding:0;border-radius:0;font:inherit}
+:not(pre)>code{overflow-wrap:anywhere}  /* long paths wrap on phones instead of widening the page */
+/* Parts: TOC labels and an in-page banner above the first section of each part */
+.toc .toc-part{font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:10px 0 2px;padding-left:10px}
+.toc a{padding:3px 10px}
+section[data-part]::before{content:attr(data-part);align-self:flex-start;font:800 12.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--surface);background:var(--accent);padding:6px 12px;border-radius:8px;margin-bottom:4px}
+/* Figures and the detailed diagrams from the project guide (svg.dgm) */
+figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
 figcaption{font-size:14px;color:var(--muted)}
 .scroll{overflow-x:auto}
-code,pre{font-family:var(--mono);font-size:13px}
-code{background:var(--accent-soft);padding:1px 5px;border-radius:4px}
-pre{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;margin:0}
-pre code{background:none;padding:0}
-table{border-collapse:collapse;width:100%;font-size:14.5px}
-.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
-th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font:600 12px var(--mono);text-transform:uppercase;color:var(--muted)}
-tr:last-child td{border-bottom:0}
-.callout{background:var(--warn-soft);border:1px solid var(--warn);border-radius:8px;padding:10px 14px}
-select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
-#doc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 22px;min-width:0;overflow-x:auto}
+svg.dgm{display:block;width:100%;height:auto;min-width:640px;color:var(--fg);font-family:var(--mono)}
+.dgm .box{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.dgm .zone{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.2;stroke-dasharray:6 4}
+.dgm .ext{fill:var(--bg);stroke:var(--muted);stroke-width:1.5}
+.dgm .hot{fill:var(--orange-soft);stroke:var(--orange);stroke-width:1.5}
+.dgm .t{font-size:13px;font-weight:600;fill:currentColor}
+.dgm .s{font-size:11px;fill:var(--muted)}
+.dgm .lbl{font-size:11px;fill:currentColor}
+.dgm .lbl-warn{font-size:11px;fill:var(--orange);font-weight:600}
+.dgm .zone-t{font-size:12px;font-weight:600;fill:var(--accent)}
+.dgm .ln{fill:none;stroke:currentColor;stroke-width:1.5}
+.dgm .ln-warn{fill:none;stroke:var(--orange);stroke-width:1.8;stroke-dasharray:5 4}
+.dgm .num{fill:var(--fg)} .dgm .num-t{font-size:11px;font-weight:600;fill:var(--bg)}
+.dgm .ah{fill:currentColor} .dgm .ah-warn{fill:var(--orange)}
+/* Document viewer (docs/*.md rendered with their mermaid diagrams) */
+select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+#doc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 22px;min-width:0;height:min(75vh,820px);overflow:auto}
 #doc h1{font-size:24px} #doc h2{font-size:19px;margin-top:18px} #doc table{margin:10px 0} #doc td,#doc th{border:1px solid var(--line)}
 #doc p{margin:8px 0} #doc .mermaid{background:#fff;border-radius:8px;padding:8px;margin:10px 0;overflow-x:auto}
-svg.dg{display:block;width:100%;height:auto;min-width:640px;color:var(--fg);font-family:var(--mono)}
-.dg .box{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
-.dg .zone{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.2;stroke-dasharray:6 4}
-.dg .ext{fill:var(--bg);stroke:var(--muted);stroke-width:1.5}
-.dg .hot{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1.5}
-.dg .t{font-size:13px;font-weight:600;fill:currentColor}
-.dg .s{font-size:11px;fill:var(--muted)}
-.dg .lbl{font-size:11px;fill:currentColor}
-.dg .lbl-warn{font-size:11px;fill:var(--warn);font-weight:600}
-.dg .zone-t{font-size:12px;font-weight:600;fill:var(--accent)}
-.dg .ln{fill:none;stroke:currentColor;stroke-width:1.5}
-.dg .ln-warn{fill:none;stroke:var(--warn);stroke-width:1.8;stroke-dasharray:5 4}
-.dg .num{fill:var(--fg)} .dg .num-t{font-size:11px;font-weight:600;fill:var(--bg)}
-.dg .ah{fill:currentColor} .dg .ah-warn{fill:var(--warn)}
 </style>
 </head>
 <body>
-<div class="top"><strong>Solaria project guide</strong><span><a href="/">← Control center</a> · <a href="http://127.0.0.1:8001/" data-crm-link>CRM :8001</a> · <a href="/docs">API docs (Swagger)</a></span></div>
+<header class="top">
+  <div class="brand">Learn <span>AI Rudder</span> × CALL-E</div>
+  <nav class="links" aria-label="Site"><a href="/">← Control center</a><a href="http://127.0.0.1:8001/" data-crm-link>CRM</a><a href="/docs">API docs</a></nav>
+  <div class="prog"><span id="progTxt">0 / 0 learned</span><div class="bar"><i id="progBar"></i></div></div>
+  <div class="tools">
+    <button id="practiceBtn" title="Blur every 'Say this' box so you can rehearse from memory. Click a box to reveal it.">🎤 <span class="lbl">Practice mode</span></button>
+    <button id="themeBtn" title="Switch light/dark">◐</button>
+  </div>
+</header>
+
 <div class="wrap">
-<nav class="toc" aria-label="Contents">
-  <a href="/learn?doc=07-interview-playbook">Interview playbook</a>
-  <a href="#start">Start here</a>
-  <a href="#calle">What CALL-E is</a>
-  <a href="#dashboard">CALL-E dashboard: what to do</a>
-  <a href="#ownership">Who does what, where</a>
-  <a href="#assembly">Goal, script &amp; call list</a>
-  <a href="#repo">What this repo does</a>
-  <a href="#map">System diagram</a>
-  <a href="#layers">Who decides what</a>
-  <a href="#code">Code map</a>
-  <a href="#terminal">Terminal cheat sheet</a>
-  <a href="#docs">All documents</a>
-</nav>
-<article>
+<nav class="toc" id="toc"></nav>
+<main>
 
-<section id="start">
-  <span class="eyebrow">Start here</span>
-  <h1>CALL-E makes the phone call. This repo decides what the call means for the business.</h1>
-  <p>A fictional Mexican lender, Financiera Solaria, wants an AI agent to remind customers of an upcoming
-    installment and record the outcome in its CRM. CALL-E (by AI Rudder) does the phone part: it dials,
-    holds the conversation in Spanish and returns a structured result. This repo is the glue. It decides who to call,
-    tells CALL-E what to do, checks the result, and writes a status and a follow-up task into the CRM.</p>
-</section>
-
-<section id="calle">
-  <span class="eyebrow">The product</span>
-  <h2>What CALL-E is</h2>
-  <div class="two">
-    <div class="box"><h3>For a person (the website)</h3>
-      <p>At <a href="https://www.heycall-e.com/" target="_blank" rel="noopener">heycall-e.com</a> you describe a goal in plain language
-        ("call this number and confirm Friday's appointment") and give a phone number. CALL-E plans the call and asks
-        about any missing details before dialing. It then holds the conversation and gives you a summary, transcript and
-        structured result.</p></div>
-    <div class="box"><h3>For a developer (what this repo uses)</h3>
-      <ul><li><b>Developer API / SDK:</b> <code>POST /v1/calls</code> with a <code>task</code>, recipients, a <code>result_schema</code>, metadata and a webhook URL. <code>GET /v1/calls/{id}</code> reads the result.</li>
-        <li><b>MCP / agent plugins:</b> <code>plan_call</code> → <code>run_call</code> → <code>get_call_run</code>, used from Claude Code, Cursor and similar tools.</li>
-        <li><b>Webhooks</b> fire on <code>call.completed</code>, <code>call.failed</code> and <code>call.result_validation_failed</code>. They are unsigned.</li></ul></div>
-  </div>
-  <div class="two">
-    <div class="box"><h3>Goal-driven, not scripted</h3><p>You don't draw a dialogue tree. You write the goal and rules (the "task") and the shape of the answer you need (the "schema"). CALL-E handles the conversation, including voicemail, IVR menus and interruptions.</p></div>
-    <div class="box"><h3>Mexico</h3><p>Supported (<code>MX</code>, Spanish and English) but through an <b>international</b> line, which CALL-E describes as mainly for development and testing. A real pilot needs a local number or a SIP trunk.</p></div>
+<section id="start" class="hero" data-title="Start here">
+  <div class="eyebrow">Learn · AI Rudder, CALL-E and this project · Technical CSM + Forward Deployed Engineer</div>
+  <h1>Everything for the AI Rudder interview and this project, in one page</h1>
+  <p class="lead">First, the two names: <b>AI Rudder</b> is the company (Singapore voice-AI vendor). <b>CALL-E</b> (pronounced “call-ee”) is one of its products, a goal-based AI phone agent. Your take-home project is a payment-reminder workflow built <i>on</i> CALL-E. This page teaches all three, and gives you the exact words to say.</p>
+  <p class="lead"><b>In one line:</b> CALL-E makes the phone call; this repo decides what the call means for the business. It decides who to call, tells CALL-E what to do, checks the result, and writes a status and a follow-up task into the CRM.</p>
+  <div class="video"><video controls preload="metadata" src="/rudder/ai-rudder-explainer.mp4"></video></div>
+  <p class="muted video-note" style="font-size:14px">▶ The 7-minute explainer video above, with narration and captions. Also in the control center's <b>Learn</b> tab, and as an <a href="/rudder/video/player.html">interactive player</a>. File: <code>app/orchestrator/static/rudder/ai-rudder-explainer.mp4</code>.</p>
+  <div class="thesis">“I built a small payment-reminder workflow for a Mexican lender on CALL-E, and focused on making it honest: it never records an outcome that didn't happen, and never reports a CRM update that didn't land.”</div>
+  <p class="muted">↑ Your one-line thesis. Open with it, and close with it.</p>
+  <div class="grid">
+    <div class="card"><h3>How to use this page</h3><ol><li>Watch the video once (7 min).</li><li><b>Part A</b> (1–6): AI Rudder, CALL-E, the role. <b>Part B</b> (7–15): the project in depth, with diagrams, code and docs. <b>Part C</b> (16–22): what to say. Tick <i>“I've learned this”</i> at the end of each section.</li><li>Turn on <b>🎤 Practice mode</b> and say every yellow box out loud from memory.</li><li>Drill the <a href="#flash">flashcards</a> until you know them all.</li><li>Use the <a href="#checklist">day-of checklist</a>.</li></ol></div>
+    <div class="card"><h3>The 4 things they're grading</h3><ul><li>Turning a customer need into a working solution</li><li>Connecting systems and troubleshooting</li><li>Testing and interpreting results</li><li>Explaining decisions, trade-offs and limits</li></ul><p class="muted" style="font-size:14px">From your assignment brief. Every answer you give should prove one of these.</p></div>
+    <div class="card"><h3>What the interviewer asked for (their PDF)</h3><ul><li>Research AI Rudder: what it does, products, industries, its place in voice AI → <a href="#company">AI Rudder</a></li><li>Map your background to the role (Technical CSM + FDE) → <a href="#role">The role</a>, <a href="#code">Code tour</a></li><li>Answer with <b>STAR</b> and be specific: scope, stakeholders, tools, metrics, lessons → <a href="#star">STAR stories</a></li><li>Bring your own questions → <a href="#ask">Questions to ask</a></li></ul></div>
   </div>
 </section>
 
-<section id="dashboard">
-  <span class="eyebrow">Your checklist</span>
+<section id="site" data-title="0 · Using the live site">
+  <div class="eyebrow">Section 0 · The live site</div>
+  <h2>Using the live site: what is what</h2>
+  <p class="lead">The same app runs in two places: <b>online</b> at <a href="https://rudder-fde-qiyin.netlify.app/">rudder-fde-qiyin.netlify.app</a>
+    (Netlify + Render) and <b>on your Mac</b> with <code>./run.sh</code>. Online, two services work together: Netlify hosts the pages and Render runs the Python backend.</p>
+  <div class="tbl"><table>
+    <tr><th>Address</th><th>What it is</th><th>Served by</th></tr>
+    <tr><td><code>/</code></td><td><b>Control center</b>: Demo, Call my phone, Results, Troubleshoot, and the <b>Learn</b> tab (video + this page)</td><td>Netlify page; its buttons call the backend</td></tr>
+    <tr><td><code>/learn</code></td><td><b>This page</b>: interview prep + project guide + all docs</td><td>Netlify</td></tr>
+    <tr><td><code>/crm/</code></td><td><b>Mock CRM</b>: the 8 customers, tasks, outage buttons</td><td>Render, through Netlify</td></tr>
+    <tr><td><code>/docs</code></td><td>Interactive API reference (Swagger) for every button</td><td>Render, through Netlify</td></tr>
+    <tr><td><code>/api/status</code></td><td>Health check: JSON with mode, CRM state, webhook</td><td>Render, through Netlify</td></tr>
+    <tr><td><code>/rudder/ai-rudder-explainer.mp4</code> · <code>/rudder/video/player.html</code></td><td>The explainer video file, and its interactive player</td><td>Netlify CDN</td></tr>
+    <tr><td><code>calle-rudder-api.onrender.com</code></td><td>The backend itself. You rarely open it directly; Netlify forwards to it</td><td>Render</td></tr>
+    <tr><td><code>127.0.0.1:8000</code> · <code>:8001</code></td><td>The same app on your Mac (<code>./run.sh</code>): control center and CRM</td><td>Your Mac</td></tr>
+  </table></div>
+  <div class="grid">
+    <div class="card"><h3>Why Netlify</h3><p>Fast static hosting with a CDN: the pages and the 36 MB video load quickly anywhere, and every push redeploys. But Netlify <b>can't run Python</b>, a database, or background timers.</p></div>
+    <div class="card"><h3>Why Render</h3><p>Runs the FastAPI backend (orchestrator + mock CRM at <code>/crm</code>, one process) with SQLite and the simulated webhooks. Free tier: it <b>sleeps after ~15 min idle</b> and takes up to a minute to wake.</p></div>
+    <div class="card"><h3>Why one address</h3><p>Netlify <b>proxies</b> <code>/api/*</code>, <code>/crm/*</code>, <code>/docs</code> to Render, so the browser only ever talks to netlify.app. No CORS setup, and the UI code is identical locally and online.</p></div>
+  </div>
+  <div class="grid two">
+    <div class="card"><h3>Before presenting on the live site</h3><ol>
+      <li>Open the site 2–3 minutes early, so a sleeping Render instance has time to wake (a yellow banner shows while it does).</li>
+      <li>Demo tab → <b>Reset everything</b>: everyone who opens the link shares the same demo data.</li>
+      <li>“Call my phone” asks once for the <b>live-call passcode</b> (Render → service → Environment → <code>LIVE_PASSCODE</code>).</li></ol></div>
+    <div class="card"><h3>Live site or your Mac?</h3><ul>
+      <li><b>Live site:</b> share a link, show it from any computer, no setup.</li>
+      <li><b>Your Mac:</b> the safest for the interview demo. No cold start, private data, no passcode, works offline from Render.</li>
+      <li>Same code in both: every push to GitHub redeploys Netlify and Render.</li></ul></div>
+  </div>
+  <p>Full guide (configuration, what to change where, troubleshooting): <a href="#docs" data-doc="08-live-site-guide">08 · Live site guide</a> in <a href="#docs">All documents</a>.</p>
+  <label class="learned"><input type="checkbox" data-learn="site"> I know which address does what, and why there are two services</label>
+</section>
+
+<section id="plan" data-title="1 · Study plan" data-part="Part A · Interview background">
+  <div class="eyebrow">Section 1 · Plan</div>
+  <h2>Your study plan</h2>
+  <div class="grid">
+    <div class="card"><span class="tag">2 days before</span><ul><li>Watch the video; read Part A and Part B here.</li><li>Run the project once: <code>./setup.sh</code> then <code>./run.sh</code>.</li><li>FDE prep: walk the <a href="#code">code tour</a> with the files open.</li><li>Click through the Presenter guide in the control center.</li><li>Draft your <a href="#star">STAR stories</a>. Fill in the boxes; they save in this browser.</li></ul></div>
+    <div class="card"><span class="tag o">1 day before</span><ul><li>Do one <b>live call to your own phone</b> via “Call my phone”. Note what CALL-E extracted.</li><li>Rehearse the <a href="#present">15-minute run-of-show</a> twice, with the timer.</li><li>Practice mode: say every yellow box out loud.</li><li>Flashcards until 100%.</li></ul></div>
+    <div class="card"><span class="tag g">Interview day</span><ul><li>Test camera, mic and internet (their PDF asks for this).</li><li><code>./run.sh</code> running 30 min before. Click <b>Reset everything</b>.</li><li>Tabs: control center :8000, CRM :8001, <code>/learn</code>, slides.</li><li>Quiet room, water, this page open on a second screen.</li></ul></div>
+  </div>
+  <label class="learned"><input type="checkbox" data-learn="plan"> I've read my study plan</label>
+</section>
+
+<section id="company" data-title="2 · AI Rudder">
+  <div class="eyebrow">Section 2 · The company</div>
+  <h2>AI Rudder in five minutes</h2>
+  <p class="lead">A Singapore-headquartered voice-AI company that helps enterprises automate <b>high-volume customer conversations</b> (calls, chat and omnichannel contact centers), mostly for banks, fintechs, insurers and e-commerce in Southeast Asia and Latin America.</p>
+  <div class="grid">
+    <div class="card"><div class="stat">500+</div><div>companies supported globally</div></div>
+    <div class="card"><div class="stat">22</div><div>countries supported</div></div>
+    <div class="card"><div class="stat">8B+</div><div>calls delivered</div></div>
+    <div class="card"><div class="stat">2019</div><div>founded · HQ Singapore · Series B US$50M (Mar 2022, led by Tiger Global &amp; Coatue)</div></div>
+  </div>
+  <p class="muted" style="font-size:14px">The 500+ / 22 / 8B+ numbers come from the company PDF they sent you. Use those exact numbers.</p>
+
+  <h3>What they sell (product names from airudder.com)</h3>
+  <div class="tbl"><table>
+    <tr><th>Product</th><th>What it is, in plain words</th></tr>
+    <tr><td><b>AI Voice Agent</b> (“voice bot”)</td><td>An AI that makes or answers phone calls at scale: payment reminders, verification, telemarketing. The classic AI Rudder product.</td></tr>
+    <tr><td><b>AI Chat Agent</b> (“chatbot”)</td><td>The same idea on WhatsApp, web chat and social. AI Rudder is an official WhatsApp Business Solutions Partner.</td></tr>
+    <tr><td><b>BotLab</b></td><td>No-code tool to build, test and monitor AI agents.</td></tr>
+    <tr><td><b>Omnichannel / AICC</b> (AI Contact Center)</td><td>An all-in-one contact center: calls, SMS, email and social in one place, with <b>robot-human collaboration</b> (AI handles routine contacts and hands over to humans when needed).</td></tr>
+    <tr><td><b>CALL-E</b></td><td>A <b>goal-based</b> phone agent. You describe the goal; it plans and makes the call and returns structured results. <b>This is what your project uses.</b></td></tr>
+  </table></div>
+
+  <div class="grid two">
+    <div class="card"><h3>Use cases</h3><p><span class="tag">Collections &amp; pre-due reminders</span><span class="tag">Customer service</span><span class="tag">KYC / info checking / verification</span><span class="tag">Telemarketing &amp; lead generation</span><span class="tag">Quality assurance (QA)</span></p><p class="muted" style="font-size:14px">Collections is the core use case, and the one your project addresses.</p></div>
+    <div class="card"><h3>Industries</h3><p><span class="tag b">Banking &amp; finance</span><span class="tag b">Fintech / lending</span><span class="tag b">Insurance</span><span class="tag b">E-commerce</span><span class="tag b">Logistics</span><span class="tag b">Telecom</span><span class="tag b">FMCG</span><span class="tag b">BPO</span></p></div>
+    <div class="card"><h3>Where</h3><p>Local teams in <b>Singapore, Jakarta, Manila, Kuala Lumpur, Bangkok, Mexico, Shanghai and the US</b> (from their PDF). Strongest in Southeast Asia and <b>Latin America</b>.</p></div>
+    <div class="card"><h3>Core technology (built in-house)</h3><p><span class="tag p">ASR</span><span class="tag p">NLU</span><span class="tag p">TTS</span><span class="tag p">Dialogue management</span><span class="tag p">LLM-enhanced extraction</span><span class="tag p">Analytics &amp; monitoring</span></p><p class="muted" style="font-size:14px">Plus: interruption handling, backchanneling (“mm-hmm”), bilingual switching, local accents.</p></div>
+  </div>
+
+  <h3>Customers and proof points worth quoting</h3>
+  <div class="tbl"><table>
+    <tr><th>Customer</th><th>Result (as published by AI Rudder)</th><th>Why it matters for you</th></tr>
+    <tr><td>Kredivo (fintech, Indonesia)</td><td>80% cost saving; 200% higher conversion vs SMS-only</td><td>“vs SMS-only” is exactly the control group your pilot proposes</td></tr>
+    <tr><td>Bank Neo Commerce</td><td>80%+ labor cost savings; 5–10% repayment improvement</td><td>Collections ROI benchmark</td></tr>
+    <tr><td>Fortune SEA 500 bank</td><td>70% agent cost savings; +5–10% repayment rate</td><td>Same</td></tr>
+    <tr><td>Megacable (Mexico telecom)</td><td>50K+ daily calls; 70% lower operating cost; 3× conversion ROI</td><td><b>Mexico, at scale</b>. Your scenario is realistic for them</td></tr>
+    <tr><td>Julo (fintech)</td><td>100% QA coverage; 3–4× faster reviews; 10–20% fewer complaints</td><td>The QA use case</td></tr>
+  </table></div>
+  <p class="muted" style="font-size:14px">Other logos on their site: Shopee, TikTok Shop, SHEIN, Traveloka, Standard Chartered, DiDi, GoTo, Superbank, and Mexican fintechs <b>Stori, Plata, Aplazo</b> plus <b>Izzi</b> (telecom). That's a lot of Mexico, so your Solaria scenario fits their real customer base.</p>
+
+  <div class="grid two">
+    <div class="card"><h3>Trust &amp; compliance (enterprise selling points)</h3><p><span class="tag g">SOC 2</span><span class="tag g">ISO 27001</span><span class="tag g">GDPR</span><span class="tag g">PDPA</span><span class="tag g">IMDA</span><span class="tag g">CSA</span></p><p>Their PDF stresses <b>reliability, monitoring, failover, and strong data practices</b>. That matches your honest-status / outbox / PII-limitations story.</p></div>
+    <div class="card"><h3>Recent blog posts to mention (shows you did your homework)</h3>
+      <ul><li><b>“Beyond the Model: Building a Harness for a Voice Agent”</b> (Sep 2026). Code, not the model, should track what really happened, and should block duplicate writes. Debug by finding the <i>first mismatch</i> between audio, transcript and model input. <b>Your D1 and D2 decisions are the same philosophy.</b></li>
+      <li><b>“AI Can Make Calls. But Can It Navigate an IVR System?”</b> (Sep 2026). CALL-E presses keypad tones (DTMF) in phone menus. Lesson: <i>sending a key doesn't prove the call progressed.</i> That's your “completed call ≠ business success”.</li></ul></div>
+  </div>
+
+  <div class="say"><p class="q">“What do you know about AI Rudder?” (30 seconds)</p>
+    <p>“AI Rudder is a Singapore-headquartered voice AI company, founded in 2019, that helps enterprises automate high-volume customer conversations: AI voice agents, chat agents and an AI contact center platform. It's strongest in collections, customer service, KYC and telemarketing for banks, fintechs, insurers and e-commerce, across Southeast Asia and Latin America. It serves more than 500 companies in 22 countries and has delivered over 8 billion calls. Two things stand out to me. First, the core stack (ASR, NLU, TTS) is built in-house. Second, CALL-E pushes it further: instead of scripting a flow, you give the agent a goal and a result schema. That's the product I built on for the assignment.”</p></div>
+  <div class="say"><p class="q">“Why AI Rudder? Why this role?”</p>
+    <p>“Three reasons. <b>One, real, measurable impact.</b> Your customers report things like 5–10% better repayment and 70–80% lower cost, so the work connects straight to business outcomes. <b>Two, the mix of technical and customer work.</b> I like owning both sides: understanding what a customer needs <i>and</i> writing the code that gets them there (integrations, testing, troubleshooting), then explaining the trade-offs. That's the Technical CSM / Forward Deployed Engineer combination, and the assignment was exactly that. <b>Three, timing.</b> Voice agents are moving from scripted flows to goal-based, LLM-driven agents like CALL-E, and Latin America is a growth market for you. I'd like to help customers adopt that safely.” <i>+ one sentence from your own background.</i></p></div>
+  <label class="learned"><input type="checkbox" data-learn="company"> I can explain AI Rudder in 30 seconds</label>
+</section>
+
+<section id="calle" data-title="3 · CALL-E">
+  <div class="eyebrow">Section 3 · The product you built on</div>
+  <h2>CALL-E explained simply</h2>
+  <p class="lead">CALL-E is an AI agent that <b>makes phone calls to get a job done</b>. You don't design a dialogue tree. You give it a <b>goal</b> in plain language, a <b>phone number</b>, and optionally a <b>result schema</b> (the JSON shape you want back). It plans the call, dials, talks, and returns a <b>summary, a transcript and structured data</b>.</p>
+  <svg class="dg" viewBox="0 0 980 250" role="img" aria-label="CALL-E flow: goal, phone, schema go in; CALL-E plans, clarifies, dials and converses; summary, transcript and structured result come out">
+    <rect class="bx" x="10" y="20" width="230" height="56" rx="10"/><text class="t" x="26" y="44">Goal (task)</text><text class="s" x="26" y="63">“Remind María of her installment…”</text>
+    <rect class="bx" x="10" y="96" width="230" height="56" rx="10"/><text class="t" x="26" y="120">Phone · region · locale</text><text class="s" x="26" y="139">+52… · MX · es-MX</text>
+    <rect class="bx" x="10" y="172" width="230" height="56" rx="10"/><text class="t" x="26" y="196">result_schema</text><text class="s" x="26" y="215">{ outcome: enum, promise_date … }</text>
+    <path class="flow" stroke="var(--accent)" d="M240 48 C 300 48, 300 124, 360 124"/><path class="flow" stroke="var(--accent)" d="M240 124 L 360 124"/><path class="flow" stroke="var(--accent)" d="M240 200 C 300 200, 300 124, 360 124"/>
+    <rect class="ext" x="360" y="60" width="260" height="130" rx="14"/><text class="t" x="490" y="92" text-anchor="middle" style="font-size:20px;fill:var(--orange)">CALL-E</text>
+    <text class="l" x="490" y="118" text-anchor="middle">plan → clarify → dial → converse</text><text class="s" x="490" y="140" text-anchor="middle">voicemail · hold · IVR (DTMF)</text><text class="s" x="490" y="160" text-anchor="middle">interruptions · transfers</text>
+    <path class="flow" stroke="var(--green)" d="M620 124 C 680 124, 680 48, 740 48"/><path class="flow" stroke="var(--green)" d="M620 124 L 740 124"/><path class="flow" stroke="var(--green)" d="M620 124 C 680 124, 680 200, 740 200"/>
+    <rect class="bx" x="740" y="20" width="230" height="56" rx="10"/><text class="t" x="756" y="44">Summary</text><text class="s" x="756" y="63">“Will pay Fri 9 Oct via SPEI”</text>
+    <rect class="bx" x="740" y="96" width="230" height="56" rx="10"/><text class="t" x="756" y="120">Transcript</text><text class="s" x="756" y="139">who said what, with timestamps</text>
+    <rect class="hot" x="740" y="172" width="230" height="56" rx="10"/><text class="t" x="756" y="196">Structured result</text><text class="s" x="756" y="215">{"outcome":"promise_to_pay",…}</text>
+  </svg>
+  <div class="grid two">
+    <div class="card"><h3>Ways to use it</h3><ul>
+      <li><b>Web app / dashboard</b> (heycall-e.com): type a goal, it calls. 100 free credits (≈ US$1) on sign-up. API keys live at dashboard → account → API keys.</li>
+      <li><b>Developer API + SDKs</b> (Python <code>calle-ai</code>, TypeScript <code>@call-e/calle</code>): create a call, get the call, read events, cancel. <b>You used this.</b></li>
+      <li><b>CLI</b>: <code>calle auth login</code>.</li>
+      <li><b>MCP</b> (for AI agents like Claude/Cursor): <code>plan_call → run_call → get_call_run</code>. No <code>webhook_url</code>, so it relies on polling.</li>
+      <li><b>ChatGPT app</b>, published by AI Rudder Pte Ltd.</li></ul></div>
+    <div class="card"><h3>Capabilities to name-drop</h3><ul>
+      <li>Smart goal clarification: asks for missing details before dialing</li>
+      <li>Structured, schema-validated results</li>
+      <li>Scheduled and batch calling</li>
+      <li>Real-world voice handling: voicemail, screening, hold, transfers, interruptions</li>
+      <li>IVR navigation with DTMF keypad tones</li>
+      <li>Governance: rate limits, concurrency controls, blocklists, kill switches, audit trails</li></ul></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Concept</th><th>What it means</th><th>How your project uses it</th></tr>
+    <tr><td><code>task</code></td><td>The goal / instructions in natural language</td><td>Built per customer in <code>agent_config.build_task</code>: STEP 1–5, EXCEPTIONS, NEVER</td></tr>
+    <tr><td><code>result_schema</code></td><td>JSON Schema of the data to extract. Closed object, scalar fields, no <code>$ref/oneOf</code></td><td>Enums with an explicit <code>unknown</code>; ISO date; <code>promise_certainty</code>; verbatim <code>outcome_evidence</code></td></tr>
+    <tr><td><code>region</code> / <code>locale</code></td><td>Which country line and language</td><td><code>MX</code> / <code>es-MX</code></td></tr>
+    <tr><td><code>metadata</code></td><td>Your own tags, echoed back</td><td><code>account_id</code>, <code>cycle</code>, <code>schema_version</code></td></tr>
+    <tr><td><code>Idempotency-Key</code> header</td><td>Same key = same call; never duplicated</td><td><code>solaria-reminder-{cycle}-{account}</code>, saved <i>before</i> the network call</td></tr>
+    <tr><td><code>webhook_url</code></td><td>CALL-E POSTs when the call ends (<code>call.completed</code>, <code>call.failed</code>, <code>call.result_validation_failed</code>). <b>Unsigned.</b></td><td>Treated as a wake-up signal only; then re-read with <code>GET</code></td></tr>
+    <tr><td>status vs result</td><td><code>completed</code> means the call ended. It does <b>not</b> mean the result is ready or the business goal was met</td><td>You only count success when the CRM confirms the write</td></tr>
+    <tr><td>Regions</td><td>Mexico (MX, +52, English/Spanish) runs on an <b>International</b> line, “intended primarily for development and testing”</td><td>Your #1 pilot blocker: needs a local MX number or SIP trunk</td></tr>
+  </table></div>
+  <div class="warn"><b>⚠ Heads-up: CALL-E's public API has moved on since you built this</b>
+    Your repo pins <code>calle-ai==0.7.0</code> and the v1 shape (<code>POST /v1/calls</code> with a <code>recipients[]</code> array). The public integrations repo now documents <b>SDK 1.0.1</b> and <b>v2 endpoints</b> (<code>POST /v2/calls</code>, <code>GET /v2/calls/{id}/events</code>, <code>…/cancel</code>), a single <code>phone</code> field, and a <code>result_status</code> (<code>pending · available · unavailable · not_applicable</code>). Their docs say to poll until <code>result_status</code> isn't <code>pending</code>, because <code>completed</code> alone doesn't mean the result is ready.<br><br>
+    <b>Say it before they ask:</b> “I built against SDK 0.7.0. I see the API is now v2 with <code>result_status</code>. That's a nice validation of my design, because I already treat ‘call completed’ as different from ‘result usable’. Migrating is contained to one file, the gateway adapter.” Do a live test call before the interview so you know whether the pinned version still works.</div>
+  <div class="say"><p class="q">“Explain CALL-E to a non-technical customer” (20 seconds)</p>
+    <p>“CALL-E is an AI assistant that makes phone calls for you. Instead of programming a script, you tell it the goal (‘remind María her payment is due and ask when she'll pay’) and what information you need back. It makes the call in natural Spanish, handles things like voicemail or being asked to call back, and gives you a summary, the transcript and clean data you can put straight into your CRM.”</p></div>
+  <div class="say"><p class="q">“What did you learn exploring CALL-E?”</p>
+    <p>“It's goal-driven, not a flow builder: a task plus a result schema. There are three integration paths: MCP for AI agents, the SDK/API for backends, and the web app for end users. I chose the API because a backend integration needs webhooks, metadata and idempotency keys, and MCP's <code>run_call</code> has no webhook URL. Three things shaped my design. Webhooks are unsigned, so I re-read every call from the API. Mexico is on an international line, which is a pilot risk. And ‘completed’ only means the call ended, not that the business goal was met.”</p></div>
+  <label class="learned"><input type="checkbox" data-learn="calle"> I can explain CALL-E and how I used it</label>
+</section>
+
+<section id="dashboard" data-title="4 · CALL-E dashboard">
+  <div class="eyebrow">Section 4 · Your checklist</div>
   <h2>What to do in the CALL-E dashboard</h2>
-  <div class="box"><ol>
+  <div class="card"><ol>
     <li>Create an account at <a href="https://www.heycall-e.com/" target="_blank" rel="noopener">heycall-e.com</a>. New accounts get 100 free credits (about US$1).</li>
     <li>Optional, to explore the product: place one call to your own phone from the CALL-E web app by typing a goal and your number. This is the "customer experience" the assignment asks you to explore.</li>
     <li>Create an API key: <a href="https://dashboard.heycall-e.com/account/api-keys" target="_blank" rel="noopener">dashboard.heycall-e.com/account/api-keys</a>. Copy it.</li>
-    <li>Paste it in this app: Control center → <b>Call my phone</b> → step 1. Or put <code>CALLE_API_KEY=...</code> in <code>.env</code> and restart.</li>
+    <li>Paste it in this app: Control center → <b>Call my phone</b> → step 1. Or put <code>CALLE_API_KEY=...</code> in <code>.env</code> and restart. On the live site, add <code>CALLE_API_KEY</code> under Render → service → Environment instead (a key typed into the page is lost when the free instance sleeps).</li>
     <li>Enter your phone and press <b>Call me now</b>. Answer, and play the customer using one of the scripts.</li>
     <li>Afterwards, check usage under <a href="https://dashboard.heycall-e.com/account/billing" target="_blank" rel="noopener">dashboard → billing</a>.</li>
   </ol></div>
-  <p class="callout">These steps follow CALL-E's public README; the dashboard's exact labels may differ. Only countries on CALL-E's
+  <p class="warn">These steps follow CALL-E's public README; the dashboard's exact labels may differ. Only countries on CALL-E's
     supported list can be called (US, CA, MX, ES, BR, GB, DE, IN, and others). The selector on the "Call my phone" tab lists them.</p>
   <p><b>That is the complete list.</b> You will not build the campaign, type the goal, or upload a call list in the dashboard:
-    for this project, all of that reaches CALL-E through the API, from this repo's code. The next two sections show exactly where.</p>
+    for this project, all of that reaches CALL-E through the API, from this repo's code. <a href="#assembly">Goal, script &amp; call list</a> and <a href="#ownership">Who does what, where</a> show exactly where.</p>
+  <label class="learned"><input type="checkbox" data-learn="dashboard"> I know the only things I need from the CALL-E dashboard</label>
 </section>
 
+<section id="glossary" data-title="5 · Voice AI words">
+  <div class="eyebrow">Section 5 · Vocabulary</div>
+  <h2>Voice-AI and collections vocabulary</h2>
+  <p class="lead">Every voice-AI call is a loop: <b>ASR</b> (speech→text) → <b>NLU</b> (text→meaning) → <b>dialogue manager / LLM</b> (decide what to say) → <b>TTS</b> (text→voice) → back to the customer. Search the list below for any word you don't know.</p>
+  <input type="search" id="gq" placeholder="Search terms… (e.g. PTP, webhook, SIP)">
+  <div class="tbl"><table id="gtable"><thead><tr><th>Term</th><th>Plain-English meaning</th><th>Area</th></tr></thead><tbody></tbody></table></div>
+  <label class="learned"><input type="checkbox" data-learn="glossary"> I know these terms</label>
+</section>
 
-<section id="ownership">
-  <span class="eyebrow">Your map</span>
-  <h2>Who does what, where</h2>
-  <div class="two">
-    <div class="box"><h3>On the CALL-E website</h3>
-      <p class="muted">heycall-e.com · dashboard.heycall-e.com</p>
-      <ul>
-        <li>Create the account and log in</li>
-        <li>Create (or revoke) the <b>API key</b> — the only thing this project needs from the dashboard</li>
-        <li>Watch <b>credits and usage</b> under billing after live calls</li>
-        <li>Optional: place one manual call from their web app, to feel the product as an end user</li>
-      </ul>
-      <p class="muted">Nothing else. No campaign builder, no goal typing, no list upload for this integration.</p></div>
-    <div class="box"><h3>On localhost (the UIs)</h3>
-      <p class="muted">Control center :8000 · mock CRM :8001</p>
-      <ul>
-        <li><b>Demo tab:</b> reset, run the campaign, simulate each conversation, break and restore the CRM</li>
-        <li><b>Call my phone:</b> paste the key, enter your number, place one real call</li>
-        <li><b>Results:</b> transcripts, extracted results, CRM records</li>
-        <li><b>Troubleshoot:</b> health checks with fixes</li>
-        <li><b>CRM :8001:</b> the customer database the calls read from and write to</li>
-      </ul></div>
-    <div class="box"><h3>In files &amp; terminal (you, the FDE)</h3>
-      <p class="muted">What you change when the customer asks for changes</p>
-      <ul>
-        <li><b>Call list:</b> <code>data/seed_accounts.json</code> (then Reset)</li>
-        <li><b>Goal &amp; script:</b> <code>app/orchestrator/agent_config.py</code></li>
-        <li><b>Policies:</b> <code>guards.py</code> (who/when), <code>outcomes.py</code> (what results mean)</li>
-        <li><b>Settings:</b> <code>.env</code> (key, calling window)</li>
-        <li>Every button has a <code>curl</code> equivalent for scripting</li>
-      </ul></div>
+<section id="role" data-title="6 · The role">
+  <div class="eyebrow">Section 6 · The job</div>
+  <h2>The role: Technical CSM + Forward Deployed Engineer</h2>
+  <p class="lead">This is a <b>hybrid</b> role. The <b>Technical CSM</b> half owns the customer relationship and outcomes. The <b>Forward Deployed Engineer (FDE)</b> half sits with the customer and <b>writes the code</b> that makes the product work in their real systems. In practice: you scope it, build it, ship it, prove it works, and keep it working.</p>
+  <div class="grid two">
+    <div class="card" style="border-left:5px solid var(--accent)"><span class="tag">Technical CSM half</span><h3>Owns the customer &amp; the outcome</h3><ul>
+      <li>Discovery: goals, KPIs, volumes, compliance, who signs off</li>
+      <li>Onboarding plan, UAT, go-live, hypercare</li>
+      <li>Health monitoring, escalations, QBRs, ROI vs control group</li>
+      <li>Expectation-setting: says honestly what the product can't do yet</li>
+      <li>Renewal and expansion: “evidence to expand”</li></ul></div>
+    <div class="card" style="border-left:5px solid var(--orange)"><span class="tag o">Forward Deployed Engineer half</span><h3>Builds the solution in the customer's world</h3><ul>
+      <li>Writes integration code: CRM/core-banking APIs, webhooks, data mapping, list uploads</li>
+      <li>Designs agent configs: task prompts, result schemas, routing rules</li>
+      <li>Debugs in environments you don't fully control (customer network, CRM, telephony)</li>
+      <li>Prototypes fast, then hardens: tests, idempotency, retries, monitoring</li>
+      <li>Turns repeated custom work into product feedback (“we built this for 3 customers → should be a feature”)</li></ul></div>
   </div>
-  <h3>How the system talks to you, and you to it</h3>
+  <div class="note"><b>The FDE mindset in one line</b>“Get the customer to a working outcome in their real environment, fast, and then make it reliable.” Palantir made the title famous, and AI companies now use it for engineers embedded with enterprise customers. Your orchestrator <i>is</i> forward-deployed work: the glue between a vendor's product (CALL-E) and a customer's systems (the CRM).</div>
   <div class="tbl"><table>
-    <tr><th>Direction</th><th>Channel</th><th>What it tells you / does</th></tr>
-    <tr><td rowspan="4">System → you</td><td>Activity feed (right panel)</td><td>Every action the orchestrator just took, newest first — your live narration during the demo</td></tr>
-    <tr><td>Results tab + call window</td><td>Per call: transcript, what CALL-E extracted, what the rules decided, what the CRM stored</td></tr>
-    <tr><td>Presenter guide ✓ / outbox / chips</td><td>Green ✓ = your step really worked; outbox = results waiting for the CRM; chips = system health at a glance</td></tr>
-    <tr><td>Troubleshoot checks</td><td>What is broken and the exact fix</td></tr>
-    <tr><td rowspan="2">You → system</td><td>Buttons (or their curl commands)</td><td>Start campaigns, simulate, inject failures, retry, place a live call</td></tr>
-    <tr><td>The files above</td><td>Change the list, the script, the policies — restart <code>./run.sh</code> to apply</td></tr>
+    <tr><th>What they're testing</th><th>CSM proof</th><th>FDE proof</th></tr>
+    <tr><td>Customer need → working solution</td><td>Solaria scenario, scope &amp; boundaries, success definition</td><td>A running orchestrator + mock CRM over real HTTP, <code>./run.sh</code> in one command</td></tr>
+    <tr><td>Connect systems &amp; troubleshoot</td><td>Troubleshoot tab with fixes in plain words</td><td>Webhook + API re-read + outbox; gateway adapter (live SDK | simulator)</td></tr>
+    <tr><td>Test &amp; interpret results</td><td>Test log written for a customer audience</td><td>39 pytest tests; v1 → v2 fix shown in git history</td></tr>
+    <tr><td>Explain trade-offs &amp; limits</td><td>Pilot plan, metrics, “not yet for full volume”</td><td>Decision log D1–D3 with alternatives and “what would change my mind”</td></tr>
   </table></div>
+  <div class="warn"><b>Expect a technical deep-dive</b>Because of the FDE half, they may ask you to open the code and explain it, change something live, or reason about scale and failure. Study the <a href="#code">code tour</a> in Part B and be ready to open any file it lists.</div>
+  <div class="note"><b>Tip: the job description</b>Their PDF asks you to map your background to the job description. Paste the JD's top responsibilities, both customer-facing and engineering, into the <a href="#star">STAR boxes</a> and attach one story to each.</div>
+  <div class="say"><p class="q">“How do you see the CSM and FDE sides of this role fitting together?”</p>
+    <p>“They're the same job seen from two sides. The CSM side asks <i>what outcome does the customer need, and how do we prove it?</i> The FDE side asks <i>what has to be built in their environment to get there, and how do we make it reliable?</i> In my assignment, the CSM half was the scenario, the success definition, the test log and the rollout plan. The FDE half was the orchestrator, the CRM integration, the failure handling and the tests. I like owning both, because the best customer fixes usually need someone who can both understand the business and change the code.”</p></div>
+  <div class="say"><p class="q">“Tell me about yourself” (structure; fill in your details, ~90 seconds)</p>
+    <p><b>Present:</b> “I'm currently [role] at [company], where I [1 line covering both sides: e.g. build API integrations for enterprise customers and own their onboarding].”</p>
+    <p><b>Past:</b> “Before that I [1–2 experiences: one technical (shipped code, integrations, debugging) + one customer-facing], for example [one number: ‘onboarded 12 enterprise accounts’, ‘cut integration time by 30%’].”</p>
+    <p><b>Why this:</b> “What I enjoy most is the space between what a customer needs and what the technology can do: building the integration <i>and</i> making sure it delivers the business result. That's the Technical CSM / Forward Deployed Engineer role.”</p>
+    <p><b>Bridge:</b> “For this assignment I built a payment-reminder workflow on CALL-E for a Mexican lender, end to end, and I'd love to walk you through it.”</p></div>
+  <label class="learned"><input type="checkbox" data-learn="role"> I can explain both halves of the role and connect my background to each</label>
 </section>
 
-<section id="assembly">
-  <span class="eyebrow">The content pipeline</span>
-  <h2>How the goal, strategy, script and call list become a phone call</h2>
-  <figure>
-    <div class="scroll">
-    <svg class="dg" viewBox="0 0 940 300" role="img" aria-label="Three inputs — the CRM call list, the script template in agent_config.py and the result schema — are merged per customer into one CALL-E request; CALL-E then improvises the live conversation within those rules and returns a structured result.">
-      <defs><marker id="asm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
-      <rect class="ext" x="20" y="20" width="240" height="72" rx="8"/>
-      <text class="t" x="140" y="44" text-anchor="middle">1 · Call list</text>
-      <text class="s" x="140" y="62" text-anchor="middle">CRM accounts (:8001)</text>
-      <text class="s" x="140" y="78" text-anchor="middle">seed: data/seed_accounts.json</text>
-      <rect class="box" x="20" y="112" width="240" height="72" rx="8"/>
-      <text class="t" x="140" y="136" text-anchor="middle">2 · Goal + script template</text>
-      <text class="s" x="140" y="154" text-anchor="middle">agent_config.build_task()</text>
-      <text class="s" x="140" y="170" text-anchor="middle">steps, exceptions, NEVERs</text>
-      <rect class="box" x="20" y="204" width="240" height="72" rx="8"/>
-      <text class="t" x="140" y="228" text-anchor="middle">3 · Answer form</text>
-      <text class="s" x="140" y="246" text-anchor="middle">RESULT_SCHEMA</text>
-      <text class="s" x="140" y="262" text-anchor="middle">outcomes list + unknown</text>
-      <polyline class="ln" points="260,56 310,56 310,128 352,128" marker-end="url(#asm)"/>
-      <line class="ln" x1="260" y1="148" x2="352" y2="148" marker-end="url(#asm)"/>
-      <polyline class="ln" points="260,240 310,240 310,168 352,168" marker-end="url(#asm)"/>
-      <text class="lbl" x="268" y="42">guards filter</text>
-      <text class="lbl" x="268" y="98">who may be called</text>
-      <rect class="zone" x="354" y="96" width="250" height="104" rx="10"/>
-      <text class="t" x="479" y="126" text-anchor="middle">One request per customer</text>
-      <text class="s" x="479" y="144" text-anchor="middle">POST /v1/calls</text>
-      <text class="s" x="479" y="160" text-anchor="middle">task + result_schema + phone</text>
-      <text class="s" x="479" y="176" text-anchor="middle">+ Idempotency-Key (never twice)</text>
-      <line class="ln" x1="604" y1="148" x2="668" y2="148" marker-end="url(#asm)"/>
-      <text class="lbl" x="612" y="138">dials</text>
-      <rect class="hot" x="670" y="96" width="250" height="104" rx="10"/>
-      <text class="t" x="795" y="122" text-anchor="middle">CALL-E improvises the</text>
-      <text class="t" x="795" y="140" text-anchor="middle">live conversation</text>
-      <text class="s" x="795" y="160" text-anchor="middle">within your rules: voicemail,</text>
-      <text class="s" x="795" y="176" text-anchor="middle">interruptions, rephrasing</text>
-      <polyline class="ln" points="795,200 795,250 612,250" marker-end="url(#asm)"/>
-      <text class="lbl" x="616" y="242">structured result → your rules → CRM</text>
-    </svg>
-    </div>
-    <figcaption>Per customer, the orchestrator merges the CRM row into the script template, attaches the answer form, and sends one request. CALL-E owns only the live conversation; everything before and after is yours.</figcaption>
-  </figure>
-
-  <div class="two">
-    <div class="box"><h3>The call list</h3>
-      <p>Lives in the <b>CRM</b> (mock, :8001), seeded from <code>data/seed_accounts.json</code> — 8 fictional customers.
-      "Run campaign" reads the whole list; the <b>guards</b> then decide who may actually be called (phone present and valid,
-      not do-not-call, 08:00–21:00 local). To change the list, edit the seed file and press Reset. "Call my phone" just
-      points María Fernanda's row (ACC-1001) at your number for one live test.</p></div>
-    <div class="box"><h3>The goal and the script</h3>
-      <p>Never typed into CALL-E's website. They are a <b>template in code</b> — <code>agent_config.build_task()</code> —
-      filled with each customer's own data:</p>
-      <pre><code>You are Sofía, a virtual assistant (AI) calling
-on behalf of Financiera Solaria...
-STEP 2 - ask the person to confirm they are {full_name}.
-STEP 3 - installment #{n} for {amount} is due on {due_date}.
-EXCEPTIONS - human requested, dispute, hardship, paid...
-NEVER: threaten · take card numbers · claim to be human.</code></pre>
-      <p>Read the exact text any call received: Results → the call → <b>"Request sent to CALL-E"</b>. To change the script,
-      edit that file and restart <code>./run.sh</code>; the next call uses it.</p></div>
-    <div class="box"><h3>The strategy (three owners)</h3>
-      <ul>
-        <li><b>Who and when</b> — your code: guards, calling window, one-call-per-cycle idempotency.</li>
-        <li><b>What to say and never say</b> — the task text above.</li>
-        <li><b>How each sentence is said live</b> — CALL-E's engine. There is no word-for-word script: it improvises within
-          your rules, which is exactly what makes it handle real people.</li>
-      </ul>
-      <p>The <b>answer form</b> (<code>RESULT_SCHEMA</code>) closes the loop: it tells CALL-E which fields to bring back —
-      fixed lists with an <code>unknown</code> option — and your rules turn that into a CRM status and a task.</p></div>
+<section id="project" data-title="7 · Your project" data-part="Part B · The project, in depth">
+  <div class="eyebrow">Section 7 · What you built</div>
+  <h2>Your project in plain English</h2>
+  <p class="lead"><b>Financiera Solaria</b> (fictional consumer lender in Mexico) wants an AI agent to call customers <b>3 days before</b> an installment is due, remind them in Mexican Spanish, and record <b>one actionable outcome</b> in the CRM, such as “promise to pay on Fri 9 Oct”, with a follow-up task for the right team.</p>
+  <div class="grid two">
+    <div class="card"><h3>Why this scenario</h3><p>Most late payers aren't unwilling. They forget, or get paid after the due date. Human agents waste hours on calls that end in “I'll pay Friday”, and the promise ends up in free-text notes nobody can check.</p></div>
+    <div class="card"><h3>Boundaries (what the agent will NOT do)</h3><p>No negotiation, discounts or payment plans. No taking payments or card data. No talking about the debt with anyone but the account holder. No legal threats. No automatic redial. <b>Anything that needs judgment becomes a task for a human.</b></p></div>
   </div>
+
+  <h3>The six steps (memorize these)</h3>
+  <ol class="steps">
+    <li><div><b>Read the account</b> from the CRM (name, phone, amount, due date, time zone). <b>Guards</b> block the call if there's no valid phone, a do-not-call flag, or it's outside 08:00–21:00 <i>customer</i> local time.</div></li>
+    <li><div><b>Create the call</b> on CALL-E: task prompt + result schema + MX/es-MX + metadata, with an <b>idempotency key</b> saved before the request, so a crash or retry can never call someone twice.</div></li>
+    <li><div><b>CALL-E has the conversation</b> in Spanish: AI disclosure, identity check, reminder, asks for a date, handles exceptions.</div></li>
+    <li><div><b>Webhook arrives.</b> It's unsigned, so it's only a <b>wake-up signal</b>. Checks: header event id = body id, and the call id must be one we created.</div></li>
+    <li><div><b>Re-read the call</b> from the authenticated API (<code>GET /calls/{id}</code>). That is the <b>source of truth</b>. A forged webhook body can't fake a promise.</div></li>
+    <li><div><b>Business rules</b> turn the verified result into a CRM status + task + team. The write goes through an <b>outbox</b> and only counts when the CRM answers <code>201 created</code> (or <code>200 duplicate</code>).</div></li>
+  </ol>
+
+  <p>See every arrow in the <a href="#map">System diagram</a>, and who owns each decision in <a href="#layers">Who decides what</a>.</p>
+  <label class="learned"><input type="checkbox" data-learn="project"> I can explain the scenario, the boundaries and the six steps</label>
 </section>
 
-<section id="repo">
-  <span class="eyebrow">This repository</span>
-  <h2>What this repo does</h2>
-  <div class="tbl"><table>
-    <tr><th>Piece</th><th>Port</th><th>Real or simulated</th><th>Job</th></tr>
-    <tr><td>Orchestrator + control center</td><td>8000</td><td>Real</td><td>Runs the campaign, the pre-call checks, the CALL-E requests, the webhook, verification, business rules and CRM writes. Also serves this UI.</td></tr>
-    <tr><td>Mock CRM</td><td>8001</td><td>Real HTTP, mock system</td><td>The customer's system of record: accounts, call interactions, follow-up tasks. Outages can be switched on.</td></tr>
-    <tr><td>CALL-E</td><td>cloud</td><td>Live or simulated</td><td>Live: real calls through the official SDK. Simulated: scripted Spanish conversations in the same data shape.</td></tr>
-  </table></div>
-</section>
-
-<section id="map">
-  <span class="eyebrow">System diagram</span>
-  <h2>Who talks to whom</h2>
+<section id="map" data-title="8 · System diagram">
+  <div class="eyebrow">Section 8 · Who talks to whom</div>
+  <h2>System diagram: who talks to whom</h2>
   <figure>
-    <div class="scroll"><svg class="dg" viewBox="0 0 960 430" role="img" aria-label="Mock CRM sends account context to the orchestrator; the orchestrator's guards and agent config build a CALL-E request; CALL-E calls the customer and sends an unsigned webhook back; the orchestrator re-reads the call from the CALL-E API, applies business rules, and writes the outcome to the CRM through an outbox.">
+    <div class="scroll"><svg class="dgm" viewBox="0 0 1000 430" role="img" aria-label="Mock CRM sends account context to the orchestrator; the orchestrator's guards and agent config build a CALL-E request; CALL-E calls the customer and sends an unsigned webhook back; the orchestrator re-reads the call from the CALL-E API, applies business rules, and writes the outcome to the CRM through an outbox.">
       <defs>
         <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
         <marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-warn" d="M0,0 L10,5 L0,10 z"/></marker>
@@ -312,84 +494,303 @@ NEVER: threaten · take card numbers · claim to be human.</code></pre>
 
       <!-- re-fetch: webhook -> gateway -->
       <line class="ln" x1="660" y1="280" x2="660" y2="154" marker-end="url(#a)"/>
-      <text class="lbl" x="668" y="214">re-fetch</text>
-      <text class="lbl" x="668" y="228">call by id</text>
+      <text class="lbl" x="652" y="214" text-anchor="end">re-fetch</text>
+      <text class="lbl" x="652" y="228" text-anchor="end">call by id</text>
 
       <!-- CALL-E -->
-      <rect class="ext" x="790" y="70" width="150" height="150" rx="8"/>
-      <text class="t" x="865" y="100" text-anchor="middle">CALL-E</text>
-      <text class="s" x="865" y="118" text-anchor="middle">AI Rudder</text>
-      <text class="s" x="865" y="146" text-anchor="middle">plans · dials</text>
-      <text class="s" x="865" y="162" text-anchor="middle">talks · extracts</text>
-      <text class="s" x="865" y="178" text-anchor="middle">structured_result</text>
+      <rect class="ext" x="830" y="70" width="150" height="150" rx="8"/>
+      <text class="t" x="905" y="100" text-anchor="middle">CALL-E</text>
+      <text class="s" x="905" y="118" text-anchor="middle">AI Rudder</text>
+      <text class="s" x="905" y="146" text-anchor="middle">plans · dials</text>
+      <text class="s" x="905" y="162" text-anchor="middle">talks · extracts</text>
+      <text class="s" x="905" y="178" text-anchor="middle">structured_result</text>
 
       <!-- Customer -->
-      <circle class="ext" cx="865" cy="340" r="42"/>
-      <text class="t" x="865" y="337" text-anchor="middle">Customer</text>
-      <text class="s" x="865" y="353" text-anchor="middle">+52 phone</text>
+      <circle class="ext" cx="905" cy="340" r="42"/>
+      <text class="t" x="905" y="337" text-anchor="middle">Customer</text>
+      <text class="s" x="905" y="353" text-anchor="middle">+52 phone</text>
 
       <!-- 1 CRM -> guards -->
       <polyline class="ln" points="170,190 214,190 214,123 264,123" marker-end="url(#a)"/>
-      <text class="lbl" x="178" y="108">GET account</text>
+      <text class="lbl" x="172" y="108">GET account</text>
       <!-- 2 gateway -> CALL-E -->
-      <polyline class="ln" points="704,110 788,110" marker-end="url(#a)"/>
-      <text class="lbl" x="712" y="100">POST /v1/calls</text>
-      <polyline class="ln" points="788,136 704,136" marker-end="url(#a)"/>
-      <text class="lbl" x="712" y="152">GET /v1/calls/id</text>
+      <polyline class="ln" points="704,110 828,110" marker-end="url(#a)"/>
+      <text class="lbl" x="775" y="100" text-anchor="middle">POST /calls</text>
+      <polyline class="ln" points="828,136 704,136" marker-end="url(#a)"/>
+      <text class="lbl" x="775" y="152" text-anchor="middle">GET /calls/id</text>
       <!-- 3 CALL-E <-> customer -->
-      <line class="ln" x1="865" y1="222" x2="865" y2="296" marker-start="url(#a)" marker-end="url(#a)"/>
-      <text class="lbl" x="873" y="256">call · es-MX</text>
+      <line class="ln" x1="905" y1="222" x2="905" y2="296" marker-start="url(#a)" marker-end="url(#a)"/>
+      <text class="lbl" x="913" y="256">call · es-MX</text>
       <!-- 4 webhook -->
-      <polyline class="ln-warn" points="800,220 800,300 706,300" marker-end="url(#aw)"/>
-      <text class="lbl-warn" x="712" y="290">webhook · unsigned</text>
+      <polyline class="ln-warn" points="840,220 840,300 706,300" marker-end="url(#aw)"/>
+      <text class="lbl-warn" x="730" y="270">webhook</text>
+      <text class="lbl-warn" x="730" y="284">unsigned</text>
       <!-- 6 outbox -> CRM -->
       <polyline class="ln" points="266,309 214,309 214,250 172,250" marker-end="url(#a)"/>
-      <text class="lbl" x="178" y="330">POST outcome</text>
-      <text class="lbl" x="178" y="344">201 = success</text>
+      <text class="lbl" x="24" y="302">POST outcome</text>
+      <text class="lbl" x="24" y="316">201 = success</text>
 
       <!-- step numbers -->
       <g><circle class="num" cx="214" cy="157" r="9"/><text class="num-t" x="214" y="161" text-anchor="middle">1</text></g>
-      <g><circle class="num" cx="746" cy="123" r="9"/><text class="num-t" x="746" y="127" text-anchor="middle">2</text></g>
-      <g><circle class="num" cx="865" cy="276" r="9"/><text class="num-t" x="865" y="280" text-anchor="middle">3</text></g>
-      <g><circle class="num" cx="760" cy="300" r="9"/><text class="num-t" x="760" y="304" text-anchor="middle">4</text></g>
+      <g><circle class="num" cx="775" cy="123" r="9"/><text class="num-t" x="775" y="127" text-anchor="middle">2</text></g>
+      <g><circle class="num" cx="905" cy="276" r="9"/><text class="num-t" x="905" y="280" text-anchor="middle">3</text></g>
+      <g><circle class="num" cx="800" cy="300" r="9"/><text class="num-t" x="800" y="304" text-anchor="middle">4</text></g>
       <g><circle class="num" cx="660" cy="190" r="9"/><text class="num-t" x="660" y="194" text-anchor="middle">5</text></g>
       <g><circle class="num" cx="214" cy="280" r="9"/><text class="num-t" x="214" y="284" text-anchor="middle">6</text></g>
     </svg></div>
     <figcaption>1 read the account · 2 create the call · 3 the conversation · 4 webhook (only a signal) · 5 re-read the call from the API (the trusted source) · 6 write to the CRM through the outbox. "201 = success" means the CRM's own confirmation.</figcaption>
   </figure>
+  <h3 id="repo">What runs where</h3>
+  <div class="tbl"><table>
+    <tr><th>Piece</th><th>On your Mac</th><th>Online</th><th>Real or simulated</th><th>Job</th></tr>
+    <tr><td>Orchestrator + control center</td><td>:8000</td><td>Render (pages on Netlify)</td><td>Real</td><td>Runs the campaign, the pre-call checks, the CALL-E requests, the webhook, verification, business rules and CRM writes. Also serves the UI locally.</td></tr>
+    <tr><td>Mock CRM</td><td>:8001</td><td>Render, at <code>/crm</code> (same process)</td><td>Real HTTP, mock system</td><td>The customer's system of record: accounts, call interactions, follow-up tasks. Outages can be switched on.</td></tr>
+    <tr><td>CALL-E</td><td>cloud</td><td>cloud</td><td>Live or simulated</td><td>Live: real calls through the official SDK. Simulated: scripted Spanish conversations in the same data shape.</td></tr>
+  </table></div>
+  <label class="learned"><input type="checkbox" data-learn="map"> I can draw the system diagram and name the six steps from memory</label>
 </section>
 
-<section id="layers">
-  <span class="eyebrow">Responsibility</span>
-  <h2>Who decides what</h2>
-  <div class="two">
-    <div class="box"><h3>Instructions (prompt)</h3><p>What the agent says: AI disclosure, confirming it's the right person, the reminder, clarifying once, handling exceptions, and things it must never do. File: <code>agent_config.build_task</code>. Shown in each call's "Request sent to CALL-E".</p></div>
-    <div class="box"><h3>Workflow config (schema)</h3><p>The shape of the answer: enum outcomes with <code>unknown</code>, an ISO date, how certain the promise was, the evidence quote. Also region/locale, metadata and the idempotency key. File: <code>agent_config.RESULT_SCHEMA</code>.</p></div>
-    <div class="box"><h3>External logic (code)</h3><p>Who may be called and when (<code>guards.py</code>). What an answer means: status, task, team, priority (<code>outcomes.py</code>). A promise only counts if it's specific, firm, and at most 7 days after the due date.</p></div>
+<section id="layers" data-title="9 · Who decides what">
+  <div class="eyebrow">Section 9 · The three layers</div>
+  <h2>Who decides what: the three layers</h2>
+  <p class="lead">CALL-E is goal-driven: you give it a <code>task</code> and a <code>result_schema</code>, and it plans the conversation itself. That makes it important to be explicit about which behaviour sits in which layer.</p>
+  <div class="grid">
+    <div class="card" style="border-left:5px solid var(--accent)"><span class="tag">1 · Instructions</span><p>The <b>task prompt</b>: purpose, AI disclosure (“virtual assistant Sofía”), right-party check before mentioning the debt, clarify a vague date <b>once</b>, exception handling, and a <b>NEVER</b> list (threats, discounts, card data, claiming to be human).</p><p class="muted" style="font-size:14px">File: <code>agent_config.build_task</code>. The exact text any call received: Results → the call → “Request sent to CALL-E”.</p></div>
+    <div class="card" style="border-left:5px solid var(--blue)"><span class="tag b">2 · Workflow config</span><p>The <b>contract</b> with CALL-E: <code>result_schema</code> with string enums that each include <code>unknown</code>, ISO <code>promise_date</code> (“never guess”), <code>promise_certainty</code> firm/tentative, verbatim <code>outcome_evidence</code>; region/locale; metadata; idempotency key.</p><p class="muted" style="font-size:14px">File: <code>agent_config.RESULT_SCHEMA</code>.</p></div>
+    <div class="card" style="border-left:5px solid var(--orange)"><span class="tag o">3 · External logic</span><p><b>Your tested code</b>: <code>guards.py</code> (who and when) and <code>outcomes.py</code> (what an answer <i>means</i>: status, task, team, priority, SMS). No auto-redial.</p><p class="muted" style="font-size:14px">A promise only counts if it's specific, firm, and at most 7 days after the due date.</p></div>
+  </div>
+  <div class="say"><p class="q">The principle in one line</p><p>“The voice agent <b>reports what happened</b>; the customer's code <b>decides what it means</b>. Prompts are probabilistic, so anything with a compliance or money consequence is enforced in code I can test.”</p></div>
+
+  <label class="learned"><input type="checkbox" data-learn="layers"> I can say which layer controls each behaviour</label>
+</section>
+
+<section id="assembly" data-title="10 · Goal, script & call list">
+  <div class="eyebrow">Section 10 · The content pipeline</div>
+  <h2>How the goal, strategy, script and call list become a phone call</h2>
+  <figure>
+    <div class="scroll">
+    <svg class="dgm" viewBox="0 0 940 300" role="img" aria-label="Three inputs — the CRM call list, the script template in agent_config.py and the result schema — are merged per customer into one CALL-E request; CALL-E then improvises the live conversation within those rules and returns a structured result.">
+      <defs><marker id="asm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+      <rect class="ext" x="20" y="20" width="240" height="72" rx="8"/>
+      <text class="t" x="140" y="44" text-anchor="middle">1 · Call list</text>
+      <text class="s" x="140" y="62" text-anchor="middle">CRM accounts (:8001)</text>
+      <text class="s" x="140" y="78" text-anchor="middle">seed: data/seed_accounts.json</text>
+      <rect class="box" x="20" y="112" width="240" height="72" rx="8"/>
+      <text class="t" x="140" y="136" text-anchor="middle">2 · Goal + script template</text>
+      <text class="s" x="140" y="154" text-anchor="middle">agent_config.build_task()</text>
+      <text class="s" x="140" y="170" text-anchor="middle">steps, exceptions, NEVERs</text>
+      <rect class="box" x="20" y="204" width="240" height="72" rx="8"/>
+      <text class="t" x="140" y="228" text-anchor="middle">3 · Answer form</text>
+      <text class="s" x="140" y="246" text-anchor="middle">RESULT_SCHEMA</text>
+      <text class="s" x="140" y="262" text-anchor="middle">outcomes list + unknown</text>
+      <polyline class="ln" points="260,56 310,56 310,128 352,128" marker-end="url(#asm)"/>
+      <line class="ln" x1="260" y1="148" x2="352" y2="148" marker-end="url(#asm)"/>
+      <polyline class="ln" points="260,240 310,240 310,168 352,168" marker-end="url(#asm)"/>
+      <text class="lbl" x="268" y="42">guards filter</text>
+      <text class="lbl" x="318" y="84">who may be called</text>
+      <rect class="zone" x="354" y="96" width="250" height="104" rx="10"/>
+      <text class="t" x="479" y="126" text-anchor="middle">One request per customer</text>
+      <text class="s" x="479" y="144" text-anchor="middle">POST /v1/calls</text>
+      <text class="s" x="479" y="160" text-anchor="middle">task + result_schema + phone</text>
+      <text class="s" x="479" y="176" text-anchor="middle">+ Idempotency-Key (never twice)</text>
+      <line class="ln" x1="604" y1="148" x2="668" y2="148" marker-end="url(#asm)"/>
+      <text class="lbl" x="612" y="138">dials</text>
+      <rect class="hot" x="670" y="96" width="250" height="104" rx="10"/>
+      <text class="t" x="795" y="122" text-anchor="middle">CALL-E improvises the</text>
+      <text class="t" x="795" y="140" text-anchor="middle">live conversation</text>
+      <text class="s" x="795" y="160" text-anchor="middle">within your rules: voicemail,</text>
+      <text class="s" x="795" y="176" text-anchor="middle">interruptions, rephrasing</text>
+      <polyline class="ln" points="795,200 795,250 612,250" marker-end="url(#asm)"/>
+      <text class="lbl" x="612" y="270">structured result → your rules → CRM</text>
+    </svg>
+    </div>
+    <figcaption>Per customer, the orchestrator merges the CRM row into the script template, attaches the answer form, and sends one request. CALL-E owns only the live conversation; everything before and after is yours.</figcaption>
+  </figure>
+
+  <div class="grid two">
+    <div class="card"><h3>The call list</h3>
+      <p>Lives in the <b>CRM</b> (mock, :8001), seeded from <code>data/seed_accounts.json</code> — 8 fictional customers.
+      "Run campaign" reads the whole list; the <b>guards</b> then decide who may actually be called (phone present and valid,
+      not do-not-call, 08:00–21:00 local). To change the list, edit the seed file and press Reset. "Call my phone" just
+      points María Fernanda's row (ACC-1001) at your number for one live test.</p></div>
+    <div class="card"><h3>The goal and the script</h3>
+      <p>Never typed into CALL-E's website. They are a <b>template in code</b> — <code>agent_config.build_task()</code> —
+      filled with each customer's own data:</p>
+      <pre><code>You are Sofía, a virtual assistant (AI) calling
+on behalf of Financiera Solaria...
+STEP 2 - ask the person to confirm they are {full_name}.
+STEP 3 - installment #{n} for {amount} is due on {due_date}.
+EXCEPTIONS - human requested, dispute, hardship, paid...
+NEVER: threaten · take card numbers · claim to be human.</code></pre>
+      <p>Read the exact text any call received: Results → the call → <b>"Request sent to CALL-E"</b>. To change the script,
+      edit that file and restart <code>./run.sh</code>; the next call uses it.</p></div>
+    <div class="card"><h3>The strategy (three owners)</h3>
+      <ul>
+        <li><b>Who and when</b> — your code: guards, calling window, one-call-per-cycle idempotency.</li>
+        <li><b>What to say and never say</b> — the task text above.</li>
+        <li><b>How each sentence is said live</b> — CALL-E's engine. There is no word-for-word script: it improvises within
+          your rules, which is exactly what makes it handle real people.</li>
+      </ul>
+      <p>The <b>answer form</b> (<code>RESULT_SCHEMA</code>) closes the loop: it tells CALL-E which fields to bring back —
+      fixed lists with an <code>unknown</code> option — and your rules turn that into a CRM status and a task.</p></div>
   </div>
 </section>
 
-<section id="code">
-  <span class="eyebrow">Code map</span>
-  <h2>Where things live</h2>
+<section id="ownership" data-title="11 · Who does what, where">
+  <div class="eyebrow">Section 11 · Your map</div>
+  <h2>Who does what, where</h2>
+  <div class="grid two">
+    <div class="card"><h3>On the CALL-E website</h3>
+      <p class="muted">heycall-e.com · dashboard.heycall-e.com</p>
+      <ul>
+        <li>Create the account and log in</li>
+        <li>Create (or revoke) the <b>API key</b> — the only thing this project needs from the dashboard</li>
+        <li>Watch <b>credits and usage</b> under billing after live calls</li>
+        <li>Optional: place one manual call from their web app, to feel the product as an end user</li>
+      </ul>
+      <p class="muted">Nothing else. No campaign builder, no goal typing, no list upload for this integration.</p></div>
+    <div class="card"><h3>On your Mac (the UIs)</h3>
+      <p class="muted">Control center :8000 · mock CRM :8001</p>
+      <ul>
+        <li><b>Demo tab:</b> reset, run the campaign, simulate each conversation, break and restore the CRM</li>
+        <li><b>Call my phone:</b> paste the key, enter your number, place one real call</li>
+        <li><b>Results:</b> transcripts, extracted results, CRM records</li>
+        <li><b>Troubleshoot:</b> health checks with fixes</li>
+        <li><b>CRM :8001:</b> the customer database the calls read from and write to</li>
+      </ul></div>
+    <div class="card"><h3>On the live site (Netlify + Render)</h3>
+      <p class="muted">rudder-fde-qiyin.netlify.app · Render dashboard</p>
+      <ul>
+        <li>The same UIs online: control center <code>/</code>, this page <code>/learn</code>, CRM <code>/crm/</code></li>
+        <li><b>Netlify:</b> <code>BACKEND_URL</code> (where to proxy), deploy logs</li>
+        <li><b>Render:</b> <code>LIVE_PASSCODE</code>, optional <code>CALLE_API_KEY</code>, backend logs</li>
+        <li>A push to GitHub redeploys both</li>
+      </ul></div>
+    <div class="card"><h3>In files &amp; terminal (you, the FDE)</h3>
+      <p class="muted">What you change when the customer asks for changes</p>
+      <ul>
+        <li><b>Call list:</b> <code>data/seed_accounts.json</code> (then Reset)</li>
+        <li><b>Goal &amp; script:</b> <code>app/orchestrator/agent_config.py</code></li>
+        <li><b>Policies:</b> <code>guards.py</code> (who/when), <code>outcomes.py</code> (what results mean)</li>
+        <li><b>Settings:</b> <code>.env</code> (key, calling window)</li>
+        <li>Every button has a <code>curl</code> equivalent for scripting</li>
+      </ul></div>
+  </div>
+  <h3>How the system talks to you, and you to it</h3>
   <div class="tbl"><table>
-    <tr><th>File</th><th>What it does</th></tr>
-    <tr><td><code>app/crm/main.py</code></td><td>Mock CRM service: accounts, call-outcome writes (idempotent), tasks, failure injection, the :8001 page</td></tr>
-    <tr><td><code>app/orchestrator/main.py</code></td><td>Campaign, webhook receiver, sync (polling), outbox retry</td></tr>
-    <tr><td><code>app/orchestrator/agent_config.py</code></td><td>The voice agent: task prompt, result schema, request builder</td></tr>
-    <tr><td><code>app/orchestrator/guards.py</code></td><td>Pre-call checks: phone format by country, do-not-call, calling window</td></tr>
-    <tr><td><code>app/orchestrator/outcomes.py</code></td><td>Business rules: CALL-E result → CRM status + task</td></tr>
-    <tr><td><code>app/orchestrator/calle_gateway.py</code></td><td>CALL-E adapter: live (official SDK, allowlist) or simulated</td></tr>
-    <tr><td><code>app/orchestrator/control.py</code> + <code>static/</code></td><td>This UI and its <code>/api/*</code> endpoints</td></tr>
-    <tr><td><code>app/simulator/scenarios/*.json</code></td><td>The scripted conversations used in simulated mode</td></tr>
-    <tr><td><code>tests/test_workflow.py</code></td><td>End-to-end tests, including the 4 required ones (plus tests/test_control.py)</td></tr>
+    <tr><th>Direction</th><th>Channel</th><th>What it tells you / does</th></tr>
+    <tr><td rowspan="4">System → you</td><td>Activity feed (right panel)</td><td>Every action the orchestrator just took, newest first — your live narration during the demo</td></tr>
+    <tr><td>Results tab + call window</td><td>Per call: transcript, what CALL-E extracted, what the rules decided, what the CRM stored</td></tr>
+    <tr><td>Presenter guide ✓ / outbox / chips</td><td>Green ✓ = your step really worked; outbox = results waiting for the CRM; chips = system health at a glance</td></tr>
+    <tr><td>Troubleshoot checks</td><td>What is broken and the exact fix</td></tr>
+    <tr><td rowspan="2">You → system</td><td>Buttons (or their curl commands)</td><td>Start campaigns, simulate, inject failures, retry, place a live call</td></tr>
+    <tr><td>The files above</td><td>Change the list, the script, the policies — restart <code>./run.sh</code> to apply</td></tr>
   </table></div>
+  <label class="learned"><input type="checkbox" data-learn="ownership"> I know where each thing is done: CALL-E site, the UIs, files, hosting</label>
 </section>
 
-<section id="terminal">
-  <span class="eyebrow">Terminal</span>
+<section id="outcomes" data-title="12 · Outcomes, tests, decisions">
+  <div class="eyebrow">Section 12 · Behaviour and evidence</div>
+  <h2>Outcomes, failure handling, tests and decisions</h2>
+  <p class="lead">What each answer becomes in the CRM, what happens when something fails, what testing found, and the three decisions you defend.</p>
+  <h3>Outcome → CRM routing</h3>
+  <div class="tbl"><table>
+    <tr><th>Customer says / result</th><th>CRM status</th><th>Task → team (priority)</th></tr>
+    <tr><td>Firm promise, specific date ≤ due + 7 days (“El viernes nueve, por SPEI”)</td><td><span class="tag g">promise_to_pay</span></td><td>verify_payment → collections ops (low) + SMS payment link</td></tr>
+    <tr><td>Vague / tentative / out-of-policy (“a fin de mes, si me pagan”)</td><td><span class="tag o">needs_review</span></td><td>confirm_promise → collections agents. <b>No SMS</b></td></tr>
+    <tr><td>Already paid</td><td><span class="tag b">paid_claimed</span> (not “paid”!)</td><td>reconcile_payment → finance</td></tr>
+    <tr><td>Dispute</td><td><span class="tag r">dispute</span></td><td>dispute_ticket → customer support (high)</td></tr>
+    <tr><td>Hardship</td><td><span class="tag r">hardship</span></td><td>hardship_review → specialists (high)</td></tr>
+    <tr><td>Wants a human / call back</td><td><span class="tag p">callback_requested</span></td><td>human_callback → agents (high / normal), with the preferred time</td></tr>
+    <tr><td>Refused / stop calling</td><td>refused</td><td>supervisor_review</td></tr>
+    <tr><td>Wrong person answers (debt never mentioned)</td><td>wrong_party_contact</td><td>verify_contact_data → data quality</td></tr>
+    <tr><td>No answer (<code>call.failed</code>)</td><td>no_contact</td><td>review → ops. <b>No auto-redial</b></td></tr>
+    <tr><td>No / invalid structured result</td><td><span class="tag o">needs_review</span></td><td>review_call → QA</td></tr>
+    <tr><td>No phone (blocked before calling)</td><td>contact_data_missing</td><td>fix_contact_data</td></tr>
+  </table></div>
+
+  <h3>Failure handling (the part that impresses)</h3>
+  <div class="tbl"><table>
+    <tr><th>What fails</th><th>What the system does</th></tr>
+    <tr><td>CRM down when <b>reading</b> accounts</td><td>Campaign aborted (502), <b>zero calls</b>. Better to call nobody than call with stale amounts</td></tr>
+    <tr><td>CALL-E rejects / unreachable on create</td><td><code>submit_failed</code> recorded and reported; CRM untouched</td></tr>
+    <tr><td>Webhook ids mismatch / unknown call</td><td>400 / ignored; nothing written</td></tr>
+    <tr><td>Webhook body forged (“firm promise!”)</td><td>Ignored, because the outcome comes from the API re-read</td></tr>
+    <tr><td>CALL-E API down while verifying</td><td><b>503</b> so CALL-E redelivers; <code>/calls/{id}/sync</code> polling fallback</td></tr>
+    <tr><td><b>CRM 5xx / timeout on write</b></td><td><b>202 pending_retry</b>, call = <code>crm_sync_failed</code>, outbox = <code>pending</code>. Retry later → CRM 201 → exactly <b>one</b> task</td></tr>
+    <tr><td>CRM 4xx (bad data)</td><td>Outbox <code>dead_letter</code> for a human</td></tr>
+    <tr><td>Same webhook twice</td><td><code>duplicate</code>, still one task</td></tr>
+  </table></div>
+
+  <h3>Tests and the before/after story</h3>
+  <div class="grid two">
+    <div class="card"><h3>The 4 required tests</h3><ul>
+      <li><b>T1 Normal</b>: firm promise → <code>promise_to_pay</code> + verify task + SMS ✓</li>
+      <li><b>T2 Ambiguous</b>: “a fin de mes, si me pagan” → <code>needs_review</code>. <span class="tag r">v1 FAILED</span></li>
+      <li><b>T3 Integration failure</b>: CRM 503 → honest pending → retry → 1 task. <span class="tag r">v1 FAILED</span></li>
+      <li><b>T4 Exception</b>: asks for a human → high-priority callback ✓</li></ul></div>
+    <div class="card"><h3>What you fixed (commits <code>270ed09</code> → <code>24ac420</code>)</h3><ul>
+      <li><b>False promise:</b> v1 trusted <code>outcome=promise_to_pay</code>. v2 requires a specific ISO date + <code>firm</code> + ≤ due+7 days.</li>
+      <li><b>False success:</b> v1 answered <code>200 synced</code> while the CRM write had failed, so the result was silently lost. v2 adds the outbox and the honest 202.</li>
+      <li>Retest: all pass. Today: <b>39 automated tests</b> (<code>.venv/bin/python -m pytest -v</code>).</li></ul></div>
+  </div>
+  <div class="say"><p class="q">The before/after story (your strongest evidence, ~40 s)</p>
+    <p>“My first version failed two of the four required tests. A vague ‘end of the month, if I get paid’ was recorded as a firm promise, which would have sent a payment link and corrupted the forecast. And when the CRM was down, it still said ‘synced’, so the result would have been lost silently. I fixed both: a promise now needs a specific, firm date within policy, and CRM writes go through an outbox. Success is only reported when the CRM confirms it. Then I retested, and everything passes. The git history shows both versions.”</p></div>
+
+  <h3>The three decisions (D1–D3)</h3>
+  <div class="grid">
+    <div class="card"><span class="tag">D1</span><h3>Rules in code, not in the prompt</h3><p><b>Why:</b> prompts are probabilistic; money/compliance decisions must be testable and auditable. <b>Evidence:</b> T2. <b>Trade-off:</b> some genuine promises land in needs_review (agent time). <b>Would change if:</b> live accuracy is very high and review volume overloads agents. Then relax the rule (e.g. accept tentative within 3 days), not move it into the prompt.</p></div>
+    <div class="card"><span class="tag b">D2</span><h3>Webhook = signal, API = truth, outbox</h3><p><b>Why:</b> webhooks are unsigned, may repeat or not arrive; the CRM can be down. <b>Alternatives:</b> trust the body (forgeable) or poll only (doesn't scale). <b>Trade-off:</b> one extra API read per call; more moving parts. <b>Would change if:</b> CALL-E signs webhooks, or the CRM offers idempotent upserts/queues.</p></div>
+    <div class="card"><span class="tag o">D3</span><h3>Narrow scope</h3><p>One reminder call; no negotiation, payments or auto-redial; judgment → routed human task; mock CRM over real HTTP (so outages can be demoed on demand). <b>Trade-off:</b> less automation per call. <b>Would change if:</b> pilot shows most human tasks are routine, or Solaria approves a payment-plan policy. Add one capability at a time, each with its own test.</p></div>
+  </div>
+  <div class="say"><p class="q">“Why not let CALL-E decide the outcome?”</p><p>“It does extract the outcome. My code decides what it <i>means</i> for the account. That way compliance and finance can read and test the policy in <code>outcomes.py</code>, it's the same in live and simulated mode, and I can change the policy without re-prompting.”</p></div>
+  <label class="learned"><input type="checkbox" data-learn="outcomes"> I can explain every step, layer, test and decision</label>
+</section>
+
+<section id="code" data-title="13 · Code tour & map">
+  <div class="eyebrow">Section 13 · For the FDE deep-dive</div>
+  <h2>Code tour &amp; map: open these files if they ask “show me”</h2>
+  <p class="lead">Know where each idea lives in the code, and which ~10 lines prove it. Practice opening each file and explaining it in 30 seconds.</p>
+  <div class="tbl"><table>
+    <tr><th>File</th><th>What to point at</th><th>Say</th></tr>
+    <tr><td><code>app/orchestrator/agent_config.py</code></td><td><code>build_task()</code> (STEP 1–5, EXCEPTIONS, NEVER), <code>RESULT_SCHEMA</code>, <code>build_request()</code>, <code>idempotency_key()</code></td><td>“Layers 1 and 2: the instructions and the contract. Every enum has an <code>unknown</code>; the date says ‘never guess’.”</td></tr>
+    <tr><td><code>app/orchestrator/guards.py</code></td><td><code>check_account()</code>, <code>validate_phone()</code>, the 08:00–21:00 window in the customer's own time zone</td><td>“Who may be called, and when. Decided before anything reaches CALL-E, and unit-tested.”</td></tr>
+    <tr><td><code>app/orchestrator/main.py</code></td><td><code>calle_webhook()</code>: header/body id check, unknown-call check. <code>process_call()</code>: re-read via <code>gw.get_call</code>, 503 if it can't verify, 202 <code>pending_retry</code> if the CRM fails</td><td>“The webhook is a wake-up signal. The trust boundary is the API re-read. I only return ‘synced’ after the CRM confirms.” Same file: the campaign run, <code>POST /calls/{id}/sync</code> (polling fallback) and <code>POST /outbox/retry</code>.</td></tr>
+    <tr><td><code>app/orchestrator/outcomes.py</code></td><td><code>decide()</code>: right-party gate, the promise rule (ISO date + firm + ≤ due+7), outcome → status + task + team</td><td>“Layer 3: the business policy in plain code that compliance can read. This is the v2 fix for T2.”</td></tr>
+    <tr><td><code>app/orchestrator/store.py</code></td><td><code>save_intent()</code> (key saved <i>before</i> the network call), <code>outbox_put / outbox_mark / outbox_pending</code></td><td>“Durable state: idempotency keys, webhook receipts, and the outbox. This is the v2 fix for T3.”</td></tr>
+    <tr><td><code>app/orchestrator/calle_gateway.py</code></td><td><code>CalleGateway</code> protocol, <code>LiveCalleGateway</code> (official SDK, phone allowlist) vs <code>SimulatedCalleGateway</code></td><td>“One adapter, two implementations with the identical contract. Migrating to CALL-E v2 only touches this file.”</td></tr>
+    <tr><td><code>app/crm/main.py</code></td><td>Idempotent <code>POST /accounts/{id}/call-outcomes</code> on <code>call_id</code>; outage injection (real 503s and timeouts)</td><td>“The mock CRM fails for real, so the failure handling is tested for real.”</td></tr>
+    <tr><td><code>tests/test_workflow.py</code></td><td><code>test_t1_…</code> to <code>test_t4_…</code> + edge cases (forged webhook, duplicate delivery, CRM down at start)</td><td>“The required tests and the edge cases, all automated.”</td></tr>
+    <tr><td><code>app/orchestrator/control.py</code> + <code>static/</code></td><td>The control center (<code>index.html</code>), this page (<code>learn.html</code>) and the <code>/api/*</code> endpoint behind every button</td><td>“Everything the UI does is a plain JSON call, so it's scriptable.”</td></tr>
+    <tr><td><code>app/simulator/scenarios/*.json</code></td><td>The scripted Spanish conversations used in simulated mode</td><td>“Simulated calls have the same data shape as live CALL-E.”</td></tr>
+    <tr><td><code>app/combined.py</code>, <code>render.yaml</code>, <code>netlify.toml</code></td><td>Hosting: one-process backend (CRM at <code>/crm</code>) on Render, pages + proxy on Netlify</td><td>“Same code locally (two services) and online (one service).”</td></tr>
+    <tr><td><code>tests/test_control.py</code></td><td>Control center API, the live path against a fake CALL-E, the passcode gate, the hosted app</td><td>“The UI and deployment are tested too.”</td></tr>
+  </table></div>
+  <pre># the core of process_call(), in words
+req = store.get_by_call_id(call_id)          # must be a call we created
+if req.state == "synced": return duplicate   # idempotent: second webhook = no-op
+snapshot = gateway.get_call(call_id)         # re-read: the source of truth (503 if unreachable)
+decision = decide(snapshot, account, date)   # deterministic business rules
+crm = write_crm_via_outbox(payload)          # outbox first, then POST to CRM
+if not crm.confirmed: return 202 pending_retry   # never a false success
+mark synced; queue SMS only if firm promise</pre>
+  <h3>Live-coding tasks they might give you (and how you'd do them)</h3>
+  <div class="tbl"><table>
+    <tr><th>“Change it so…”</th><th>Where / how</th></tr>
+    <tr><td>…tentative promises within 3 days are accepted</td><td><code>outcomes.decide()</code>: relax the <code>promise_certainty</code> check when <code>promise_date − call_date ≤ 3</code>; add a test next to T2.</td></tr>
+    <tr><td>…the calling window becomes 09:00–20:00</td><td><code>guards._window()</code> / env setting; add a guard test at 08:30 and 20:30.</td></tr>
+    <tr><td>…a new outcome “wrong_number” is supported</td><td>Add it to the <code>OUTCOMES</code> enum + description in <code>agent_config.py</code>, route it in <code>decide()</code>, add a simulator scenario and a test.</td></tr>
+    <tr><td>…failed CRM writes retry automatically</td><td>A background loop that calls <code>outbox_pending()</code> with exponential backoff, plus an alert when the oldest item is &gt; 15 min old.</td></tr>
+    <tr><td>…we switch to CALL-E v2</td><td><code>LiveCalleGateway</code> only: single <code>phone</code> field, poll until <code>result_status != pending</code>, map v2 fields to the snapshot shape <code>decide()</code> expects.</td></tr>
+  </table></div>
+  <div class="say"><p class="q">“How would you approach a codebase/environment at a new customer?”</p><p>“First, get it running end to end with fake data, like my mock CRM and simulator, so I can reproduce problems on demand. Then map the trust boundaries: what's authenticated, what's the source of truth for each piece of data, and what can fail. I write the failure tests before the happy-path polish, and I keep everything the customer's ops team needs to see in plain status words, not logs.”</p></div>
+  <label class="learned"><input type="checkbox" data-learn="code"> I can open each file and explain it in 30 seconds</label>
+</section>
+
+<section id="terminal" data-title="14 · Terminal">
+  <div class="eyebrow">Section 14 · Terminal cheat sheet</div>
   <h2>Doing the same from the terminal</h2>
-  <p>Every button calls a JSON endpoint, so you can do everything with <code>curl</code>. Paste one line at a time in zsh.</p>
+  <p>Every button calls a JSON endpoint, so you can do everything with <code>curl</code>. Paste one line at a time in zsh. On the live site, the addresses below are rewritten to this site automatically.</p>
 <pre><code>./setup.sh                          once: venv + dependencies + tests
 ./run.sh                            start CRM :8001 + orchestrator :8000 (Ctrl+C stops)
 ./demo.sh                           narrated terminal demo (starts services if needed)
@@ -408,52 +809,428 @@ curl localhost:8000/api/calls/CALL_ID/detail
 curl -X POST localhost:8000/calls/CALL_ID/sync
 curl localhost:8000/api/troubleshoot
 curl localhost:8000/agent-config                       the result schema sent to CALL-E</code></pre>
-  <p class="muted">Full, interactive API reference: <a href="/docs">localhost:8000/docs</a> and <a href="http://127.0.0.1:8001/docs">localhost:8001/docs</a>. You can try every endpoint from the browser there.</p>
+  <p class="muted">Full, interactive API reference: <a href="/docs">orchestrator API docs</a> and <a href="http://127.0.0.1:8001/docs">CRM API docs</a>. You can try every endpoint from the browser there.</p>
 </section>
 
-<section id="docs">
-  <span class="eyebrow">Documents</span>
+<section id="docs" data-title="15 · All documents">
+  <div class="eyebrow">Section 15 · Documents</div>
   <h2>All project documents</h2>
-  <p>The interview documents from <code>docs/</code>, with their diagrams. Start with 01 → 06, then ARCHITECTURE.</p>
+  <p>The interview documents from <code>docs/</code>, with their diagrams. Start with 01 → 06, then ARCHITECTURE. Step by step for the interview: <a href="#docs" data-doc="07-interview-playbook">07 · Interview playbook</a>. <a href="#docs" data-doc="08-live-site-guide">08 · Live site guide</a> explains the Netlify + Render setup.</p>
   <label for="docsel" class="muted">Document <select id="docsel"></select></label>
   <div id="doc"><p class="muted">Loading…</p></div>
 </section>
 
-</article>
+<section id="rollout" data-title="16 · Rollout & metrics" data-part="Part C · Presenting & practice">
+  <div class="eyebrow">Section 16 · Is it ready?</div>
+  <h2>Readiness, rollout and metrics</h2>
+  <div class="say"><p class="q">“Is it ready for a pilot?”</p><p>“Yes for a <b>small, controlled pilot after a 1–2 week pre-pilot</b> of internal test calls. Not for full volume yet, for two reasons: live Spanish extraction accuracy isn't proven, and Mexico is on an international line, which CALL-E itself says is intended for development and testing. That likely hurts pick-up rates and trust.”</p></div>
+  <div class="grid">
+    <div class="card"><span class="tag">Phase 1 · Pre-pilot · 1–2 weeks</span><p>30–50 internal calls to employee phones playing personas. Measure extraction accuracy against human labels. Legal review of the script.</p></div>
+    <div class="card"><span class="tag b">Phase 2 · Pilot · 4 weeks</span><p>500–1,000 low-risk accounts (upcoming due, not delinquent). A/B against SMS-only. 100% human QA on <code>needs_review</code> + 10% sampling of the rest.</p></div>
+    <div class="card"><span class="tag g">Phase 3 · Expand</span><p>Only if promise-kept and on-time-payment rates beat the control over <b>2 billing cycles</b>, accuracy is above target, there are no compliance incidents, and the human workload fits the team.</p></div>
+  </div>
+  <div class="grid two">
+    <div class="card"><h3>Needs AI Rudder Product/Engineering</h3><ul><li>Local Mexican caller ID or SIP trunk</li><li>Webhook signing</li><li>Confirm <code>result_schema</code> support and the webhook retry policy</li><li>Recording/transcript retention options</li></ul></div>
+    <div class="card"><h3>Needs the customer (Solaria)</h3><ul><li>Compliance: calling window, AI-disclosure wording, privacy notice (LFPDPPP), contact-frequency limits (CONDUSEF)</li><li>Real CRM fields/API, human callback SLA, payment-link provider, opt-out handling</li></ul></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Metric</th><th>Why</th><th>Pilot target (to agree)</th></tr>
+    <tr><td>Right-party contact rate</td><td>Line quality, caller-ID trust</td><td>≥ 35%</td></tr>
+    <tr><td>Early hang-up (&lt; 10 s)</td><td>Acceptance of AI disclosure / persona</td><td>≤ 25%</td></tr>
+    <tr><td><code>unknown</code> / <code>needs_review</code> share</td><td>Design &amp; extraction quality</td><td><code>unknown</code> ≤ 5%</td></tr>
+    <tr><td><b>Extraction accuracy vs human labels</b></td><td>Can the data be trusted?</td><td>≥ 95% outcome, ≥ 90% date</td></tr>
+    <tr><td><b>Promise-kept rate</b></td><td>The real business value</td><td>Better than SMS-only control</td></tr>
+    <tr><td>On-time payment vs control</td><td>Incremental impact</td><td>+X pp, statistically significant</td></tr>
+    <tr><td>Human task volume &amp; SLA</td><td>Saves or creates work?</td><td>Callback ≤ 24 h for ≥ 90%</td></tr>
+    <tr><td>CRM sync failures / outbox age</td><td>Integration health</td><td>0 lost; p99 sync &lt; 5 min</td></tr>
+    <tr><td>Complaints / opt-outs</td><td>Customer harm</td><td>No increase vs baseline</td></tr>
+    <tr><td>Cost per right-party contact</td><td>ROI</td><td>Below human-agent baseline</td></tr>
+  </table></div>
+  <div class="say"><p class="q">Remaining defects (say these before they ask; it builds trust)</p><p>“No live accuracy study yet: all call content in my test log is scripted. Outbox retry is manual, with no scheduler or alerting yet. Webhooks are unsigned by CALL-E's design, mitigated by re-reading. Customer data is stored unencrypted in this prototype. Mexican public holidays aren't handled. And the Mexican line is international.”</p></div>
+  <label class="learned"><input type="checkbox" data-learn="rollout"> I can give the 4 closing answers (ready? who's needed? metrics? evidence to expand?)</label>
+</section>
+
+<section id="present" data-title="17 · 15-min script">
+  <div class="eyebrow">Section 17 · The presentation</div>
+  <h2>Your 15-minute run-of-show, word for word</h2>
+  <div class="row"><div class="timer" id="timer">00:00</div><button id="tStart">▶ Start</button><button id="tReset">↺ Reset</button><span class="muted" id="tHint">Rehearse with the clock. Target 15:00.</span></div>
+  <div class="tbl"><table>
+    <tr><th>Min</th><th>Do</th><th>Say</th></tr>
+    <tr><td>0–2</td><td>Slide 1, then the CRM tab (:8001)</td><td>“Financiera Solaria is a fictional consumer lender in Mexico. Most late payers just forget or get paid later, and agents waste time on calls that end in ‘I'll pay Friday’. The objective: call 3 days before the due date and capture <b>one actionable outcome</b> per customer in the CRM. The agent reminds and listens. It never negotiates, takes payments, or discusses the debt with anyone but the holder. Success is a dated promise you can check. But an honest ‘needs review’ also counts as success. A fake promise never does.”</td></tr>
+    <tr><td>2–5</td><td><code>/learn</code> → System diagram; then a call's “Request sent to CALL-E”</td><td>“Six steps: read, create, converse, webhook, re-read, write through an outbox.” Then the three layers: “Instructions: what the agent says. Workflow config: the contract, meaning the schema, locale and idempotency key. External logic: my code decides who's called and what answers mean.”</td></tr>
+    <tr><td>5–10</td><td>Demo → <b>Run campaign</b> → Results → ACC-1001 → Simulate <b>Vague answer</b> → <b>Run outage scenario</b> → <b>Restore CRM + retry outbox</b>. Optional: <b>Call me now</b></td><td>“6 called, 2 blocked before CALL-E: no phone, and do-not-call.” → “Here's the field mapping; the customer's own words are kept as evidence.” → “Vague isn't a promise: needs review, and no SMS.” → “The CRM is down: the system says ‘pending retry’, not success.” → “It's back, and the result is delivered exactly once.”</td></tr>
+    <tr><td>10–13</td><td>Terminal: <code>cat docs/evidence/v1_test_run.txt</code>, slide 3</td><td>The before/after story (<a href="#outcomes">Outcomes, tests, decisions</a>), then D1–D3 one-liners.</td></tr>
+    <tr><td>13–15</td><td>Slides 4–5</td><td>Pilot yes / full volume not yet → phases → who's needed → metrics → evidence to expand. Close with your thesis.</td></tr>
+  </table></div>
+  <div class="note"><b>If something breaks</b>Page won't load → Ctrl+C, <code>./run.sh</code>. Looks odd → <b>Troubleshoot</b> tab → Run checks (“this is how I'd troubleshoot for a customer”). Live call fails → “That's the international-line risk I flagged”, then switch to simulated. Everything fails → <code>cat docs/evidence/demo_run_simulated.txt</code> and <code>pytest -v</code>.</div>
+  <div class="say"><p class="q">Your opening (first 20 seconds)</p><p>“Thanks for having me. I'll spend about 15 minutes: the customer scenario, how I designed the agent and the integration, a live demo including a failure, what my tests found, and my rollout recommendation. My one-line summary: I built a small payment-reminder workflow on CALL-E and focused on making it <b>honest</b>. It never records an outcome that didn't happen, and never reports a CRM update that didn't land.”</p></div>
+  <div class="say"><p class="q">Your close (last 20 seconds)</p><p>“So: the workflow logic, failure handling and CRM contract are ready. What's not proven is live Spanish extraction and the Mexican line. That's what a two-week pre-pilot answers, before a measured pilot against SMS-only. I'm happy to go deeper on any part.”</p></div>
+  <label class="learned"><input type="checkbox" data-learn="present"> I rehearsed the 15 minutes out loud with the timer</label>
+</section>
+
+<section id="star" data-title="18 · STAR stories">
+  <div class="eyebrow">Section 18 · Behavioural answers</div>
+  <h2>STAR stories</h2>
+  <p class="lead"><b>S</b>ituation (context, scale) → <b>T</b>ask (your responsibility) → <b>A</b>ction (what <i>you</i> did, step by step: most of the answer) → <b>R</b>esult (numbers, impact, lesson). About 90 seconds each. Their PDF asks for scope, stakeholders, tools, metrics and lessons, so include all five.</p>
+  <div class="card" style="border-left:5px solid var(--accent)"><span class="tag">Ready-made story · from this assignment</span><h3>“Tell me about a time you found a problem through testing” / “a time you failed”</h3>
+    <p><b>S:</b> Building a CALL-E payment-reminder integration for a lender, with a mock CRM over HTTP and four required tests.</p>
+    <p><b>T:</b> Make sure every call ends in a correct, actionable CRM record, and that the system never claims success it didn't achieve.</p>
+    <p><b>A:</b> I wrote the tests before calling it done, including an ambiguous answer and a CRM outage. Version 1 failed two of them: it recorded “a fin de mes, si me pagan” as a firm promise, and it returned “synced” while the CRM was down. I moved the promise policy out of the prompt into a deterministic rule (specific date + firm + within due+7), and added an outbox so a CRM write only counts on the CRM's own 201 confirmation.</p>
+    <p><b>R:</b> Retest passed everything (now 39 automated tests); duplicates produce exactly one task; forged webhooks are ignored. <b>Lesson:</b> a completed call isn't a business outcome. Design for the failure path first, and keep money decisions in code you can test.</p></div>
+  <p class="muted">Draft your own stories below. They're saved in this browser only.</p>
+  <div class="grid two" id="starGrid"></div>
+  <label class="learned"><input type="checkbox" data-learn="star"> I have 5 STAR stories with numbers</label>
+</section>
+
+<section id="qa" data-title="19 · Q&A bank">
+  <div class="eyebrow">Section 19 · Likely questions</div>
+  <h2>Q&amp;A bank</h2>
+  <div class="filters" id="qaFilters"></div>
+  <div class="qa" id="qaList"></div>
+  <label class="learned"><input type="checkbox" data-learn="qa"> I can answer every question without reading</label>
+</section>
+
+<section id="ask" data-title="20 · Questions to ask">
+  <div class="eyebrow">Section 20 · Your questions for them</div>
+  <h2>Questions to ask (pick 3–5)</h2>
+  <div class="grid two">
+    <div class="card"><h3>About the role</h3><ol>
+      <li>What does success look like for this role in the first 90 days, and in the first year?</li>
+      <li>How many accounts would I own, and how is the work split between onboarding new customers and running existing ones?</li>
+      <li>How do Technical CSMs / FDEs work with Solutions Engineering, Product and the AI/ASR teams when a customer hits a model-quality issue?</li><li>How is time split between customer-facing work and hands-on engineering? Do FDEs ship code into the core product, or mainly customer-specific integrations?</li><li>When FDEs build the same thing for several customers, how does it become a product feature?</li></ol></div>
+    <div class="card"><h3>About customers &amp; product</h3><ol>
+      <li>Where is CALL-E in its journey: mostly developers and self-serve, or are enterprise customers starting to use it next to the AI Voice Agent?</li>
+      <li>For a Mexican customer, how do you usually handle local caller ID: local numbers, SIP trunks, partner carriers?</li>
+      <li>What's the most common reason a pilot doesn't convert to production, and what does the CSM/FDE do about it?</li>
+      <li>How do customers usually measure ROI: repayment uplift vs a control group, cost per contact, something else?</li></ol></div>
+    <div class="card"><h3>About the team</h3><ol>
+      <li>How is the team distributed across Singapore, Jakarta, Manila, Mexico and the other offices, and which markets would I cover?</li>
+      <li>What's something the team learned the hard way that a new person should know?</li></ol></div>
+    <div class="card"><h3>Hook to their blog (shows curiosity)</h3><p>“I read the ‘harness for a voice agent’ post: code tracking what was actually heard, and blocking duplicate writes. How much of that harness thinking is exposed to customers, versus internal to the platform?”</p></div>
+  </div>
+  <label class="learned"><input type="checkbox" data-learn="ask"> I picked my 3–5 questions</label>
+</section>
+
+<section id="flash" data-title="21 · Flashcards">
+  <div class="eyebrow">Section 21 · Self-test</div>
+  <h2>Flashcards</h2>
+  <p class="muted">Click the card (or press <span class="kbd">Space</span>) to flip. <span class="kbd">→</span> next, <span class="kbd">←</span> back.</p>
+  <div class="flash">
+    <div class="fc" id="fc"><div class="fc-in"><div class="fc-face a"><div class="k" id="fcK">QUESTION</div><div class="v" id="fcQ"></div></div><div class="fc-face b"><div class="k">ANSWER</div><div class="v" id="fcA"></div></div></div></div>
+    <div class="row"><button id="fcPrev">← Prev</button><button id="fcNext">Next →</button><button id="fcShuf">🔀 Shuffle</button><button id="fcKnow">✓ I knew it</button><span class="muted" id="fcPos"></span></div>
+  </div>
+  <label class="learned"><input type="checkbox" data-learn="flash"> I got every card right</label>
+</section>
+
+<section id="checklist" data-title="22 · Day-of checklist">
+  <div class="eyebrow">Section 22 · Interview day</div>
+  <h2>Day-of checklist</h2>
+  <div class="grid two">
+    <div class="card"><h3>Tech (their PDF: test camera, mic, internet)</h3><div class="check" data-group="tech"></div></div>
+    <div class="card"><h3>Demo ready</h3><div class="check" data-group="demo"></div></div>
+    <div class="card"><h3>During the interview</h3><div class="check" data-group="during"></div></div>
+    <div class="card"><h3>Commands</h3><pre>./run.sh
+.venv/bin/python -m pytest -v
+git log --oneline
+cat docs/evidence/v1_test_run.txt
+cat docs/evidence/v2_test_run.txt
+curl localhost:8000/api/troubleshoot</pre></div>
+  </div>
+</section>
+
+<footer>
+  <p>This page merges the former project guide (<code>/learn</code>) and the Learn AI Rudder study guide (<code>/rudder/</code>, which now redirects here).</p>
+  <p><b>Sources:</b> the interviewer's PDFs (Interview preparation guide; Company introduction), this repo's <code>docs/</code>, <a href="https://www.airudder.com/">airudder.com</a>, <a href="https://github.com/CALLE-AI/call-e-integrations">CALLE-AI/call-e-integrations</a>, AI Rudder blog posts <a href="https://airudder.com/blog-page/blog/beyond-the-model-building-a-harness-for-a-voice-agent/">“Beyond the Model”</a> and <a href="https://airudder.com/blog-page/blog/ai-can-make-calls-but-can-it-navigate-an-ivr-system/">“Can it navigate an IVR?”</a>, and Series B coverage (<a href="https://kyodonewsprwire.jp/release/202203098386">Kyodo PR Wire, Mar 2022</a>). Case-study numbers are as published by AI Rudder. Checked October 2026.</p>
+</footer>
+</main>
 </div>
+
+<script>
+if (new URLSearchParams(location.search).has("embed")) document.body.classList.add("embed");
+/* ---------- storage (best-effort; page works without it) ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('rudder:' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('rudder:' + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+/* ---------- theme ---------- */
+const themeBtn = document.getElementById('themeBtn');
+const applyTheme = t => { if (t) document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme'); };
+applyTheme(store.get('theme', null));
+themeBtn.onclick = () => { const dark = matchMedia('(prefers-color-scheme: dark)').matches; const cur = document.documentElement.getAttribute('data-theme') || (dark ? 'dark' : 'light');
+  const next = cur === 'dark' ? 'light' : 'dark'; applyTheme(next); store.set('theme', next); };
+
+/* ---------- TOC + learned progress ---------- */
+const toc = document.getElementById('toc'); const secs = [...document.querySelectorAll('main section[data-title]')];
+secs.forEach(s => {
+  if (s.dataset.part) { const d = document.createElement('div'); d.className = 'toc-part'; d.textContent = s.dataset.part; toc.appendChild(d); }
+  const a = document.createElement('a'); a.href = '#' + s.id; a.textContent = s.dataset.title; a.dataset.id = s.id; toc.appendChild(a);
+});
+const learned = store.get('learned', {}); const boxes = [...document.querySelectorAll('[data-learn]')];
+function updProg() { const n = boxes.filter(b => b.checked).length; document.getElementById('progTxt').textContent = `${n} / ${boxes.length} learned`;
+  document.getElementById('progBar').style.width = (n / boxes.length * 100) + '%';
+  boxes.forEach(b => { const a = toc.querySelector(`a[data-id="${b.dataset.learn}"]`); if (a) a.classList.toggle('done', b.checked); }); }
+boxes.forEach(b => { b.checked = !!learned[b.dataset.learn]; b.onchange = () => { learned[b.dataset.learn] = b.checked; store.set('learned', learned); updProg(); }; }); updProg();
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) {
+  toc.querySelectorAll('a').forEach(a => a.classList.toggle('cur', a.dataset.id === e.target.id));
+  const cur = toc.querySelector('a.cur');  // keep the highlighted entry visible in a TOC taller than the screen
+  if (cur && toc.scrollHeight > toc.clientHeight) toc.scrollTop += cur.getBoundingClientRect().top - toc.getBoundingClientRect().top - toc.clientHeight / 2;
+} }), { rootMargin: '-30% 0px -60% 0px' });
+secs.forEach(s => io.observe(s));
+
+/* ---------- practice mode ---------- */
+const pBtn = document.getElementById('practiceBtn');
+pBtn.onclick = () => { document.body.classList.toggle('practice'); pBtn.classList.toggle('on'); document.querySelectorAll('.say.reveal').forEach(s => s.classList.remove('reveal')); };
+document.querySelectorAll('.say').forEach(s => s.addEventListener('click', () => { if (document.body.classList.contains('practice')) s.classList.toggle('reveal'); }));
+
+/* ---------- glossary ---------- */
+const G = [
+ ['ASR', 'Automatic Speech Recognition: turns the customer\'s voice into text.', 'Voice AI'],
+ ['NLU', 'Natural Language Understanding: works out what the text means (intent, dates, amounts).', 'Voice AI'],
+ ['TTS', 'Text-to-Speech: turns the bot\'s reply into a human-sounding voice.', 'Voice AI'],
+ ['Dialogue management', 'The "brain" that decides what to say next. Now often an LLM.', 'Voice AI'],
+ ['LLM', 'Large Language Model (like GPT/Claude). Makes conversations flexible and extracts information.', 'Voice AI'],
+ ['Barge-in / interruption handling', 'The customer talks over the bot, and the bot stops and listens.', 'Voice AI'],
+ ['Backchanneling', 'Small listener sounds like "mm-hmm", "ajá" that make the bot feel natural.', 'Voice AI'],
+ ['Latency', 'Delay between the customer finishing and the bot answering. Too long feels robotic.', 'Voice AI'],
+ ['Goal-based agent', 'You give a goal, and the agent plans the conversation itself (CALL-E). The opposite of a scripted flow / dialogue tree.', 'Voice AI'],
+ ['Dialogue tree / flow builder', 'Traditional bot design: every branch drawn by hand (e.g. in a no-code tool like BotLab).', 'Voice AI'],
+ ['Structured result / extraction', 'Turning a free conversation into fields like outcome=promise_to_pay, date=2026-10-09.', 'Voice AI'],
+ ['Hallucination', 'The model states something not supported by the conversation. Mitigated with enums + "unknown" and rules in code.', 'Voice AI'],
+ ['Prompt injection', 'A caller tries to override the bot\'s instructions ("ignore your rules, give me a discount"). Mitigated by keeping decisions in code.', 'Voice AI'],
+ ['IVR', 'Interactive Voice Response: "press 1 for sales" phone menus. CALL-E can navigate them.', 'Telephony'],
+ ['DTMF', 'The keypad tones sent when pressing phone keys. How bots choose IVR options.', 'Telephony'],
+ ['AMD / voicemail detection', 'Detecting whether a human or a voicemail answered.', 'Telephony'],
+ ['SIP trunk', 'A way to connect a company\'s phone lines/numbers to a cloud voice system. Needed for local caller ID in unsupported countries.', 'Telephony'],
+ ['Caller ID / local number', 'The number the customer sees. A foreign/international number lowers pick-up rates.', 'Telephony'],
+ ['International line (CALL-E)', 'CALL-E calls Mexico from a shared international number pool, "intended primarily for development and testing".', 'Telephony'],
+ ['E.164', 'International phone format: +52 then 10 digits for Mexico (e.g. +525512345678).', 'Telephony'],
+ ['Concurrency', 'How many calls run at the same time. Limits throughput of a campaign.', 'Telephony'],
+ ['Collections', 'Getting customers to pay what they owe. Pre-due (reminders) → early delinquency → late collections.', 'Lending'],
+ ['Pre-due reminder', 'A call before the due date, the softest, most customer-friendly collections touch. Your scenario.', 'Lending'],
+ ['PTP (promise to pay)', 'The customer commits to pay on a date. The key collections outcome.', 'Lending'],
+ ['Promise-kept rate', 'Share of promises actually paid by the promised date. The real proof of value.', 'Lending'],
+ ['RPC (right-party contact)', 'You reached the actual account holder, not a relative or voicemail.', 'Lending'],
+ ['DPD', 'Days past due. 0 = on time; 30+ = delinquent buckets.', 'Lending'],
+ ['KYC', 'Know Your Customer: identity verification for banks/fintechs. An AI Rudder use case.', 'Lending'],
+ ['SPEI / OXXO', 'Mexican payment channels: SPEI = instant bank transfer; OXXO = pay cash at convenience stores.', 'Mexico'],
+ ['CONDUSEF', 'Mexico\'s financial consumer-protection authority; sets collection-practice rules (hours, conduct).', 'Mexico'],
+ ['LFPDPPP', 'Mexico\'s federal personal-data protection law (privacy notice, consent).', 'Mexico'],
+ ['usted', 'The formal "you" in Spanish. The polite register for a lender calling customers.', 'Mexico'],
+ ['CRM', 'Customer Relationship Management system (Salesforce, HubSpot…): where accounts, statuses and tasks live.', 'Integration'],
+ ['API', 'A way for programs to talk over HTTP: GET reads, POST creates.', 'Integration'],
+ ['Webhook', 'The other system calls YOUR URL when something happens ("call finished"). Push instead of polling.', 'Integration'],
+ ['Polling', 'You ask repeatedly "is it done yet?". Simple, reliable fallback.', 'Integration'],
+ ['Unsigned webhook', 'No cryptographic signature, so you can\'t prove who sent it. Treat as a signal and re-read from the API.', 'Integration'],
+ ['Idempotency / Idempotency-Key', 'Doing the same request twice has the same effect as once. Like a receipt number: no double calls, no duplicate tasks.', 'Integration'],
+ ['Outbox', 'A durable "to-send" list. Writes wait there until the CRM confirms, so nothing is lost when the CRM is down.', 'Integration'],
+ ['Dead letter', 'A message that can\'t be delivered (e.g. bad data, 4xx) parked for a human to fix.', 'Integration'],
+ ['HTTP 200 / 201 / 202', '200 OK; 201 Created (the CRM saved it); 202 Accepted (received, will finish later).', 'Integration'],
+ ['HTTP 4xx / 5xx / 503', '4xx = your request is wrong; 5xx = server problem; 503 = temporarily unavailable, try again.', 'Integration'],
+ ['Source of truth', 'The system whose data wins. Here, the CALL-E API (for calls) and the CRM (for accounts).', 'Integration'],
+ ['MCP', 'Model Context Protocol: lets AI assistants (Claude, Cursor) use tools like CALL-E\'s plan_call/run_call.', 'Integration'],
+ ['SDK', 'A library that wraps an API (calle-ai for Python, @call-e/calle for TypeScript).', 'Integration'],
+ ['Orchestrator', 'Your service in the middle: decides who to call, talks to CALL-E, applies rules, writes the CRM.', 'Integration'],
+ ['CSM / Technical CSM', 'Customer Success Manager: owns customer outcomes after the sale. "Technical" = also integrations, troubleshooting, data.', 'Business'],
+ ['FDE (Forward Deployed Engineer)', 'An engineer embedded with customers who builds and ships the integrations and custom solutions that make the product work in their environment.', 'Business'],
+ ['QBR', 'Quarterly Business Review: meeting where you show the customer results and plan next steps.', 'Business'],
+ ['UAT', 'User Acceptance Testing: the customer tests before go-live.', 'Business'],
+ ['Pilot / control group', 'Small live trial compared against a group handled the old way (e.g. SMS-only) to prove uplift.', 'Business'],
+ ['Hypercare', 'Extra-close monitoring in the first weeks after go-live.', 'Business'],
+ ['AICC', 'AI Contact Center: AI Rudder\'s omnichannel platform with robot-human collaboration.', 'Business'],
+ ['BPO', 'Business Process Outsourcing: call-center companies. AI Rudder sells QA/agent-assist to them.', 'Business'],
+];
+const gb = document.querySelector('#gtable tbody');
+G.forEach(([t, d, a]) => { const tr = document.createElement('tr'); tr.innerHTML = `<td><b>${t}</b></td><td>${d}</td><td><span class="tag">${a}</span></td>`; gb.appendChild(tr); });
+document.getElementById('gq').oninput = e => { const q = e.target.value.toLowerCase(); [...gb.rows].forEach(r => r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none'); };
+
+/* ---------- STAR drafts ---------- */
+const STAR = [
+ ['A difficult or unhappy customer', 'Who was upset, about what, how big was the account? What did you do first (listen, data, plan)? What changed: retention, CSAT, renewal?'],
+ ['A complex technical problem you troubleshot', 'Systems involved (APIs, CRM, data)? How did you isolate the cause (find the first mismatch)? Time to resolve, impact avoided?'],
+ ['Working with Engineering/Product for a customer', 'What did the customer need that the product lacked? How did you frame the business impact? Outcome: fix, workaround, roadmap?'],
+ ['Onboarding / delivering a project end-to-end', 'Scope (users, volume, timeline), stakeholders, tools. What did you do each phase? Go-live result, adoption metric?'],
+ ['Shipping code / an integration in a customer\'s environment', 'What did you build (APIs, data, scripts)? What constraints (access, legacy systems, deadlines)? How did you test and roll it out? Result: time saved, errors avoided, adoption?'],
+ ['Prioritizing under pressure', 'Competing deadlines/escalations? How did you decide (impact × urgency, SLAs)? What did you communicate? Result?'],
+ ['A mistake or failure, and what you learned', 'Own it plainly. What did you change afterwards (process, test, checklist)? Proof it worked?'],
+];
+const sg = document.getElementById('starGrid'); const drafts = store.get('star', {});
+STAR.forEach(([q, hint], i) => { const c = document.createElement('div'); c.className = 'card'; c.innerHTML = `<h3>${q}</h3><p class="muted" style="font-size:14px">${hint}</p>`;
+  ['S', 'T', 'A', 'R'].forEach(k => { const ta = document.createElement('textarea'); ta.placeholder = { S: 'Situation…', T: 'Task…', A: 'Action (what YOU did)…', R: 'Result (numbers + lesson)…' }[k];
+    ta.style.minHeight = k === 'A' ? '96px' : '56px'; ta.value = drafts[i + k] || ''; ta.oninput = () => { drafts[i + k] = ta.value; store.set('star', drafts); }; c.appendChild(ta); });
+  sg.appendChild(c); });
+
+/* ---------- Q&A bank ---------- */
+const QA = [
+ ['Project', 'Walk me through your project in 2 minutes.', `<p>“Financiera Solaria, a fictional Mexican lender, wants to call customers 3 days before an installment is due and turn each call into one actionable CRM outcome. I built an orchestrator between their CRM and CALL-E. It reads the account and runs guards for phone, do-not-call and calling hours. It creates the call with a task prompt, a result schema and an idempotency key. When CALL-E's webhook arrives, it treats it only as a signal and re-reads the call from the API. Then deterministic rules map the result to a CRM status and a task for a named team, written through an outbox. Testing found two bugs in v1: a vague answer counted as a promise, and a false ‘synced’ during a CRM outage. Both are fixed and retested. My recommendation: a controlled pilot after a short pre-pilot, because live Spanish accuracy and the Mexican line are unproven.”</p>`],
+ ['Project', 'What if the webhook never arrives?', `<p>“Polling fallback: <code>POST /calls/{id}/sync</code> re-reads the call. In production I'd add a sweeper that polls any call stuck in <code>submitted</code> for more than 15 minutes, plus an alert.”</p>`],
+ ['Project', 'How do you know the CRM write succeeded?', `<p>“Only the CRM's own confirmation counts: 201 created, or 200 duplicate. Until then the write sits in the outbox as pending, and the call shows <code>crm_sync_failed</code>, not success.”</p>`],
+ ['Project', 'Why return 202 and not 500 when the CRM fails?', `<p>“By then the result is already durable in my outbox, so asking CALL-E to redeliver adds nothing: the outbox is the safety net. I return 503 when I <i>can't</i> verify the call, because the CALL-E API is down. Then I do want redelivery.”</p>`],
+ ['Project', 'Why would a clear promise go to review?', `<p>“Either the date is past policy (more than due + 7 days), or it wasn't specific or firm. That's a deliberate trade-off: false negatives cost agent time, but a false promise corrupts forecasts and triggers wrong follow-up. The threshold is configurable (<code>PTP_MAX_DAYS_AFTER_DUE</code>), and I'd tune it on pilot data.”</p>`],
+ ['Project', 'Why the enum + "unknown" design in the schema?', `<p>“A boolean like <code>will_pay: false</code> can't separate ‘no’ from ‘nobody knew’. An explicit <code>unknown</code> stops the extractor picking the nearest confident label. The date must be ISO or empty, with ‘never guess’. And I keep the customer's own words as evidence for QA and audit.”</p>`],
+ ['Project', 'Mexico specifics?', `<p>“Several time zones, so the calling window is per customer. Formal <i>usted</i>. OXXO and SPEI as payment channels. CONDUSEF collection-practice rules and the LFPDPPP privacy law. And the caller-ID issue: CALL-E calls Mexico from an international line.”</p>`],
+ ['Project', 'What would you do with one more week?', `<p>“Live calls and an accuracy study against human labels. An automatic outbox retry worker with alerting. A real CRM sandbox like HubSpot. And a QA review screen showing transcript + evidence + extracted fields side by side.”</p>`],
+ ['Project', 'Why a mock CRM and not Salesforce/HubSpot?', `<p>“So I can demo real failures (503s, timeouts) on demand, which a SaaS sandbox can't do reliably in a live demo. It's a separate service over real HTTP with its own database, so the integration code is real. Only the CRM product is mocked. The mapping would be redone for Solaria's real CRM.”</p>`],
+ ['Project', 'What is real and what is simulated?', `<p>“The orchestrator, guards, webhook handling, rules, outbox and CRM integration are real and run over HTTP. CALL-E call execution is simulated by default with scripted Spanish transcripts, using the identical request contract. Live mode with my API key places real calls to allow-listed numbers.”</p>`],
+ ['Technical', 'How would you scale this to 50,000 calls a day?', `<p>“Put a queue in front of call creation and respect CALL-E's concurrency and rate limits. Schedule by customer time zone so each window is used fully. Move from SQLite to Postgres. Make the outbox retry automatic with backoff, plus alerting on outbox age. Add a sweeper for stuck calls. Then dashboards for contact rate, sync lag and needs_review volume. The idempotency keys already make retries safe at any scale.”</p>`],
+ ['Technical', 'A customer says the bot gets 10% of outcomes wrong. What do you do?', `<p>“First get concrete call IDs. Then for each one, compare audio, transcript and extracted fields to find <i>where</i> it first goes wrong. That's the ‘first mismatch’ method from AI Rudder's harness post. Was it a speech-recognition error, an extraction/schema ambiguity, or a policy question? Quick wins are clearer schema descriptions, an <code>unknown</code> option, and a clarifying question in the task. Meanwhile, guard the business: route low-confidence cases to needs_review. Build a small human-labeled test set to measure the fix. Send engineering an evidence pack for model issues, and give the customer a clear timeline.”</p>`],
+ ['Technical', 'What risks are specific to LLM voice agents in collections?', `<p>“Inventing commitments, discounts or threats. Disclosing the debt to the wrong person. Pressure or tone complaints. Callers trying prompt injection. Wrong extraction. And compliance: calling hours and contact frequency. My mitigations: a NEVER list in the prompt, right-party enforced in code, policy in deterministic rules, a verbatim evidence field, QA sampling, and no auto-redial.”</p>`],
+ ['Technical', 'Explain idempotency to a non-technical customer.', `<p>“It's like a receipt number. If the same request arrives twice, because of a retry or a crash, we recognize the receipt and don't do it again. So no customer gets called twice and no duplicate task is created.”</p>`],
+ ['Technical', 'Webhook vs polling, simply?', `<p>“Polling is calling the restaurant every 5 minutes to ask if your table is ready. A webhook is them texting you when it is. Webhooks are efficient, but since CALL-E's aren't signed, I treat the text as a nudge and then check with the restaurant directly. That's the API re-read.”</p>`],
+ ['Technical', 'How do you handle PII and security?', `<p>“Mask phones in logs and UI. Keep card data out entirely: the agent may never take it. Use metadata IDs rather than personal data where possible. In production: encryption at rest, a retention policy for transcripts and recordings, least-privilege API keys, an unguessable webhook path, and a review against PDPA, GDPR and LFPDPPP. My prototype stores account JSON unencrypted, and I list that as a known gap.”</p>`],
+ ['Technical', 'CALL-E API is now v2. Does your code still work?', `<p>“I built against SDK 0.7.0 and the v1 shape. The public docs now show v2 / SDK 1.0.1 with a single <code>phone</code> field and <code>result_status</code>. All CALL-E calls go through one gateway adapter, so migrating is contained. And <code>result_status</code> fits my design, because I already separate ‘call completed’ from ‘result usable’.” <i>(Test a live call beforehand so you can say whether 0.7.0 still works.)</i></p>`],
+ ['Customer', 'How would you onboard a new bank onto AI Rudder?', `<p>“Discovery first: goals and KPIs, volumes, segments, systems, compliance constraints and who signs off. Then solution design: use case, script/goal, result fields, routing to their teams. Then integration: CRM API or list upload, outcome write-back. UAT with internal test calls, and a pilot against a control group with agreed success criteria. Go-live with hypercare, then regular reviews on the metrics we agreed.”</p>`],
+ ['Customer', 'A customer wants a feature CALL-E doesn\'t have. What do you do?', `<p>“Understand the underlying need, not just the feature they asked for. Offer a workaround if there is one: for example, unsigned webhooks → I re-read from the API. Log the request with its business impact, such as revenue or the number of customers affected. Set honest expectations on timing, and follow up so they know it was heard.”</p>`],
+ ['Customer', 'Which metrics would you report to a collections customer?', `<p>“Contact and right-party contact rate, PTP rate, <b>promise-kept rate</b>, repayment uplift vs a control group, cost per contact vs human agents, transfer and callback volumes, needs_review share, and complaints/opt-outs. Lead with business outcomes, not call counts.”</p>`],
+ ['Customer', 'The customer\'s pilot results are below target. What now?', `<p>“Segment the data: which step is losing them? Pick-up (line, caller ID, time of day), early hang-ups (opening, disclosure), or the conversation (script, extraction)? Fix the biggest leak first, rerun on a comparable segment, and present an honest plan with a decision date. Don't hide the numbers.”</p>`],
+ ['Customer', 'Several enterprise customers escalate at the same time. How do you prioritize?', `<p>“Impact × urgency: production down beats a degraded feature, which beats a question. Contractual SLAs and revenue at risk count too. Acknowledge everyone quickly with a time for the next update, pull in help where needed, and keep a single status note per incident.”</p>`],
+ ['Role', 'What\'s the difference between a CSM and a Forward Deployed Engineer?', `<p>“A CSM owns the customer outcome and relationship: onboarding, health, ROI, renewal. An FDE owns making the product actually work in the customer's environment: integration code, configs, debugging, hardening. In this role I'd do both: decide what success looks like with the customer, then build and ship what gets us there.”</p>`],
+ ['Role', 'When do you build something custom for a customer vs push it to the product team?', `<p>“Build custom when it's specific to their systems (their CRM fields, their compliance rules, their routing), and keep it thin and well-tested. Push to product when it's generic or I've seen it at more than one customer, like webhook signing or local caller ID. Even then I ship a workaround so the customer isn't blocked, and I log the request with its business impact.”</p>`],
+ ['Role', 'How do you keep quality high when moving fast at a customer site?', `<p>“Prototype fast, but put the guardrails in early: idempotency keys, honest status codes, tests for the failure paths, and one adapter per external system so changes stay contained. In my assignment the tests caught two real bugs before any customer would have seen them.”</p>`],
+ ['Role', 'How do you debug a problem in an environment you don\'t control?', `<p>“First make it reproducible: get call IDs, timestamps and payloads. Then walk the chain hop by hop: CRM read → CALL-E create → webhook → API re-read → CRM write. Find the first place where reality differs from expectations. Use health checks like my Troubleshoot tab, and send the customer's IT team a precise question rather than ‘it doesn't work’.”</p>`],
+ ['Company', 'How is CALL-E different from the AI Voice Agent / BotLab?', `<p>“My understanding: BotLab and the Voice Agent are built around designed flows for high-volume, repeatable campaigns. CALL-E is goal-based: you describe the outcome and it plans the conversation, which suits long-tail tasks, developer integrations and AI agents via MCP. I'd want to learn how the teams position them for enterprise customers.” <i>(Say it as your understanding; ask them to confirm.)</i></p>`],
+ ['Company', 'Who are AI Rudder\'s customers and competitors?', `<p>“Banks, fintechs, insurers and e-commerce in Southeast Asia and Latin America, for example Kredivo, Bank Neo Commerce, AmBank, Megacable, and Mexican fintechs like Stori and Plata. On competitors: other voice-AI and conversational-AI vendors, plus contact-center software adding AI. The differentiators I'd point to are the in-house ASR/NLU/TTS, local-language and accent support, collections expertise, and enterprise compliance like SOC 2 and ISO 27001.”</p>`],
+];
+const cats = ['All', ...new Set(QA.map(q => q[0]))]; let curCat = 'All';
+const qf = document.getElementById('qaFilters'), ql = document.getElementById('qaList');
+function renderQA() { ql.innerHTML = ''; QA.filter(q => curCat === 'All' || q[0] === curCat).forEach(([c, q, a]) => {
+  const d = document.createElement('details'); d.innerHTML = `<summary><span>${q} <span class="tag ${c === 'Technical' ? 'b' : c === 'Customer' ? 'g' : c === 'Company' ? 'p' : c === 'Role' ? 'o' : ''}">${c}</span></span></summary><div><div class="say" style="margin:0">${a}</div></div>`; ql.appendChild(d);
+  d.querySelector('.say').addEventListener('click', e => { if (document.body.classList.contains('practice')) e.currentTarget.classList.toggle('reveal'); }); }); }
+cats.forEach(c => { const b = document.createElement('button'); b.textContent = c; b.onclick = () => { curCat = c; qf.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); renderQA(); }; if (c === 'All') b.classList.add('on'); qf.appendChild(b); });
+renderQA();
+
+/* ---------- flashcards ---------- */
+let FC = [
+ ['AI Rudder: HQ, founded, 3 headline numbers?', 'Singapore · 2019 · 500+ companies, 22 countries, 8B+ calls'],
+ ['Name AI Rudder\'s 5 products.', 'AI Voice Agent · AI Chat Agent · BotLab · Omnichannel/AICC · CALL-E'],
+ ['AI Rudder\'s main use cases?', 'Collections/reminders · customer service · KYC/verification · telemarketing/lead gen · QA'],
+ ['The voice-AI loop, in order?', 'ASR → NLU → dialogue management (+LLM) → TTS'],
+ ['What is CALL-E, in one sentence?', 'A goal-based AI phone agent: give it a goal, a number and a result schema, and it plans and makes the call, then returns a summary, transcript and structured result.'],
+ ['3 CALL-E integration paths?', 'Developer API/SDK (you used it) · MCP for AI agents (plan_call → run_call → get_call_run, no webhook) · web app / CLI / ChatGPT app'],
+ ['Why are CALL-E webhooks only a "signal" in your design?', 'They\'re unsigned, so you re-read the call from the authenticated API (source of truth).'],
+ ['Mexico on CALL-E: what\'s the catch?', 'International line, "intended primarily for development and testing" → pilot blocker; needs a local number or SIP trunk.'],
+ ['Your one-line thesis?', 'It never records an outcome that didn\'t happen, and never reports a CRM update that didn\'t land.'],
+ ['The 6 steps?', 'Read account + guards → create call (idempotency key) → conversation → webhook (signal) → re-read API (truth) → rules + outbox → CRM 201'],
+ ['The 3 layers?', 'Instructions (task prompt) · Workflow config (schema, locale, metadata, idempotency) · External logic (guards + rules in code)'],
+ ['What 2 tests did v1 fail, and why?', 'T2: "a fin de mes, si me pagan" recorded as a promise. T3: CRM 503 but returned "200 synced" (result lost).'],
+ ['What makes a valid promise in v2?', 'Specific ISO date + certainty "firm" + on or before due date + 7 days.'],
+ ['Already paid → which CRM status, and why not "paid"?', 'paid_claimed → finance reconciles. You can\'t trust a claim without checking the payment.'],
+ ['When does a CRM write count as success?', 'Only when the CRM returns 201 created (or 200 duplicate). Until then: outbox pending, crm_sync_failed.'],
+ ['D1, D2, D3 in one line each?', 'D1 rules in code not prompt · D2 webhook = signal, API = truth, outbox · D3 narrow scope (one reminder, no negotiation, no auto-redial)'],
+ ['Ready for a pilot?', 'Yes, controlled, after a 1–2 week pre-pilot (30–50 internal calls). Not full volume: Spanish extraction unproven + MX international line.'],
+ ['The #1 business metric?', 'Promise-kept rate (and on-time payment) vs an SMS-only control group.'],
+ ['The role is a hybrid of which two jobs?', 'Technical CSM (owns customer outcome, onboarding, ROI) + Forward Deployed Engineer (builds and ships the integration code in the customer\'s environment).'],
+ ['Where is the promise rule in the code?', 'app/orchestrator/outcomes.py → decide()'],
+ ['Where is the webhook trust boundary in the code?', 'app/orchestrator/main.py → calle_webhook() checks ids, process_call() re-reads via gateway.get_call()'],
+ ['STAR stands for?', 'Situation · Task · Action · Result (with numbers + lesson)'],
+ ['Which accounts were blocked before CALL-E, and why?', 'ACC-1004 (no phone → fix_contact_data task) and ACC-1008 (do-not-call).'],
+ ['What happens when the wrong person answers?', 'The debt is never mentioned. Status wrong_party_contact, plus a verify_contact_data task for data quality.'],
+ ['What does "completed" mean on a CALL-E call?', 'Only that the call ended. Not that the result is ready (result_status) or that the business goal was met.'],
+];
+let fi = 0; const fc = document.getElementById('fc'); const known = new Set(store.get('known', []));
+function showFC() { const [q, a] = FC[fi]; fc.classList.remove('flip'); setTimeout(() => { document.getElementById('fcQ').textContent = q; document.getElementById('fcA').textContent = a; }, 120);
+  document.getElementById('fcK').textContent = known.has(q) ? 'QUESTION · ✓ KNOWN' : 'QUESTION'; document.getElementById('fcPos').textContent = `${fi + 1} / ${FC.length} · known ${known.size}`; }
+fc.onclick = () => fc.classList.toggle('flip');
+document.getElementById('fcNext').onclick = () => { fi = (fi + 1) % FC.length; showFC(); };
+document.getElementById('fcPrev').onclick = () => { fi = (fi - 1 + FC.length) % FC.length; showFC(); };
+document.getElementById('fcShuf').onclick = () => { FC = FC.map(v => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(v => v[1]); fi = 0; showFC(); };
+document.getElementById('fcKnow').onclick = () => { known.add(FC[fi][0]); store.set('known', [...known]); fi = (fi + 1) % FC.length; showFC(); };
+document.addEventListener('keydown', e => { const r = document.getElementById('flash').getBoundingClientRect(); if (r.top > innerHeight || r.bottom < 0 || /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if (e.key === 'ArrowRight') { fi = (fi + 1) % FC.length; showFC(); } else if (e.key === 'ArrowLeft') { fi = (fi - 1 + FC.length) % FC.length; showFC(); } else if (e.key === ' ') { e.preventDefault(); fc.classList.toggle('flip'); } });
+showFC();
+
+/* ---------- timer ---------- */
+let tStart = null, tAcc = 0, tInt = null; const tEl = document.getElementById('timer');
+const tShow = () => { const s = Math.floor((tAcc + (tStart ? Date.now() - tStart : 0)) / 1000); tEl.textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  tEl.style.color = s > 900 ? 'var(--red)' : s > 780 ? 'var(--orange)' : 'var(--accent)'; };
+document.getElementById('tStart').onclick = e => { if (tStart) { tAcc += Date.now() - tStart; tStart = null; clearInterval(tInt); e.target.textContent = '▶ Start'; } else { tStart = Date.now(); tInt = setInterval(tShow, 250); e.target.textContent = '❚❚ Pause'; } };
+document.getElementById('tReset').onclick = () => { tAcc = 0; tStart = null; clearInterval(tInt); document.getElementById('tStart').textContent = '▶ Start'; tShow(); };
+
+/* ---------- checklist ---------- */
+const CK = { tech: ['Camera, mic and internet tested', 'Quiet room, notifications off', 'Join link ready, on time', 'Water + this page on a 2nd screen'],
+  demo: ['./run.sh running, control center opens', 'Reset everything pressed', 'Tabs: :8000, :8001, /learn, slides', 'Second terminal open in the project folder', 'Optional: live call tested earlier today, phone loud, DND off'],
+  during: ['Open with the one-line thesis', 'Say what\'s real vs simulated, clearly', 'Show the failure + recovery', 'Tell the v1 → v2 story', 'Say the limits before they ask', 'Ask 3–5 questions', 'Close with the thesis'] };
+const ck = store.get('ck', {});
+document.querySelectorAll('.check').forEach(box => CK[box.dataset.group].forEach((t, i) => { const id = box.dataset.group + i; const l = document.createElement('label');
+  l.innerHTML = `<input type="checkbox"><span>${t}</span>`; const inp = l.querySelector('input'); inp.checked = !!ck[id]; inp.onchange = () => { ck[id] = inp.checked; store.set('ck', ck); }; box.appendChild(l); }));
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
-const sel = document.getElementById("docsel"), out = document.getElementById("doc");
-try { window.mermaid && mermaid.initialize({startOnLoad: false, theme: "default", securityLevel: "strict"}); } catch {}
-async function load(name) {
-  const md = await (await fetch("/api/docs/" + encodeURIComponent(name))).text();
-  if (!window.marked) { out.innerHTML = ""; const pre = document.createElement("pre"); pre.textContent = md; out.appendChild(pre); return; }
-  out.innerHTML = marked.parse(md);
-  out.querySelectorAll("code.language-mermaid").forEach(code => {
-    const div = document.createElement("div"); div.className = "mermaid"; div.textContent = code.textContent;
-    code.parentElement.replaceWith(div);
-  });
-  out.querySelectorAll("a[href$='.md']").forEach(a => {
-    const stem = a.getAttribute("href").split("/").pop().replace(/\.md$/, "");
-    a.addEventListener("click", e => { e.preventDefault(); sel.value = stem; load(stem); });
-  });
-  try { if (window.mermaid) await mermaid.run({nodes: out.querySelectorAll(".mermaid")}); } catch (e) { console.warn(e); }
-}
-(async () => {
-  const names = await (await fetch("/api/docs")).json();
-  sel.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join("");
-  const wanted = new URLSearchParams(location.search).get("doc");
-  const first = names.includes(wanted) ? wanted : (names.includes("ARCHITECTURE") ? "ARCHITECTURE" : names[0]);
-  if (wanted) document.getElementById("docs").scrollIntoView();
-  sel.value = first; load(first);
-  sel.addEventListener("change", () => load(sel.value));
+/* ---------- document viewer: docs/*.md from /api/docs, with mermaid diagrams ---------- */
+(() => {
+  const sel = document.getElementById("docsel"), out = document.getElementById("doc");
+  try { window.mermaid && mermaid.initialize({startOnLoad: false, theme: "default", securityLevel: "strict"}); } catch (e) {}
+  async function load(name) {
+    let md;
+    try { const r = await fetch("/api/docs/" + encodeURIComponent(name)); if (!r.ok) throw new Error(r.status); md = await r.text(); }
+    catch (e) { out.innerHTML = '<p class="muted">Couldn\'t load the document (is the backend running or still waking up?). Try again in a minute.</p>'; return; }
+    if (!window.marked) { out.innerHTML = ""; const pre = document.createElement("pre"); pre.textContent = md; out.appendChild(pre); return; }
+    out.innerHTML = marked.parse(md);
+    out.scrollTop = 0;
+    out.querySelectorAll("code.language-mermaid").forEach(code => {
+      const div = document.createElement("div"); div.className = "mermaid"; div.textContent = code.textContent;
+      code.parentElement.replaceWith(div);
+    });
+    // Links inside a doc: other docs open here; other repo files (e.g. evidence/*.txt) open on GitHub.
+    const GH = "https://github.com/kiaruh/calle-rudder/blob/claude/affectionate-euler-cvrdsm/";
+    out.querySelectorAll("a[href]").forEach(a => {
+      const href = a.getAttribute("href");
+      if (href.startsWith("#")) { a.addEventListener("click", e => { e.preventDefault(); toHeading(href.slice(1)); }); return; }
+      if (/^[a-z]+:/i.test(href)) { a.target = "_blank"; a.rel = "noopener"; return; }
+      const path = href.split("#")[0];
+      if (/\.md$/.test(path)) {
+        const stem = path.split("/").pop().replace(/\.md$/, "");
+        a.addEventListener("click", e => { e.preventDefault(); showDoc(stem, href.split("#")[1] || ""); });
+        return;
+      }
+      a.href = GH + new URL(href, "https://repo/" + (name === "README" ? "" : "docs/")).pathname.slice(1);  // README is at the root
+      a.target = "_blank"; a.rel = "noopener";
+    });
+    try { if (window.mermaid) await mermaid.run({nodes: out.querySelectorAll(".mermaid")}); } catch (e) { console.warn(e); }
+  }
+  (async () => {
+    let names = [];
+    try { const r = await fetch("/api/docs"); if (r.ok) names = await r.json(); } catch (e) {}
+    if (!names.length) { out.innerHTML = '<p class="muted">The document list comes from the backend, which isn\'t reachable yet. Reload in a minute.</p>'; return; }
+    sel.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join("");
+    const wanted = new URLSearchParams(location.search).get("doc");
+    const first = names.includes(wanted) ? wanted : (names.includes("ARCHITECTURE") ? "ARCHITECTURE" : names[0]);
+    // ?doc= alone jumps to the viewer; a #section in the same link wins (e.g. a shared /learn?doc=…#flash).
+    if (wanted && (!location.hash || location.hash === "#docs")) document.getElementById("docs").scrollIntoView();
+    sel.value = first; load(first);
+    sel.addEventListener("change", () => { load(sel.value); remember(sel.value); });
+  })();
+  // GitHub-style heading anchors ("3. Call your own phone (real CALL-E)" -> "3-call-your-own-phone-real-call-e").
+  const slug = t => t.trim().toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
+  function toHeading(frag) {
+    const h = [...out.querySelectorAll("h1,h2,h3,h4,h5,h6")].find(x => slug(x.textContent) === decodeURIComponent(frag));
+    if (h) out.scrollTop += h.getBoundingClientRect().top - out.getBoundingClientRect().top - 12;  // scroll inside the viewer only
+  }
+  // Keep ?doc= in the address so a reload (or a shared link) reopens the same document. Other params (embed=1) stay.
+  function remember(name) {
+    try { const u = new URL(location.href); u.searchParams.set("doc", name); u.hash = ""; history.replaceState(null, "", u); } catch (e) {}
+  }
+  // Open a doc in the viewer without reloading the page (keeps ?embed=1 inside the control center's Learn tab).
+  async function showDoc(name, frag) {
+    document.getElementById("docs").scrollIntoView();
+    if (![...sel.options].some(o => o.value === name)) return;
+    sel.value = name; remember(name);
+    await load(name);
+    if (frag) toHeading(frag);
+  }
+  document.addEventListener("click", e => { const a = e.target.closest("a[data-doc]"); if (a) { e.preventDefault(); showDoc(a.dataset.doc); } });
 })();
-</script>
-<script>
-// Hosted (Netlify + Render): the CRM is at /crm/ and the terminal hints should use this site's address.
+
+/* ---------- embedded in the control center's Learn tab: links leave the iframe in a new tab ---------- */
+if (document.body.classList.contains("embed")) {
+  document.querySelectorAll("a[href]").forEach(a => { if (!a.getAttribute("href").startsWith("#") && !a.dataset.doc && !a.target) { a.target = "_blank"; a.rel = "noopener"; } });
+}
+
+/* ---------- hosted (Netlify + Render): CRM is at /crm/, terminal hints use this site's address ---------- */
 if (!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
-  document.querySelectorAll("a[data-crm-link]").forEach(a => { a.href = "/crm/"; a.textContent = "CRM"; });
+  document.querySelectorAll('a[href^="http://127.0.0.1:8001/"]').forEach(a => { a.href = a.getAttribute("href").replace("http://127.0.0.1:8001/", "/crm/"); });
   document.querySelectorAll("pre").forEach(p => { p.textContent = p.textContent
     .replaceAll("localhost:8001/", location.origin + "/crm/").replaceAll("localhost:8000", location.origin); });
 }

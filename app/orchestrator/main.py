@@ -5,7 +5,7 @@
   POST /calls/{call_id}/sync          polling fallback when no webhook arrives (e.g. no public URL)
   POST /outbox/retry                  re-send CRM writes that failed earlier
   GET  /calls, /outbox, /notifications            inspection
-  GET  /  and  /learn  and  /rudder/  and  /api/*  control center UI, project guide, AI Rudder study guide (see control.py)
+  GET  /  and  /learn  and  /api/*                control center UI and the Learn page (see control.py)
 """
 
 from __future__ import annotations

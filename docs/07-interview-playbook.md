@@ -23,9 +23,9 @@ the notes off with the buttons in the header once you know the flow.
 |---|---|---|
 | 0.1 | Open Terminal and `cd` into the project folder (e.g. `cd ~/Desktop/calle-rudder-claude-affectionate-euler-cvrdsm`) | |
 | 0.2 | Get the latest code (`git pull`, or download the branch again) | |
-| 0.3 | `./setup.sh` | Ends with "33 passed" and "Ready. Next: ./run.sh" |
+| 0.3 | `./setup.sh` | Ends with "39 passed" and "Ready. Next: ./run.sh" |
 | 0.4 | `./run.sh` | The browser opens **http://127.0.0.1:8000/** (the control center). Leave this terminal open; Ctrl+C stops everything. |
-| 0.5 | In the browser, also open **http://127.0.0.1:8001/** (mock CRM) and **http://127.0.0.1:8000/learn** (project guide) | Three tabs, ready to use |
+| 0.5 | In the browser, also open **http://127.0.0.1:8001/** (mock CRM) and **http://127.0.0.1:8000/learn** (Learn page) | Three tabs, ready to use |
 
 Paste terminal commands one line at a time. zsh breaks on pasted `# comments`.
 
@@ -116,7 +116,7 @@ CALL-E is simulated unless you use "Call my phone". Always state this clearly.
 
 | # | Do | See | Say |
 |---|---|---|---|
-| 1 | **Learn the project** → "System diagram" | Numbered flow 1–6 | *"1 read the account, 2 create the call, 3 the conversation, 4 webhook, 5 re-read the call from the API, 6 write to the CRM through an outbox."* |
+| 1 | **Learn page** → "System diagram" | Numbered flow 1–6 | *"1 read the account, 2 create the call, 3 the conversation, 4 webhook, 5 re-read the call from the API, 6 write to the CRM through an outbox."* |
 | 2 | **Input:** tab :8001, or in Terminal: `curl localhost:8001/accounts/ACC-1001` | Name, phone, amount, due date, time zone | *"This is the customer context the agent uses."* |
 | 3 | **Output:** Results → click ACC-1001 → compare "What CALL-E extracted" with "What the CRM stored" | `promise_date: 2026-10-09`, `payment_channel: spei_transfer`, a task `verify_payment` due 10-10 | **Field mapping:** *"promise_date goes to the interaction, and the follow-up task is due the next day. The customer's words are kept as evidence. Full table in docs/03."* |
 | 4 | Open `docs/03-integration.md` → "Field mapping" + "Outcome → CRM routing" | | *"Every outcome routes to a named team with a priority."* |
@@ -138,7 +138,7 @@ CALL-E is simulated unless you use "Call my phone". Always state this clearly.
 | **T3 Integration failure** | **Run outage scenario** → **Restore CRM + retry outbox** | `crm_sync_failed` → `synced`, with one task |
 | **T4 Customer exception** | Simulate **Asks for a human** | `callback_requested`, a high-priority `human_callback` task |
 
-**Automated proof:** in a second Terminal, `.venv/bin/python -m pytest -v`. You'll see 33 passed; the names `test_t1_…` to `test_t4_…` are the 4 required tests.
+**Automated proof:** in a second Terminal, `.venv/bin/python -m pytest -v`. You'll see 39 passed; the names `test_t1_…` to `test_t4_…` are the 4 required tests.
 
 ### Show the improvement and retest (this is required)
 | # | Do | See | Say |

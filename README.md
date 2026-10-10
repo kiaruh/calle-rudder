@@ -47,8 +47,7 @@ Paste these commands one line at a time:
 | **Call my phone** | Paste your CALL-E API key, enter your number, and get a **real** call. Scripts tell you what to say for each test |
 | **Results** | Calls, CRM accounts, tasks, outbox. Click a call for the transcript, the extracted result and the CRM record |
 | **Troubleshoot** | One-click health checks with fixes, plus common errors |
-| **Learn AI Rudder** | Interview study guide: 7-min explainer video, AI Rudder + CALL-E, the role (Technical CSM + FDE), what to say, STAR, Q&A, flashcards. Also at `/rudder/` |
-| **Learn** (`/learn`) | What CALL-E is, what this repo does, the system diagram, code map, terminal cheat sheet, all docs with diagrams |
+| **Learn** (also `/learn`) | One page for everything: 7-min explainer video; Part A AI Rudder, CALL-E and the role (Technical CSM + FDE); Part B the project in depth (system diagram, who decides what, code tour, terminal cheat sheet, all docs with diagrams); Part C what to say (15-min script, STAR, Q&A, flashcards, checklist) |
 
 Also: the mock CRM at http://127.0.0.1:8001/ (with outage buttons), and Swagger API docs at `/docs` on both ports.
 `./demo.sh` runs the narrated terminal demo, starting the services if needed. Tests: `.venv/bin/python -m pytest -v`.
@@ -79,7 +78,7 @@ Netlify only hosts static pages, so the app is split in two. Both redeploy autom
 
 ```
  Browser ──▶ Netlify (pages + video, CDN) ──proxy /api/*, /calls/*, /crm/*, /docs…──▶ Render (FastAPI backend)
-             control center, /learn, /rudder/                                        orchestrator + mock CRM at /crm
+             control center, /learn, video                                           orchestrator + mock CRM at /crm
 ```
 
 | Piece | Config | What it runs |
@@ -92,7 +91,8 @@ One-time setup:
    (e.g. `https://calle-rudder-api.onrender.com`). Under the service's **Environment**, note the generated `LIVE_PASSCODE`.
 2. **Netlify:** **Add new site → Import an existing project** → GitHub → this repo. Build settings come from `netlify.toml`.
    Under **Site configuration → Environment variables**, add `BACKEND_URL` = the Render URL, then **Deploy**.
-3. Open the Netlify URL. The control center, project guide (`/learn`), CRM (`/crm/`) and **Learn AI Rudder** (`/rudder/`) all work.
+3. Open the Netlify URL. The control center, the Learn page (`/learn`) and the CRM (`/crm/`) all work.
+   What each address is, and day-to-day use of the live site: [docs/08-live-site-guide.md](docs/08-live-site-guide.md).
 
 Things to know:
 - **The free Render instance sleeps after ~15 min idle** and takes up to a minute to wake. The page shows a banner and retries
@@ -112,8 +112,8 @@ app/orchestrator/calle_gateway.py  CALL-E adapter: LiveCalleGateway (SDK) | Simu
 app/orchestrator/outcomes.py    Business rules: verified call result -> CRM status + follow-up task
 app/orchestrator/main.py        HTTP API: campaign, webhook, sync (poll), outbox retry
 app/orchestrator/control.py     Control center API (/api/*): demo actions, live call, troubleshooting, docs
-app/orchestrator/static/        Control center (index.html) and project guide (learn.html)
-app/orchestrator/static/rudder/ Learn AI Rudder study guide (index.html), explainer video, video source (video/)
+app/orchestrator/static/        Control center (index.html) and the Learn page (learn.html)
+app/orchestrator/static/rudder/ Explainer video, its source (video/), and a redirect from the old /rudder/ guide to /learn
 app/combined.py                 One-process backend for hosting (orchestrator + CRM at /crm), used by render.yaml
 render.yaml, netlify.toml       Deployment: backend on Render, pages + proxy on Netlify (scripts/netlify_build.sh)
 app/orchestrator/store.py       Orchestrator state: intents, idempotency keys, webhook receipts, outbox
@@ -136,4 +136,5 @@ docs/evidence/                  Captured test runs (v1 fail -> v2 pass) and demo
 5. [Decision log](docs/05-decision-log.md)
 6. [Presentation outline + rollout recommendation + Q&A prep](docs/06-presentation.md)
 7. [Interview playbook: step by step for sections 1-6](docs/07-interview-playbook.md)
-8. [Architecture](docs/ARCHITECTURE.md)
+8. [Live site guide: what each address is, Netlify vs Render](docs/08-live-site-guide.md)
+9. [Architecture](docs/ARCHITECTURE.md)

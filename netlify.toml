@@ -1,4 +1,4 @@
-# Netlify serves the static pages (control center, project guide, Learn AI Rudder + video)
+# Netlify serves the static pages (control center, Learn page, explainer video)
 # and proxies every API call to the backend on Render (see render.yaml).
 # Set BACKEND_URL in Netlify (Site configuration -> Environment variables) to your Render URL,
 # e.g. https://calle-rudder-api.onrender.com, then redeploy.

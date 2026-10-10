@@ -87,11 +87,12 @@ Open the **Troubleshoot** tab and press **Run checks**. It checks the services, 
 the webhook, the outbox and stuck calls, and says how to fix each failure. Below that is a table of common errors.
 
 ## 5. Understand the project
-Open **http://127.0.0.1:8000/learn**. It covers what CALL-E is, what the repo does, the system diagram, who decides what,
+Open **http://127.0.0.1:8000/learn** (or the control center's **Learn** tab). It covers AI Rudder and CALL-E, the role, the system diagram, who decides what,
 a code map, a terminal cheat sheet, and all the documents in `docs/` rendered with their diagrams.
 
-For the interview itself, open the control center's **Learn AI Rudder** tab (or **http://127.0.0.1:8000/rudder/**): a 7-minute
-explainer video, AI Rudder and CALL-E, the role (Technical CSM + Forward Deployed Engineer), what to say, STAR stories, Q&A and flashcards.
+The same page has the 7-minute explainer video and everything for the interview itself: the role (Technical CSM + Forward
+Deployed Engineer), what to say, a 15-minute script, STAR stories, Q&A and flashcards. Using the online version
+(https://rudder-fde-qiyin.netlify.app): [08-live-site-guide.md](08-live-site-guide.md).
 
 ## 5b. Who does what, where (quick map)
 

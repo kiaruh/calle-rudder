@@ -59,11 +59,11 @@ th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertic
 th{font:600 11px var(--mono);text-transform:uppercase;color:var(--muted);background:var(--bg)}
 tr.click{cursor:pointer} tr.click:hover td{background:var(--accent-soft)}
 .wake{max-width:1400px;margin:10px auto 0;padding:10px 14px;border:1px solid var(--warn);background:var(--warn-soft);color:var(--fg);border-radius:8px;font-size:14px}
-/* Learn AI Rudder tab: full width (no activity sidebar / presenter guide), video + embedded study guide. */
+/* Learn tab: full width (no activity sidebar / presenter guide), video + the embedded Learn page. */
 body.wide-tab .layout{grid-template-columns:minmax(0,1fr)}
 body.wide-tab aside,body.wide-tab #guide,body.wide-tab #g-mini{display:none!important}
-.rudder-video{width:100%;max-width:1100px;aspect-ratio:16/9;background:#050f17;border-radius:10px;border:1px solid var(--line);display:block}
-.rudder-guide{width:100%;height:calc(100vh - 150px);min-height:600px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.learn-video{width:100%;max-width:1100px;aspect-ratio:16/9;background:#050f17;border-radius:10px;border:1px solid var(--line);display:block}
+.learn-guide{width:100%;height:calc(100vh - 150px);min-height:600px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .pill{display:inline-block;font:600 11px/1 var(--mono);padding:4px 7px;border-radius:999px;white-space:nowrap;background:var(--bg);border:1px solid var(--line)}
 .pill.good{background:var(--good-soft);color:var(--good);border-color:transparent}
 .pill.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
@@ -147,9 +147,9 @@ body.notes .speak{display:block}
   <button role="tab" data-tab="live" aria-selected="false">Call my phone</button>
   <button role="tab" data-tab="results" aria-selected="false">Results</button>
   <button role="tab" data-tab="trouble" aria-selected="false">Troubleshoot</button>
-  <button role="tab" data-tab="rudder" aria-selected="false">Learn AI Rudder</button>
+  <button role="tab" data-tab="learn" aria-selected="false">Learn</button>
   <a href="/learn?doc=07-interview-playbook" style="margin-left:auto">Interview playbook</a>
-  <a href="/learn" style="margin-left:12px">Learn the project ↗</a>
+  <a href="/learn" style="margin-left:12px">Learn page ↗</a>
 </nav>
 
 <div class="guide" id="guide">
@@ -362,20 +362,21 @@ tail -f logs/crm.log            # CRM server log (orchestrator logs print in the
   <div id="recent-errors"></div>
 </section>
 
-<!-- ============================ LEARN AI RUDDER ============================ -->
-<section class="tab" id="tab-rudder" hidden>
+<!-- ============================ LEARN ============================ -->
+<section class="tab" id="tab-learn" hidden>
   <div>
-    <h2>Learn AI Rudder: interview study guide</h2>
-    <p class="muted">The company, CALL-E, the role (Technical CSM + Forward Deployed Engineer), this project in plain words,
-      what to say, STAR stories, a Q&amp;A bank and flashcards. Start with the 7-minute explainer video.</p>
+    <h2>Learn: AI Rudder, CALL-E and this project</h2>
+    <p class="muted">One page for everything: the company, CALL-E, the role (Technical CSM + Forward Deployed Engineer), the project in depth
+      (system diagram, who decides what, code tour, terminal, all docs), and what to say (script, STAR, Q&amp;A, flashcards).
+      Start with the 7-minute explainer video.</p>
   </div>
-  <video class="rudder-video" id="rudder-video" controls preload="metadata" src="/rudder/ai-rudder-explainer.mp4"></video>
+  <video class="learn-video" id="learn-video" controls preload="metadata" src="/rudder/ai-rudder-explainer.mp4"></video>
   <div class="row">
-    <a class="act" href="/rudder/" target="_blank" rel="noopener">Open the study guide in its own tab ↗</a>
+    <a class="act" href="/learn" target="_blank" rel="noopener">Open the Learn page in its own tab ↗</a>
     <a class="act secondary" href="/rudder/video/player.html" target="_blank" rel="noopener" style="background:transparent;color:var(--accent)">Interactive video player ↗</a>
     <span class="muted" style="font-size:13px">Your progress, STAR drafts and checklist are saved in this browser.</span>
   </div>
-  <iframe class="rudder-guide" id="rudder-guide" title="Learn AI Rudder study guide" loading="lazy" data-src="/rudder/?embed=1"></iframe>
+  <iframe class="learn-guide" id="learn-guide" title="Learn page" loading="lazy" data-src="/learn?embed=1"></iframe>
 </section>
 </main>
 
@@ -479,10 +480,10 @@ document.querySelectorAll("nav button").forEach(b => b.addEventListener("click",
 function tab(name) {
   document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === name));
   document.querySelectorAll("section.tab").forEach(s => s.hidden = s.id !== "tab-" + name);
-  document.body.classList.toggle("wide-tab", name === "rudder");
-  const frame = $("#rudder-guide");
-  if (name === "rudder" && !frame.src) frame.src = frame.dataset.src;  // load the guide only when first opened
-  if (name !== "rudder") $("#rudder-video").pause();
+  document.body.classList.toggle("wide-tab", name === "learn");
+  const frame = $("#learn-guide");
+  if (name === "learn" && !frame.src) frame.src = frame.dataset.src;  // load the page only when first opened
+  if (name !== "learn") $("#learn-video").pause();
   try { localStorage.setItem("tab", name); } catch {}
 }
 document.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => tab(b.dataset.goto)));
@@ -682,7 +683,7 @@ const GUIDE = [
    say: "Here the customer asks for a person. The agent doesn't argue: it asks when to call back, and the CRM gets a high-priority task for a human agent.",
    why: "The assignment asks for at least one exception. Others are ready too: wrong person answers, already paid, no answer."},
   {sec: "Section 4B · Integration", title: "Explain the flow with the diagram", tab: "demo",
-   do: 'Open <a href="/learn#map" target="_blank" rel="noopener">Learn the project → System diagram</a> (new tab). Follow the numbers 1 to 6.',
+   do: 'Open <a href="/learn#map" target="_blank" rel="noopener">Learn page → System diagram</a> (new tab). Follow the numbers 1 to 6.',
    see: "A diagram: Mock CRM on the left, our orchestrator in the middle, CALL-E and the customer on the right.",
    say: "One: read the customer. Two: ask CALL-E to call. Three: the conversation. Four: CALL-E tells us it's done. Five: we double-check the result with CALL-E. Six: we write it to the CRM, and it only counts once the CRM confirms.",
    why: 'Orchestrator = the program in the middle that I built. "Webhook" = CALL-E calling our program back when a call ends.'},

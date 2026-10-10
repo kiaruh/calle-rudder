@@ -267,7 +267,9 @@ def create_app(db_path: str | None = None) -> FastAPI:
 def _page(title: str, body: str) -> str:
     return (
         "<!doctype html><html><head><meta charset='utf-8'><meta http-equiv='refresh' content='3'>"
-        f"<title>{title}</title><style>"
+        f"<title>{title}</title>"
+        "<link rel='icon' href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23b86f00'/%3E%3C/svg%3E\">"
+        "<style>"
         ":root{--bg:#f4f6f7;--fg:#15222b;--line:#d3dbe0;--surface:#fff;--good:#2d7a34;--bad:#b3261e;--accent:#0d6b66}"
         "@media (prefers-color-scheme:dark){:root{--bg:#0f171c;--fg:#e2eaef;--line:#2d3d47;--surface:#16222a;--good:#72c479;--bad:#f07068;--accent:#53c4ba}}"
         "body{font-family:system-ui;margin:0;padding:20px;background:var(--bg);color:var(--fg)}"
@@ -278,7 +280,9 @@ def _page(title: str, body: str) -> str:
         ".btns{display:flex;flex-wrap:wrap;gap:6px}button,.btn{font:inherit;font-size:13px;padding:6px 10px;border-radius:6px;"
         "border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;text-decoration:none}"
         "button:hover,.btn:hover{background:var(--accent);color:var(--surface)}.hint{opacity:.75;font-size:14px}"
-        "</style><script>async function act(p,b){await fetch(p,{method:'POST',headers:{'content-type':'application/json'},"
+        # Opened at /crm (no slash, hosted)? Relative links would hit the site root: move to /crm/ first.
+        "</style><script>if(location.pathname.endsWith('/crm'))location.replace(location.pathname+'/'+location.search);"
+        "async function act(p,b){await fetch(p,{method:'POST',headers:{'content-type':'application/json'},"
         "body:JSON.stringify(b)});location.reload()}"
         # Relative paths work both on :8001/ (local) and under /crm/ (hosted). Hosted: the control center is at /.
         "addEventListener('DOMContentLoaded',()=>{const a=document.getElementById('cc');"

@@ -19,7 +19,12 @@ def rt(env):
 # ---------------------------------------------------------------- pages + status
 def test_pages_and_status(env):
     assert "Solaria Control Center" in env.orch.get("/").text
-    assert "Solaria Project Guide" in env.orch.get("/learn").text
+    learn = env.orch.get("/learn").text
+    # One merged Learn page: interview prep + the project guide (anchors other pages link to must survive).
+    assert "Learn AI Rudder" in learn and "Flashcards" in learn and "System diagram" in learn
+    for anchor in ("map", "assembly", "docs", "layers", "ownership", "code", "terminal", "site"):
+        assert f'<section id="{anchor}"' in learn, anchor
+    assert '/rudder/ai-rudder-explainer.mp4' in learn and "08-live-site-guide" in env.orch.get("/api/docs").json()
     st = env.orch.get("/api/status").json()
     assert st["mode"] == "simulated" and st["crm"] == "healthy" and st["regions"]["MX"] == "+52"
     docs = env.orch.get("/api/docs").json()
@@ -28,11 +33,13 @@ def test_pages_and_status(env):
     assert env.orch.get("/api/docs/../../etc/passwd").status_code == 404
 
 
-def test_learn_ai_rudder_tab_and_video(env):
-    assert 'data-tab="rudder"' in env.orch.get("/").text
-    assert env.orch.get("/rudder", follow_redirects=False).headers["location"] == "/rudder/"
-    guide = env.orch.get("/rudder/")
-    assert guide.status_code == 200 and "Learn AI Rudder" in guide.text
+def test_learn_tab_video_and_old_rudder_address(env):
+    index = env.orch.get("/").text
+    assert 'data-tab="learn"' in index and 'data-src="/learn?embed=1"' in index
+    # The old /rudder/ study guide merged into /learn: both old addresses lead there.
+    assert env.orch.get("/rudder", follow_redirects=False).headers["location"] == "/learn"
+    stub = env.orch.get("/rudder/")
+    assert stub.status_code == 200 and 'url=/learn' in stub.text
     video = env.orch.get("/rudder/ai-rudder-explainer.mp4", headers={"Range": "bytes=0-99"})
     assert video.status_code == 206 and video.headers["content-type"] == "video/mp4" and len(video.content) == 100
     assert env.orch.get("/rudder/video/player.html").status_code == 200

@@ -13,7 +13,7 @@ flowchart LR
     CAMP[Campaign API]
     GUARD[Guards\nphone · DNC · 08-21 local]
     CFG[Agent config\ntask prompt · result_schema]
-    GW[CALL-E Gateway\nlive SDK | simulator]
+    GW[CALL-E Gateway\nlive SDK / simulator]
     WH[Webhook receiver\nid check · dedupe]
     RULES[Business rules\noutcome → status + task]
     OUT[(Outbox + state\nSQLite)]

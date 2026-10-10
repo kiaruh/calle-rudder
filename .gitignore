@@ -6,3 +6,4 @@ data/*.sqlite3
 .venv/
 logs/
 dist/
+.DS_Store

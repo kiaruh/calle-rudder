@@ -148,10 +148,10 @@ def register(app: FastAPI, rt, *, run_campaign: Callable, retry_outbox: Callable
     def learn() -> FileResponse:
         return FileResponse(STATIC / "learn.html")
 
-    # "Learn AI Rudder" interview study guide + explainer video (static/rudder/, shown in the control center tab)
+    # Explainer video + its source (static/rudder/). The old /rudder/ study guide merged into /learn.
     @app.get("/rudder", include_in_schema=False)
     def rudder_redirect() -> RedirectResponse:
-        return RedirectResponse("/rudder/")
+        return RedirectResponse("/learn")
 
     app.mount("/rudder", StaticFiles(directory=STATIC / "rudder", html=True), name="rudder")
 
